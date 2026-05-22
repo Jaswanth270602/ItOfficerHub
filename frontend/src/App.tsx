@@ -1,0 +1,51 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AuthProvider, useAuth } from '@/lib/auth'
+import { Layout } from '@/components/Layout'
+import { LandingPage } from '@/pages/LandingPage'
+import { LoginPage } from '@/pages/LoginPage'
+import { RegisterPage } from '@/pages/RegisterPage'
+import { DashboardPage } from '@/pages/DashboardPage'
+import { MockTestPage } from '@/pages/MockTestPage'
+import { ResultPage } from '@/pages/ResultPage'
+import { HistoryPage } from '@/pages/HistoryPage'
+import { CommunityPage } from '@/pages/CommunityPage'
+import { AdminLoginPage } from '@/pages/admin/AdminLoginPage'
+import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
+import { AdminMockPage } from '@/pages/admin/AdminMockPage'
+
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth()
+  const redirect = encodeURIComponent(window.location.pathname + window.location.search)
+  return isAuthenticated ? <>{children}</> : <Navigate to={`/login?redirect=${redirect}`} replace />
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/admin" />
+  if (user?.role !== 'ADMIN') return <Navigate to="/" />
+  return <>{children}</>
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/mock/:mockId" element={<PrivateRoute><MockTestPage /></PrivateRoute>} />
+            <Route path="/result/:attemptId" element={<PrivateRoute><ResultPage /></PrivateRoute>} />
+            <Route path="/history" element={<PrivateRoute><HistoryPage /></PrivateRoute>} />
+            <Route path="/community" element={<PrivateRoute><CommunityPage /></PrivateRoute>} />
+          </Route>
+          <Route path="/admin" element={<AdminLoginPage />} />
+          <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+          <Route path="/admin/mocks/:id" element={<AdminRoute><AdminMockPage /></AdminRoute>} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
+}

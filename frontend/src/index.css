@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cyber-950: #070b14;
+  --color-cyber-900: #0c1222;
+  --color-cyber-800: #151d33;
+  --color-cyber-700: #243056;
+  --color-neon-blue: #3b82f6;
+  --color-neon-purple: #8b5cf6;
+  --color-neon-cyan: #22d3ee;
+}
+
+body {
+  @apply bg-cyber-950 text-slate-100 antialiased min-h-screen;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    radial-gradient(ellipse at 15% 0%, rgba(59, 130, 246, 0.12), transparent 45%),
+    radial-gradient(ellipse at 85% 100%, rgba(139, 92, 246, 0.1), transparent 45%);
+  background-size: 48px 48px, 48px 48px, auto, auto;
+}
+
+a,
+button,
+[role='button'],
+label[for],
+select,
+summary {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.page-container {
+  @apply max-w-6xl mx-auto px-4;
+}
+
+.page-title {
+  @apply text-3xl font-bold tracking-tight text-white;
+}
+
+.page-subtitle {
+  @apply text-slate-400 mt-1;
+}
