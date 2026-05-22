@@ -12,32 +12,41 @@ Free mock test platform for **IBPS SO IT Officer** exams — 20 questions, 15 mi
 
 ## Local development
 
-### 1. Start PostgreSQL
-
-```powershell
-cd c:\Users\dell\Downloads\ItOfficerHub
-docker compose up -d
-```
-
-### 2. Backend
+### 1. Neon / PostgreSQL config
 
 ```powershell
 copy .env.example .env
-# Edit JWT_SECRET if you like
-.\mvnw.cmd spring-boot:run
+# Edit .env with your Neon JDBC URL, DB_USER, DB_PASSWORD (see .env.example)
 ```
 
-API: http://localhost:8080
+`.env` is loaded automatically (`spring.config.import`). **Never commit `.env`.**
 
-### 3. Frontend
+### 2. Build UI into Spring static (one app on port 8080)
 
 ```powershell
 cd frontend
 npm install
+npm run build
+cd ..
+powershell -ExecutionPolicy Bypass -File .\scripts\build-static.ps1
+```
+
+### 3. Run backend (serves API + React UI)
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dskip.frontend.build=true"
+```
+
+Open **http://localhost:8080** (UI + `/api` on same host).
+
+Optional Vite dev server (hot reload):
+
+```powershell
+cd frontend
 npm run dev
 ```
 
-App: http://localhost:5173
+→ http://localhost:5173 (proxies `/api` to 8080)
 
 **Admin:** `/admin` — `admin@itofficerhub.com` / `Admin@123` (change `ADMIN_PASSWORD` in production)
 
@@ -53,42 +62,42 @@ App: http://localhost:5173
 | `PORT` | HTTP port (Render sets this) |
 | `VITE_API_URL` | Frontend build: backend `/api` base URL |
 
-## Deploy to Render (free tier)
+## Deploy to Render (one service: API + UI)
 
-### A. Database (Neon — free)
+### A. Neon database
 
-1. Create project at [neon.tech](https://neon.tech)
-2. Copy **connection string** (`postgres://...`)
+Use your Neon project; set on Render:
+
+| Key | Example |
+|-----|---------|
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://....neon.tech/itofficerhub_db?sslmode=require` |
+| `DB_USER` | `neondb_owner` |
+| `DB_PASSWORD` | *(from Neon dashboard)* |
+| `JWT_SECRET` | long random string |
+| `ADMIN_PASSWORD` | strong admin password |
 
 ### B. Push to GitHub
 
 ```powershell
-git init
 git add .
-git commit -m "ItOfficerHub PostgreSQL + Render deploy"
-git branch -M main
-git remote add origin https://github.com/YOUR_USER/ItOfficerHub.git
-git push -u origin main
+git commit -m "Deploy: Neon Postgres + bundled static UI"
+git push
 ```
 
-### C. Render
+Do **not** push `.env` (it is gitignored).
 
-1. [render.com](https://render.com) → **New** → **Blueprint** → connect repo (uses `render.yaml`)
-2. Or manually:
-   - **Web Service** `itofficerhub-api`: Docker, set `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGINS=https://YOUR-STATIC-SITE.onrender.com`
-   - **Static Site** `itofficerhub-web`: root `frontend`, build `npm ci && npm run build`, publish `dist`, env `VITE_API_URL=https://itofficerhub-api.onrender.com/api`
-3. After deploy, update `CORS_ORIGINS` on the API to match your real static URL → redeploy API.
+### C. Render Web Service (Docker)
 
-### Build commands (reference)
+1. [render.com](https://render.com) → **New** → **Blueprint** or **Web Service** → connect repo  
+2. Dockerfile builds frontend + backend JAR (`-Dskip.frontend.build=false`)  
+3. Add env vars above  
+4. Open your Render URL → full app at `https://your-app.onrender.com`
+
+### Full production JAR locally
 
 ```powershell
-# Backend JAR
-.\mvnw.cmd clean package -DskipTests
-
-# Frontend (production)
-cd frontend
-$env:VITE_API_URL="https://YOUR-API.onrender.com/api"
-npm run build
+.\mvnw.cmd clean package -DskipTests "-Dskip.frontend.build=false"
+java -jar target\ItOfficerHub-1.0.0-SNAPSHOT.jar
 ```
 
 ## Import quizzes

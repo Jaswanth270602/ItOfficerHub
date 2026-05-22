@@ -1,6 +1,7 @@
 HELP.md
 .env
 .env.local
+src/main/resources/static/
 frontend/.env
 frontend/.env.local
 target/

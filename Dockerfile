@@ -5,7 +5,7 @@ COPY mvnw pom.xml ./
 COPY .mvn .mvn
 RUN chmod +x mvnw
 COPY src src
-RUN ./mvnw -q package -DskipTests
+RUN ./mvnw -q package -DskipTests -Dskip.frontend.build=false
 
 # Run stage
 FROM eclipse-temurin:21-jre-alpine
