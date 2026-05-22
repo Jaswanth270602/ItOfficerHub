@@ -89,6 +89,14 @@ Login: `admin@itofficerhub.com` / password = whatever you set as `ADMIN_PASSWORD
 
 ---
 
+## Database migrations (Flyway)
+
+On each deploy, Spring runs SQL in `src/main/resources/db/migration/` before the app serves traffic.
+
+If you see **`column exam_target does not exist`** before redeploying, run `docs/scripts/fix-neon-schema.sql` in the Neon SQL Editor, then restart Render.
+
+---
+
 ## Step 5 — After first deploy
 
 1. **Rotate Neon password** if you ever shared it in chat or committed `.env`.
