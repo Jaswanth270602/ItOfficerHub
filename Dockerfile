@@ -1,13 +1,23 @@
-# Build stage
-FROM eclipse-temurin:21-jdk-alpine AS build
+# Stage 1: Build React UI
+FROM node:20-bookworm-slim AS frontend
+WORKDIR /fe
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend .
+ENV VITE_API_URL=
+RUN npm run build
+
+# Stage 2: Build Spring Boot JAR (UI baked into classpath:/static)
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 COPY mvnw pom.xml ./
 COPY .mvn .mvn
 RUN chmod +x mvnw
 COPY src src
-RUN ./mvnw -q package -DskipTests -Dskip.frontend.build=false
+COPY --from=frontend /fe/dist src/main/resources/static
+RUN ./mvnw -q package -DskipTests -Dskip.frontend.build=true
 
-# Run stage
+# Stage 3: Run
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 RUN adduser -D -u 1000 appuser

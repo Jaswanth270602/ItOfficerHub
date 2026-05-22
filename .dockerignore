@@ -1,8 +1,9 @@
 target/
-frontend/
 frontend/node_modules/
+frontend/dist/
 .git/
 .idea/
 *.md
 .env
 .env.*
+src/main/resources/static/

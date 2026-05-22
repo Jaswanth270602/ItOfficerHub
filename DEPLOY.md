@@ -55,6 +55,8 @@ git push origin main
    - **Dockerfile path:** `./Dockerfile`
    - **Plan:** Free
 
+**Note:** The Docker build copies `frontend/` and runs `npm ci` + `npm run build` inside the image (first deploy may take 10–15 min).
+
 5. Click **Advanced** → add **Environment Variables**:
 
 | Key | Value |
