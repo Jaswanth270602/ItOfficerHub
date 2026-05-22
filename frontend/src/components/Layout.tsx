@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button } from './ui/button'
-import { Cpu, LogOut, Mail, User } from 'lucide-react'
+import { ClipboardList, Cpu, LogOut, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -37,10 +37,13 @@ export function Layout() {
                   </span>
                 </NavLink>
                 <NavLink to="/history" className={navLinkClass}>
-                  <span className="flex items-center gap-1 max-w-[120px] truncate">
-                    <User className="h-4 w-4 shrink-0" /> {user?.name}
+                  <span className="flex items-center gap-1">
+                    <ClipboardList className="h-4 w-4 hidden sm:inline" /> My attempts
                   </span>
                 </NavLink>
+                <span className="text-xs text-slate-500 hidden md:inline truncate max-w-[100px]" title={user?.name}>
+                  {user?.name}
+                </span>
                 <Button variant="ghost" size="sm" className="cursor-pointer ml-1" onClick={logout} aria-label="Logout">
                   <LogOut className="h-4 w-4" />
                 </Button>

@@ -41,8 +41,13 @@ public class AttemptController {
 		return attemptService.getResult(id);
 	}
 
+	@GetMapping("/my-mocks")
+	public List<MockWithUserStatusDto> myMocks() {
+		return attemptService.getMocksWithUserStatus();
+	}
+
 	@GetMapping("/history")
-	public List<AttemptResultDto> history() {
+	public List<AttemptHistoryItemDto> history() {
 		return attemptService.getUserHistory();
 	}
 }

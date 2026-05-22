@@ -11,6 +11,17 @@ public interface TestAttemptRepository extends JpaRepository<TestAttempt, Long> 
 
 	List<TestAttempt> findByUserIdAndSubmittedTrueOrderBySubmittedAtDesc(Long userId);
 
+	@Query("""
+			SELECT a FROM TestAttempt a
+			JOIN FETCH a.mockTest m
+			WHERE a.user.id = :userId AND a.submitted = true
+			ORDER BY a.submittedAt DESC
+			""")
+	List<TestAttempt> findSubmittedByUserWithMock(@Param("userId") Long userId);
+
+	@Query("SELECT AVG(a.netScore * 100.0 / (a.totalQuestions * 1.0)) FROM TestAttempt a WHERE a.submitted = true AND a.totalQuestions > 0")
+	Double averageNetScorePercent();
+
 	long countByMockTestIdAndSubmittedTrue(Long mockTestId);
 
 	@Query("SELECT COUNT(a) FROM TestAttempt a WHERE a.mockTest.id = :mockId AND a.submitted = true")

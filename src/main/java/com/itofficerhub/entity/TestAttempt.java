@@ -43,6 +43,11 @@ public class TestAttempt {
 
 	private Instant submittedAt;
 
+	/** Snapshot at submit time — avoids recomputing rank on every list/history load */
+	private Long rankAtSubmit;
+	private Double percentileAtSubmit;
+	private Long uniqueStudentsAtSubmit;
+
 	public Long getId() { return id; }
 	public void setId(Long id) { this.id = id; }
 	public User getUser() { return user; }
@@ -73,4 +78,10 @@ public class TestAttempt {
 	public void setStartedAt(Instant startedAt) { this.startedAt = startedAt; }
 	public Instant getSubmittedAt() { return submittedAt; }
 	public void setSubmittedAt(Instant submittedAt) { this.submittedAt = submittedAt; }
+	public Long getRankAtSubmit() { return rankAtSubmit; }
+	public void setRankAtSubmit(Long rankAtSubmit) { this.rankAtSubmit = rankAtSubmit; }
+	public Double getPercentileAtSubmit() { return percentileAtSubmit; }
+	public void setPercentileAtSubmit(Double percentileAtSubmit) { this.percentileAtSubmit = percentileAtSubmit; }
+	public Long getUniqueStudentsAtSubmit() { return uniqueStudentsAtSubmit; }
+	public void setUniqueStudentsAtSubmit(Long uniqueStudentsAtSubmit) { this.uniqueStudentsAtSubmit = uniqueStudentsAtSubmit; }
 }

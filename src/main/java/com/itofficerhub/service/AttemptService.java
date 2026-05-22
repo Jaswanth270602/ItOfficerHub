@@ -121,7 +121,8 @@ public class AttemptService {
 		attempt.setTimeTakenSeconds(request.timeTakenSeconds());
 		attempt.setSubmitted(true);
 		attempt.setSubmittedAt(Instant.now());
-		attemptRepository.save(attempt);
+		snapshotRank(attempt);
+		attempt = attemptRepository.save(attempt);
 		return buildResult(attempt);
 	}
 
@@ -133,10 +134,49 @@ public class AttemptService {
 		return buildResult(attempt);
 	}
 
-	public List<AttemptResultDto> getUserHistory() {
+	@Transactional(readOnly = true)
+	public List<AttemptHistoryItemDto> getUserHistory() {
 		UserPrincipal user = getCurrentUser();
-		return attemptRepository.findByUserIdAndSubmittedTrueOrderBySubmittedAtDesc(user.getId()).stream()
-				.map(this::buildResultSummary)
+		List<TestAttempt> attempts = attemptRepository.findSubmittedByUserWithMock(user.getId());
+		Map<Long, Integer> countByMock = new HashMap<>();
+		List<AttemptHistoryItemDto> items = new ArrayList<>();
+		for (TestAttempt a : attempts) {
+			int index = countByMock.merge(a.getMockTest().getId(), 1, Integer::sum);
+			items.add(toHistoryItem(a, index));
+		}
+		return items;
+	}
+
+	@Transactional(readOnly = true)
+	public List<MockWithUserStatusDto> getMocksWithUserStatus() {
+		UserPrincipal user = getCurrentUser();
+		Map<Long, List<TestAttempt>> byMock = new HashMap<>();
+		for (TestAttempt a : attemptRepository.findSubmittedByUserWithMock(user.getId())) {
+			byMock.computeIfAbsent(a.getMockTest().getId(), k -> new ArrayList<>()).add(a);
+		}
+		return mockTestRepository.findByPublishedTrueOrderByCreatedAtDesc().stream()
+				.map(m -> {
+					List<TestAttempt> mine = byMock.getOrDefault(m.getId(), List.of());
+					boolean attempted = !mine.isEmpty();
+					double best = mine.stream().mapToDouble(TestAttempt::getNetScore).max().orElse(0);
+					TestAttempt latest = mine.isEmpty() ? null : mine.get(0);
+					boolean cleared = latest != null
+							&& latest.getNetScore() >= m.getCutoffMarks();
+					return new MockWithUserStatusDto(
+							m.getId(),
+							m.getTitle(),
+							m.getDescription(),
+							m.getDifficulty().name(),
+							m.getQuestionCount(),
+							m.getTimeLimitMinutes(),
+							attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()),
+							m.isAllowRetake(),
+							attempted,
+							mine.size(),
+							attempted ? best : null,
+							latest != null ? latest.getId() : null,
+							cleared);
+				})
 				.toList();
 	}
 
@@ -176,6 +216,24 @@ public class AttemptService {
 		attempt.setNetScore(b.netScore());
 	}
 
+	private void snapshotRank(TestAttempt attempt) {
+		var unique = uniqueRankingService.computeForAttempt(attempt);
+		attempt.setRankAtSubmit(unique.rank());
+		attempt.setPercentileAtSubmit(unique.percentile());
+		attempt.setUniqueStudentsAtSubmit(unique.uniqueStudents());
+	}
+
+	private RankStats rankStatsFor(TestAttempt attempt) {
+		if (attempt.getRankAtSubmit() != null) {
+			return new RankStats(
+					attempt.getRankAtSubmit(),
+					attempt.getPercentileAtSubmit() != null ? attempt.getPercentileAtSubmit() : 0,
+					attempt.getUniqueStudentsAtSubmit() != null ? attempt.getUniqueStudentsAtSubmit() : 0,
+					0);
+		}
+		return computeRankStats(attempt);
+	}
+
 	private RankStats computeRankStats(TestAttempt attempt) {
 		var unique = uniqueRankingService.computeForAttempt(attempt);
 		return new RankStats(
@@ -183,6 +241,31 @@ public class AttemptService {
 				unique.percentile(),
 				unique.uniqueStudents(),
 				unique.totalAttempts());
+	}
+
+	private AttemptHistoryItemDto toHistoryItem(TestAttempt attempt, int attemptIndexForMock) {
+		ensureScoring(attempt);
+		double maxMarks = attempt.getTotalQuestions() * ExamScoring.MARKS_PER_CORRECT;
+		double pct = maxMarks > 0 ? (attempt.getNetScore() / maxMarks) * 100.0 : 0;
+		RankStats stats = rankStatsFor(attempt);
+		double cutoff = attempt.getMockTest().getCutoffMarks();
+		return new AttemptHistoryItemDto(
+				attempt.getId(),
+				attempt.getMockTest().getId(),
+				attempt.getMockTest().getTitle(),
+				round2(attempt.getNetScore()),
+				maxMarks,
+				attempt.getCorrectCount(),
+				attempt.getWrongCount(),
+				round1(pct),
+				stats.rank(),
+				round1(stats.percentile()),
+				stats.uniqueStudents(),
+				attempt.getNetScore() >= cutoff,
+				cutoff,
+				attempt.getSubmittedAt(),
+				attempt.getMockTest().isAllowRetake(),
+				attemptIndexForMock);
 	}
 
 	private record RankStats(long rank, double percentile, long uniqueStudents, long totalAttempts) {}
@@ -193,7 +276,7 @@ public class AttemptService {
 				attempt.getTotalQuestions(),
 				attempt.getCorrectCount(),
 				attempt.getWrongCount());
-		RankStats stats = computeRankStats(attempt);
+		RankStats stats = rankStatsFor(attempt);
 		double pctMarks = b.maxMarks() > 0 ? (attempt.getNetScore() / b.maxMarks()) * 100.0 : 0;
 		return buildDto(attempt, List.of(), stats, b, pctMarks);
 	}
@@ -226,7 +309,7 @@ public class AttemptService {
 				attempt.getTotalQuestions(),
 				attempt.getCorrectCount(),
 				attempt.getWrongCount());
-		RankStats stats = computeRankStats(attempt);
+		RankStats stats = rankStatsFor(attempt);
 		double pctMarks = b.maxMarks() > 0 ? (attempt.getNetScore() / b.maxMarks()) * 100.0 : 0;
 		return buildDto(attempt, reviews, stats, b, pctMarks);
 	}

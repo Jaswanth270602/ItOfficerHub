@@ -48,6 +48,7 @@ public class SocialService {
 				.toList();
 	}
 
+	@Transactional(readOnly = true)
 	public PollResponseDto poll(Instant since) {
 		User me = getCurrentUser().getUser();
 		long unread = messageRepository.countUnreadForUser(me.getId());
@@ -55,7 +56,8 @@ public class SocialService {
 				? messageRepository.findNewForUserSince(me.getId(), since)
 				: List.of();
 		List<ChatMessageDto> dtos = fresh.stream().map(m -> toMessageDto(m, me.getId())).toList();
-		return new PollResponseDto(Instant.now(), unread, dtos, inbox());
+		// Lightweight poll — inbox is loaded separately (avoids heavy rebuild every few seconds)
+		return new PollResponseDto(Instant.now(), unread, dtos, List.of());
 	}
 
 	@Transactional(readOnly = true)
@@ -370,7 +372,19 @@ public class SocialService {
 
 	private ScoreCardDto buildScoreCard(Long attemptId) {
 		TestAttempt a = attemptRepository.findById(attemptId).orElseThrow();
-		var rank = uniqueRankingService.computeForAttempt(a);
+		long rank;
+		double percentile;
+		long students;
+		if (a.getRankAtSubmit() != null) {
+			rank = a.getRankAtSubmit();
+			percentile = a.getPercentileAtSubmit() != null ? a.getPercentileAtSubmit() : 0;
+			students = a.getUniqueStudentsAtSubmit() != null ? a.getUniqueStudentsAtSubmit() : 0;
+		} else {
+			var computed = uniqueRankingService.computeForAttempt(a);
+			rank = computed.rank();
+			percentile = computed.percentile();
+			students = computed.uniqueStudents();
+		}
 		return new ScoreCardDto(
 				a.getId(),
 				a.getMockTest().getTitle(),
@@ -378,9 +392,9 @@ public class SocialService {
 				a.getTotalQuestions() * ExamScoring.MARKS_PER_CORRECT,
 				a.getCorrectCount(),
 				a.getWrongCount(),
-				rank.rank(),
-				Math.round(rank.percentile() * 10) / 10.0,
-				rank.uniqueStudents(),
+				rank,
+				Math.round(percentile * 10) / 10.0,
+				students,
 				a.getNetScore() >= a.getMockTest().getCutoffMarks(),
 				a.getMockTest().getCutoffMarks());
 	}

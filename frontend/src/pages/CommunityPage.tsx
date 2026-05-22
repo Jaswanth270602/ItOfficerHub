@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import api from '@/lib/api'
+import api, { apiErrorMessage } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -87,11 +87,21 @@ export function CommunityPage() {
   const [pickerStudents, setPickerStudents] = useState<StudentPick[]>([])
   const [showAddMembers, setShowAddMembers] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [inboxLoading, setInboxLoading] = useState(true)
+  const [messagesLoading, setMessagesLoading] = useState(false)
   const lastPoll = useRef<string>(new Date().toISOString())
   const messagesEnd = useRef<HTMLDivElement>(null)
 
   const loadInbox = useCallback(() => {
-    api.get('/social/inbox').then((r) => setInbox(r.data)).catch(() => {})
+    setInboxLoading(true)
+    api
+      .get('/social/inbox')
+      .then((r) => {
+        setInbox(r.data)
+        setActionError('')
+      })
+      .catch((e) => setActionError(apiErrorMessage(e, 'Could not load conversations')))
+      .finally(() => setInboxLoading(false))
   }, [])
 
   const loadStudents = useCallback(() => {
@@ -112,20 +122,23 @@ export function CommunityPage() {
   }, [])
 
   const loadMessages = useCallback((convId: number, since?: string) => {
-    api.get(`/social/conversations/${convId}/messages`, { params: since ? { since } : {} })
+    if (!since) setMessagesLoading(true)
+    api
+      .get(`/social/conversations/${convId}/messages`, { params: since ? { since } : {} })
       .then((r) => {
         if (since) setMessages((prev) => [...prev, ...r.data])
         else setMessages(r.data)
         setTimeout(() => messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }), 100)
       })
-      .catch(() => {})
+      .catch((e) => setActionError(apiErrorMessage(e, 'Could not load messages')))
+      .finally(() => !since && setMessagesLoading(false))
   }, [])
 
   const poll = useCallback(() => {
-    api.get('/social/poll', { params: { since: lastPoll.current } })
+    api
+      .get('/social/poll', { params: { since: lastPoll.current } })
       .then((r) => {
         lastPoll.current = r.data.serverTime
-        if (r.data.inboxUpdates?.length) setInbox(r.data.inboxUpdates)
         if (activeId && r.data.newMessages?.length) {
           const forConv = r.data.newMessages.filter((m: Message) => m.conversationId === activeId)
           if (forConv.length) {
@@ -141,15 +154,30 @@ export function CommunityPage() {
   }, [activeId])
 
   useEffect(() => {
-    api.post('/social/groups/prep-squad/join').finally(loadInbox)
-    api.get('/social/profile/me').then((r) => setProfile(r.data))
-    loadStudents()
+    const init = async () => {
+      if (!sessionStorage.getItem('prepSquadJoined')) {
+        try {
+          await api.post('/social/groups/prep-squad/join')
+          sessionStorage.setItem('prepSquadJoined', '1')
+        } catch {
+          /* group may already exist */
+        }
+      }
+      loadInbox()
+      api.get('/social/profile/me').then((r) => setProfile(r.data)).catch(() => {})
+      loadStudents()
+    }
+    init()
   }, [loadInbox, loadStudents])
 
   useEffect(() => {
-    const t = setInterval(poll, 4000)
-    return () => clearInterval(t)
-  }, [poll])
+    const pollTimer = setInterval(poll, 12000)
+    const inboxTimer = setInterval(loadInbox, 45000)
+    return () => {
+      clearInterval(pollTimer)
+      clearInterval(inboxTimer)
+    }
+  }, [poll, loadInbox])
 
   useEffect(() => {
     if (activeId) {
@@ -465,6 +493,14 @@ export function CommunityPage() {
               <CardTitle className="text-sm font-medium">Conversations</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-2 space-y-1 min-h-[200px]">
+              {inboxLoading && (
+                <p className="text-sm text-slate-500 text-center py-8">Loading conversations...</p>
+              )}
+              {!inboxLoading && inbox.length === 0 && (
+                <p className="text-sm text-slate-500 text-center py-8 px-2">
+                  No chats yet. Create a group or message someone from Students.
+                </p>
+              )}
               {inbox.map((c) => (
                 <button
                   key={c.id}
@@ -562,6 +598,12 @@ export function CommunityPage() {
                   )}
                 </CardHeader>
                 <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {messagesLoading && (
+                    <p className="text-sm text-slate-500 text-center py-8">Loading messages...</p>
+                  )}
+                  {!messagesLoading && messages.length === 0 && (
+                    <p className="text-sm text-slate-500 text-center py-8">No messages yet. Say hello!</p>
+                  )}
                   {messages.map((m) => (
                     <div
                       key={m.id}
