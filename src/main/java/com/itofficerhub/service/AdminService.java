@@ -16,13 +16,15 @@ public class AdminService {
 	private final QuestionRepository questionRepository;
 	private final UserRepository userRepository;
 	private final TestAttemptRepository attemptRepository;
+	private final AppCacheService appCacheService;
 
 	public AdminService(MockTestRepository mockTestRepository, QuestionRepository questionRepository,
-			UserRepository userRepository, TestAttemptRepository attemptRepository) {
+			UserRepository userRepository, TestAttemptRepository attemptRepository, AppCacheService appCacheService) {
 		this.mockTestRepository = mockTestRepository;
 		this.questionRepository = questionRepository;
 		this.userRepository = userRepository;
 		this.attemptRepository = attemptRepository;
+		this.appCacheService = appCacheService;
 	}
 
 	public AdminDashboardDto dashboard() {
@@ -52,7 +54,11 @@ public class AdminService {
 	public MockTestAdminDto updateMock(Long id, MockTestRequest request) {
 		MockTest m = findMock(id);
 		applyMockRequest(m, request);
-		return toAdminDto(mockTestRepository.save(m));
+		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
+		if (request.published() != null) {
+			appCacheService.evictPublicCatalog();
+		}
+		return dto;
 	}
 
 	@Transactional
@@ -70,7 +76,9 @@ public class AdminService {
 					"Need at least " + m.getQuestionCount() + " questions before publishing");
 		}
 		m.setPublished(!m.isPublished());
-		return toAdminDto(mockTestRepository.save(m));
+		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
+		appCacheService.evictPublicCatalog();
+		return dto;
 	}
 
 	@Transactional(readOnly = true)

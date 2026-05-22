@@ -1,11 +1,14 @@
 package com.itofficerhub.service;
 
+import com.itofficerhub.config.CacheNames;
 import com.itofficerhub.dto.*;
 import com.itofficerhub.entity.*;
 import com.itofficerhub.exception.ApiException;
 import com.itofficerhub.repository.*;
 import com.itofficerhub.entity.Role;
 import com.itofficerhub.security.UserPrincipal;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -25,11 +28,15 @@ public class SocialService {
 	private final UserDisplayService userDisplayService;
 	private final UniqueRankingService uniqueRankingService;
 	private final UserBlockRepository userBlockRepository;
+	private final AppCacheService appCacheService;
+	private final SocialService self;
+
 	public SocialService(ConversationRepository conversationRepository,
 			ConversationMemberRepository memberRepository, ChatMessageRepository messageRepository,
 			UserRepository userRepository, TestAttemptRepository attemptRepository,
 			UserDisplayService userDisplayService, UniqueRankingService uniqueRankingService,
-			UserBlockRepository userBlockRepository) {
+			UserBlockRepository userBlockRepository, AppCacheService appCacheService,
+			@Lazy SocialService self) {
 		this.conversationRepository = conversationRepository;
 		this.memberRepository = memberRepository;
 		this.messageRepository = messageRepository;
@@ -38,13 +45,21 @@ public class SocialService {
 		this.userDisplayService = userDisplayService;
 		this.uniqueRankingService = uniqueRankingService;
 		this.userBlockRepository = userBlockRepository;
+		this.appCacheService = appCacheService;
+		this.self = self;
 	}
 
 	@Transactional(readOnly = true)
 	public List<ConversationDto> inbox() {
 		User me = getCurrentUser().getUser();
-		return conversationRepository.findForUser(me.getId()).stream()
-				.map(c -> toConversationDto(c, me.getId()))
+		return self.inboxForUser(me.getId());
+	}
+
+	@Cacheable(cacheNames = CacheNames.USER_INBOX, key = "#userId")
+	@Transactional(readOnly = true)
+	public List<ConversationDto> inboxForUser(long userId) {
+		return conversationRepository.findForUser(userId).stream()
+				.map(c -> toConversationDto(c, userId))
 				.toList();
 	}
 
@@ -110,6 +125,7 @@ public class SocialService {
 		msg = messageRepository.save(msg);
 		conv.setUpdatedAt(Instant.now());
 		conversationRepository.save(conv);
+		evictInboxForConversation(conversationId);
 		return toMessageDto(msg, me.getId());
 	}
 
@@ -139,8 +155,10 @@ public class SocialService {
 					welcome.setMessageType(MessageType.SYSTEM);
 					welcome.setBody("Direct prep mail started. Share score cards and clear doubts here! 📬");
 					messageRepository.save(welcome);
+					evictInboxForConversation(c.getId());
 					return c;
 				});
+		evictInboxForConversation(conv.getId());
 		return toConversationDto(conv, me.getId());
 	}
 
@@ -168,6 +186,7 @@ public class SocialService {
 		welcome.setMessageType(MessageType.SYSTEM);
 		welcome.setBody(me.getName() + " created prep group \"" + conv.getName() + "\" 🚀");
 		messageRepository.save(welcome);
+		evictInboxForConversation(conv.getId());
 		return toConversationDto(conv, me.getId());
 	}
 
@@ -202,6 +221,7 @@ public class SocialService {
 			messageRepository.save(sys);
 			conv.setUpdatedAt(Instant.now());
 			conversationRepository.save(conv);
+			evictInboxForConversation(conversationId);
 		}
 		return toConversationDto(conv, me.getId());
 	}
@@ -214,6 +234,7 @@ public class SocialService {
 				.findFirst()
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Prep group not found"));
 		addMember(g, me);
+		appCacheService.evictUserInbox(me.getId());
 		return toConversationDto(g, me.getId());
 	}
 
@@ -397,6 +418,11 @@ public class SocialService {
 				students,
 				a.getNetScore() >= a.getMockTest().getCutoffMarks(),
 				a.getMockTest().getCutoffMarks());
+	}
+
+	private void evictInboxForConversation(Long conversationId) {
+		memberRepository.findByConversationIdWithUser(conversationId)
+				.forEach(m -> appCacheService.evictUserInbox(m.getUser().getId()));
 	}
 
 	private UserPrincipal getCurrentUser() {

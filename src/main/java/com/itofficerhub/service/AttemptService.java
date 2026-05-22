@@ -20,15 +20,20 @@ public class AttemptService {
 	private final MockTestRepository mockTestRepository;
 	private final QuestionRepository questionRepository;
 	private final UniqueRankingService uniqueRankingService;
+	private final UserAttemptCacheService userAttemptCache;
+	private final AppCacheService appCacheService;
 
 	public AttemptService(TestAttemptRepository attemptRepository, AttemptAnswerRepository answerRepository,
 			MockTestRepository mockTestRepository, QuestionRepository questionRepository,
-			UniqueRankingService uniqueRankingService) {
+			UniqueRankingService uniqueRankingService, UserAttemptCacheService userAttemptCache,
+			AppCacheService appCacheService) {
 		this.attemptRepository = attemptRepository;
 		this.answerRepository = answerRepository;
 		this.mockTestRepository = mockTestRepository;
 		this.questionRepository = questionRepository;
 		this.uniqueRankingService = uniqueRankingService;
+		this.userAttemptCache = userAttemptCache;
+		this.appCacheService = appCacheService;
 	}
 
 	@Transactional
@@ -123,6 +128,7 @@ public class AttemptService {
 		attempt.setSubmittedAt(Instant.now());
 		snapshotRank(attempt);
 		attempt = attemptRepository.save(attempt);
+		appCacheService.evictAfterMockSubmit(attempt.getMockTest().getId(), attempt.getUser().getId());
 		return buildResult(attempt);
 	}
 
@@ -136,48 +142,12 @@ public class AttemptService {
 
 	@Transactional(readOnly = true)
 	public List<AttemptHistoryItemDto> getUserHistory() {
-		UserPrincipal user = getCurrentUser();
-		List<TestAttempt> attempts = attemptRepository.findSubmittedByUserWithMock(user.getId());
-		Map<Long, Integer> countByMock = new HashMap<>();
-		List<AttemptHistoryItemDto> items = new ArrayList<>();
-		for (TestAttempt a : attempts) {
-			int index = countByMock.merge(a.getMockTest().getId(), 1, Integer::sum);
-			items.add(toHistoryItem(a, index));
-		}
-		return items;
+		return userAttemptCache.historyForUser(getCurrentUser().getId());
 	}
 
 	@Transactional(readOnly = true)
 	public List<MockWithUserStatusDto> getMocksWithUserStatus() {
-		UserPrincipal user = getCurrentUser();
-		Map<Long, List<TestAttempt>> byMock = new HashMap<>();
-		for (TestAttempt a : attemptRepository.findSubmittedByUserWithMock(user.getId())) {
-			byMock.computeIfAbsent(a.getMockTest().getId(), k -> new ArrayList<>()).add(a);
-		}
-		return mockTestRepository.findByPublishedTrueOrderByCreatedAtDesc().stream()
-				.map(m -> {
-					List<TestAttempt> mine = byMock.getOrDefault(m.getId(), List.of());
-					boolean attempted = !mine.isEmpty();
-					double best = mine.stream().mapToDouble(TestAttempt::getNetScore).max().orElse(0);
-					TestAttempt latest = mine.isEmpty() ? null : mine.get(0);
-					boolean cleared = latest != null
-							&& latest.getNetScore() >= m.getCutoffMarks();
-					return new MockWithUserStatusDto(
-							m.getId(),
-							m.getTitle(),
-							m.getDescription(),
-							m.getDifficulty().name(),
-							m.getQuestionCount(),
-							m.getTimeLimitMinutes(),
-							attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()),
-							m.isAllowRetake(),
-							attempted,
-							mine.size(),
-							attempted ? best : null,
-							latest != null ? latest.getId() : null,
-							cleared);
-				})
-				.toList();
+		return userAttemptCache.mockStatusForUser(getCurrentUser().getId());
 	}
 
 	private void ensureScoring(TestAttempt attempt) {
@@ -241,31 +211,6 @@ public class AttemptService {
 				unique.percentile(),
 				unique.uniqueStudents(),
 				unique.totalAttempts());
-	}
-
-	private AttemptHistoryItemDto toHistoryItem(TestAttempt attempt, int attemptIndexForMock) {
-		ensureScoring(attempt);
-		double maxMarks = attempt.getTotalQuestions() * ExamScoring.MARKS_PER_CORRECT;
-		double pct = maxMarks > 0 ? (attempt.getNetScore() / maxMarks) * 100.0 : 0;
-		RankStats stats = rankStatsFor(attempt);
-		double cutoff = attempt.getMockTest().getCutoffMarks();
-		return new AttemptHistoryItemDto(
-				attempt.getId(),
-				attempt.getMockTest().getId(),
-				attempt.getMockTest().getTitle(),
-				round2(attempt.getNetScore()),
-				maxMarks,
-				attempt.getCorrectCount(),
-				attempt.getWrongCount(),
-				round1(pct),
-				stats.rank(),
-				round1(stats.percentile()),
-				stats.uniqueStudents(),
-				attempt.getNetScore() >= cutoff,
-				cutoff,
-				attempt.getSubmittedAt(),
-				attempt.getMockTest().isAllowRetake(),
-				attemptIndexForMock);
 	}
 
 	private record RankStats(long rank, double percentile, long uniqueStudents, long totalAttempts) {}
