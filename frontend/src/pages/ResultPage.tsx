@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import {
   Award,
+  BookMarked,
   CheckCircle2,
   Copy,
   Share2,
@@ -39,6 +40,17 @@ interface Review {
   topic: string
 }
 
+interface TopicBreakdown {
+  topic: string
+  shortLabel: string
+  fullLabel: string
+  total: number
+  correct: number
+  wrong: number
+  unattempted: number
+  accuracyPercent: number
+}
+
 interface Result {
   attemptId: number
   mockTestId: number
@@ -69,6 +81,8 @@ interface Result {
   reviews: Review[]
   allowRetake: boolean
   shareMessage: string
+  topicBreakdown?: TopicBreakdown[]
+  bookmarkedQuestionIds?: number[]
 }
 
 function formatTime(s: number) {
@@ -104,6 +118,8 @@ export function ResultPage() {
   const [showCompetitive, setShowCompetitive] = useState(false)
   const [copied, setCopied] = useState(false)
   const [loadError, setLoadError] = useState('')
+  const [bookmarked, setBookmarked] = useState<Set<number>>(new Set())
+  const [bookmarkBusy, setBookmarkBusy] = useState<number | null>(null)
 
   useEffect(() => {
     if (!attemptId) return
@@ -111,7 +127,10 @@ export function ResultPage() {
     setResult(null)
     api
       .get(`/attempts/${attemptId}/result`)
-      .then((r) => setResult(r.data))
+      .then((r) => {
+        setResult(r.data)
+        setBookmarked(new Set(r.data.bookmarkedQuestionIds ?? []))
+      })
       .catch((e) => setLoadError(apiErrorMessage(e, 'Could not load your report. Try again from Dashboard.')))
   }, [attemptId])
 
@@ -127,6 +146,45 @@ export function ResultPage() {
       navigator.clipboard.writeText(result.shareMessage)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const nativeShare = async () => {
+    if (!result?.shareMessage || !navigator.share) {
+      copyShare()
+      return
+    }
+    try {
+      await navigator.share({
+        title: `ItOfficerHub — ${result.mockTitle}`,
+        text: result.shareMessage,
+        url: window.location.origin,
+      })
+    } catch {
+      /* user cancelled */
+    }
+  }
+
+  const toggleBookmark = async (questionId: number) => {
+    if (!attemptId) return
+    setBookmarkBusy(questionId)
+    const saved = bookmarked.has(questionId)
+    try {
+      if (saved) {
+        await api.delete(`/attempts/revision/${questionId}`)
+        setBookmarked((prev) => {
+          const next = new Set(prev)
+          next.delete(questionId)
+          return next
+        })
+      } else {
+        await api.post(`/attempts/revision/${questionId}?attemptId=${attemptId}`)
+        setBookmarked((prev) => new Set(prev).add(questionId))
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setBookmarkBusy(null)
     }
   }
 
@@ -185,6 +243,40 @@ export function ResultPage() {
           <p className="text-slate-400 mt-2">{result.percentage}% of maximum</p>
         </CardContent>
       </Card>
+
+      {result.topicBreakdown && result.topicBreakdown.length > 0 && (
+        <Card className="mb-6 border-cyber-600">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Subject-wise breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500 border-b border-cyber-800">
+                    <th className="py-2 pr-4">Subject</th>
+                    <th className="py-2 pr-3">Q</th>
+                    <th className="py-2 pr-3 text-green-400">✓</th>
+                    <th className="py-2 pr-3 text-red-400">✗</th>
+                    <th className="py-2">Acc %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.topicBreakdown.map((t) => (
+                    <tr key={t.topic} className="border-b border-cyber-800/60">
+                      <td className="py-2 pr-4 font-mono text-neon-cyan">{t.shortLabel}</td>
+                      <td className="py-2 pr-3 tabular-nums">{t.total}</td>
+                      <td className="py-2 pr-3 tabular-nums text-green-400">{t.correct}</td>
+                      <td className="py-2 pr-3 tabular-nums text-red-400">{t.wrong}</td>
+                      <td className="py-2 tabular-nums">{Math.round(t.accuracyPercent)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <StatCell
@@ -284,12 +376,17 @@ export function ResultPage() {
             <Mail className="h-4 w-4" /> Share in Prep Mail
           </Button>
         </Link>
-        <Button variant="outline" className="cursor-pointer" onClick={copyShare}>
-          <Share2 className="h-4 w-4" /> {copied ? 'Copied!' : 'Copy share text'}
+        <Button variant="outline" className="cursor-pointer" onClick={nativeShare}>
+          <Share2 className="h-4 w-4" /> Share score
         </Button>
         <Button variant="outline" className="cursor-pointer" onClick={copyShare}>
-          <Copy className="h-4 w-4" /> Copy
+          <Copy className="h-4 w-4" /> {copied ? 'Copied!' : 'Copy text'}
         </Button>
+        <Link to="/revision">
+          <Button variant="outline" className="cursor-pointer">
+            <BookMarked className="h-4 w-4" /> Revision bucket
+          </Button>
+        </Link>
         {result.allowRetake && (
           <Link to={`/mock/${result.mockTestId}`}>
             <Button variant="outline" className="cursor-pointer">Retake</Button>
@@ -376,6 +473,19 @@ export function ResultPage() {
                     <p className="text-sm font-semibold text-neon-purple mb-2 uppercase tracking-wide">Solution</p>
                     {r.explanation}
                   </div>
+                )}
+
+                {r.attempted && !r.correct && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="cursor-pointer"
+                    disabled={bookmarkBusy === r.questionId}
+                    onClick={() => toggleBookmark(r.questionId)}
+                  >
+                    <BookMarked className="h-4 w-4" />
+                    {bookmarked.has(r.questionId) ? 'Saved for revision' : 'Save for revision'}
+                  </Button>
                 )}
               </CardContent>
             </Card>

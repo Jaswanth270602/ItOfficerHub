@@ -17,5 +17,10 @@ public record MockWithUserStatusDto(
 		int userAttemptCount,
 		Double bestNetScore,
 		Long latestAttemptId,
-		boolean latestClearedCutoff
+		boolean latestClearedCutoff,
+		java.util.List<String> topics,
+		boolean cumulative,
+		String mockCategory,
+		String examTarget,
+		Integer seriesDay
 ) {}

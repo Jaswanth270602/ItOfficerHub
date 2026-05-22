@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button } from './ui/button'
-import { ClipboardList, Cpu, LogOut, Mail } from 'lucide-react'
+import { BookMarked, ClipboardList, Cpu, GraduationCap, Layers, LogOut, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -27,13 +27,28 @@ export function Layout() {
           </Link>
           <nav className="flex items-center gap-1 sm:gap-2">
             <NavLink to="/dashboard" className={navLinkClass}>
-              Mocks
+              Dashboard
+            </NavLink>
+            <NavLink to="/mocks" className={navLinkClass}>
+              <span className="flex items-center gap-1">
+                <Layers className="h-4 w-4 hidden sm:inline" /> Mocks
+              </span>
+            </NavLink>
+            <NavLink to="/syllabus" className={navLinkClass}>
+              <span className="flex items-center gap-1">
+                <GraduationCap className="h-4 w-4 hidden sm:inline" /> Syllabus
+              </span>
             </NavLink>
             {isAuthenticated ? (
               <>
                 <NavLink to="/community" className={navLinkClass}>
                   <span className="flex items-center gap-1">
                     <Mail className="h-4 w-4 hidden sm:inline" /> Prep Mail
+                  </span>
+                </NavLink>
+                <NavLink to="/revision" className={navLinkClass}>
+                  <span className="flex items-center gap-1">
+                    <BookMarked className="h-4 w-4 hidden sm:inline" /> Revision
                   </span>
                 </NavLink>
                 <NavLink to="/history" className={navLinkClass}>

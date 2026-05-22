@@ -62,7 +62,9 @@ export function LandingPage() {
         <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-2">
           20 Questions · 15 Minutes · P +1 · N −0.25 marking
         </p>
-        <p className="text-slate-500 mb-10">Real exam-style scoring, percentile rank & solution review. Login required to attempt.</p>
+        <p className="text-slate-500 mb-10">
+          Daily mocks, All-India rank, cutoff analysis, and full solutions — built for IBPS SO IT Officer aspirants.
+        </p>
       </section>
 
       {featured && (
@@ -138,7 +140,7 @@ export function LandingPage() {
 
       {!featured && (
         <p className="text-center pb-20">
-          <Link to="/login" className="text-neon-blue hover:underline cursor-pointer">Login</Link> to see available mocks
+          <Link to="/login" className="text-neon-blue hover:underline cursor-pointer">Login</Link> to access daily mocks and leaderboards
         </p>
       )}
     </div>

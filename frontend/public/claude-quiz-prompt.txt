@@ -29,6 +29,9 @@ JSON SCHEMA (follow exactly):
   "title": "...",
   "description": "One-line mock subtitle",
   "difficulty": "MEDIUM",
+  "mockCategory": "FULL",
+  "examTarget": "IBPS_SO_IT",
+  "seriesDay": null,
   "questions": [
     {
       "questionText": "...",
@@ -48,5 +51,10 @@ JSON SCHEMA (follow exactly):
 VALID topic values (uppercase): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS
 
 VALID difficulty: EASY, MEDIUM, HARD
+
+OPTIONAL mock tags (for filters on Mocks page):
+- mockCategory: FULL | SECTIONAL | PYQ | CHALLENGE
+- examTarget: IBPS_SO_IT | NIACL_IT | LIC_IT | GIC_IT | RBI_IT | PSU_IT_GENERAL | MIXED
+- seriesDay: 1-30 only when mockCategory is CHALLENGE
 
 Before you output, self-check: 20 questions, each explanation ≥4 lines with • bullets, diagram present, References line present, valid JSON only.

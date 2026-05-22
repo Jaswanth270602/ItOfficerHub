@@ -18,12 +18,14 @@ public class UserAttemptCacheService {
 	private final TestAttemptRepository attemptRepository;
 	private final MockTestRepository mockTestRepository;
 	private final PublicService publicService;
+	private final MockTopicService mockTopicService;
 
 	public UserAttemptCacheService(TestAttemptRepository attemptRepository, MockTestRepository mockTestRepository,
-			@Lazy PublicService publicService) {
+			@Lazy PublicService publicService, MockTopicService mockTopicService) {
 		this.attemptRepository = attemptRepository;
 		this.mockTestRepository = mockTestRepository;
 		this.publicService = publicService;
+		this.mockTopicService = mockTopicService;
 	}
 
 	@Cacheable(cacheNames = CacheNames.USER_HISTORY, key = "#userId")
@@ -47,13 +49,16 @@ public class UserAttemptCacheService {
 		Long featuredId = mockTestRepository.findFeaturedMock()
 				.map(m -> m.getId())
 				.orElse(null);
-		return mockTestRepository.findPublishedOrderByReleaseDesc().stream()
+		var mocks = mockTestRepository.findPublishedOrderByReleaseDesc();
+		var topicMap = mockTopicService.topicsByMockId(mocks.stream().map(m -> m.getId()).toList());
+		return mocks.stream()
 				.map(m -> {
 					List<TestAttempt> mine = byMock.getOrDefault(m.getId(), List.of());
 					boolean attempted = !mine.isEmpty();
 					double best = mine.stream().mapToDouble(TestAttempt::getNetScore).max().orElse(0);
 					TestAttempt latest = mine.isEmpty() ? null : mine.get(0);
 					boolean cleared = latest != null && latest.getNetScore() >= m.getCutoffMarks();
+					var topics = topicMap.getOrDefault(m.getId(), List.of());
 					return new MockWithUserStatusDto(
 							m.getId(),
 							m.getTitle(),
@@ -69,7 +74,12 @@ public class UserAttemptCacheService {
 							mine.size(),
 							attempted ? best : null,
 							latest != null ? latest.getId() : null,
-							cleared);
+							cleared,
+							topics,
+							mockTopicService.isCumulative(topics),
+							m.getMockCategory().name(),
+							m.getExamTarget().name(),
+							m.getSeriesDay());
 				})
 				.toList();
 	}

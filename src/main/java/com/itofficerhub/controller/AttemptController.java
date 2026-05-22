@@ -2,6 +2,8 @@ package com.itofficerhub.controller;
 
 import com.itofficerhub.dto.*;
 import com.itofficerhub.service.AttemptService;
+import com.itofficerhub.service.RevisionService;
+import com.itofficerhub.service.UserPrepStatsService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -11,9 +13,14 @@ import java.util.List;
 public class AttemptController {
 
 	private final AttemptService attemptService;
+	private final UserPrepStatsService userPrepStatsService;
+	private final RevisionService revisionService;
 
-	public AttemptController(AttemptService attemptService) {
+	public AttemptController(AttemptService attemptService, UserPrepStatsService userPrepStatsService,
+			RevisionService revisionService) {
 		this.attemptService = attemptService;
+		this.userPrepStatsService = userPrepStatsService;
+		this.revisionService = revisionService;
 	}
 
 	@PostMapping("/start")
@@ -49,5 +56,26 @@ public class AttemptController {
 	@GetMapping("/history")
 	public List<AttemptHistoryItemDto> history() {
 		return attemptService.getUserHistory();
+	}
+
+	@GetMapping("/me/stats")
+	public UserPrepStatsDto myStats() {
+		return userPrepStatsService.statsForCurrentUser();
+	}
+
+	@GetMapping("/revision")
+	public List<RevisionItemDto> revisionList() {
+		return revisionService.listForCurrentUser();
+	}
+
+	@org.springframework.web.bind.annotation.PostMapping("/revision/{questionId}")
+	public void addRevision(@org.springframework.web.bind.annotation.PathVariable Long questionId,
+			@org.springframework.web.bind.annotation.RequestParam(required = false) Long attemptId) {
+		revisionService.addForCurrentUser(questionId, attemptId);
+	}
+
+	@org.springframework.web.bind.annotation.DeleteMapping("/revision/{questionId}")
+	public void removeRevision(@org.springframework.web.bind.annotation.PathVariable Long questionId) {
+		revisionService.removeForCurrentUser(questionId);
 	}
 }

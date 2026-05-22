@@ -38,6 +38,9 @@ JSON SCHEMA (follow exactly):
   "title": "...",
   "description": "One-line mock subtitle",
   "difficulty": "MEDIUM",
+  "mockCategory": "FULL",
+  "examTarget": "IBPS_SO_IT",
+  "seriesDay": null,
   "questions": [
     {
       "questionText": "...",
@@ -84,6 +87,11 @@ Before you output, self-check: 20 questions, each explanation ≥4 lines with �
 | explanation | Strongly required | Multi-line + bullets + diagram + references |
 | solutionImageUrl | No | HTTPS URL to diagram image |
 | topic | No | From list above |
+| mockCategory | No | FULL, SECTIONAL, PYQ, CHALLENGE (30-day plan uses CHALLENGE + seriesDay) |
+| examTarget | No | IBPS_SO_IT, NIACL_IT, LIC_IT, GIC_IT, RBI_IT, PSU_IT_GENERAL, MIXED |
+| seriesDay | No | 1–30 when mockCategory is CHALLENGE |
+| timeLimitMinutes | No | Defaults to app setting (15) |
+| questionCount | No | Defaults to 20 |
 
 ## Common fixes
 

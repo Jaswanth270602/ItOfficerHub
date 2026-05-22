@@ -33,7 +33,9 @@ public record AttemptResultDto(
 		List<LeaderboardEntryDto> leaderboard,
 		List<QuestionReviewDto> reviews,
 		boolean allowRetake,
-		String shareMessage
+		String shareMessage,
+		List<TopicBreakdownDto> topicBreakdown,
+		java.util.Set<Long> bookmarkedQuestionIds
 ) {
 	public record QuestionReviewDto(
 			Long questionId,

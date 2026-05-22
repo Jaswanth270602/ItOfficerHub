@@ -22,11 +22,14 @@ public class AttemptService {
 	private final UniqueRankingService uniqueRankingService;
 	private final UserAttemptCacheService userAttemptCache;
 	private final AppCacheService appCacheService;
+	private final TopicAnalyticsService topicAnalyticsService;
+	private final RevisionService revisionService;
 
 	public AttemptService(TestAttemptRepository attemptRepository, AttemptAnswerRepository answerRepository,
 			MockTestRepository mockTestRepository, QuestionRepository questionRepository,
 			UniqueRankingService uniqueRankingService, UserAttemptCacheService userAttemptCache,
-			AppCacheService appCacheService) {
+			AppCacheService appCacheService, TopicAnalyticsService topicAnalyticsService,
+			RevisionService revisionService) {
 		this.attemptRepository = attemptRepository;
 		this.answerRepository = answerRepository;
 		this.mockTestRepository = mockTestRepository;
@@ -34,6 +37,8 @@ public class AttemptService {
 		this.uniqueRankingService = uniqueRankingService;
 		this.userAttemptCache = userAttemptCache;
 		this.appCacheService = appCacheService;
+		this.topicAnalyticsService = topicAnalyticsService;
+		this.revisionService = revisionService;
 	}
 
 	@Transactional
@@ -272,6 +277,8 @@ public class AttemptService {
 		boolean cleared = net >= cutoff;
 		double toCutoff = cleared ? 0 : round2(cutoff - net);
 		List<LeaderboardEntryDto> leaderboard = buildLeaderboard(attempt, attempt.getMockTest().getId());
+		List<TopicBreakdownDto> topicBreakdown = topicAnalyticsService.breakdownForAttempt(attempt.getId());
+		Set<Long> bookmarked = bookmarkedIdsForUser(attempt.getUser().getId());
 
 		String share = String.format(
 				"🎯 IBPS SO IT Officer Mock Result\n\n%s\nNet Score: %.2f / %.0f (Cutoff %.0f %s)\nCorrect: %d | Wrong: %d | Left: %d\nRank: #%d of %d students | Percentile: %.1f\n(Best score per student · retakes not counted)\n\nItOfficerHub",
@@ -311,7 +318,15 @@ public class AttemptService {
 				leaderboard,
 				reviews,
 				attempt.getMockTest().isAllowRetake(),
-				share);
+				share,
+				topicBreakdown,
+				bookmarked);
+	}
+
+	private Set<Long> bookmarkedIdsForUser(long userId) {
+		return new HashSet<>(revisionService.listForUser(userId).stream()
+				.map(RevisionItemDto::questionId)
+				.toList());
 	}
 
 	private double round1(double v) { return Math.round(v * 10) / 10.0; }

@@ -36,6 +36,17 @@ public class MockTest {
 	@Column(nullable = false)
 	private boolean allowRetake = true;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private MockCategory mockCategory = MockCategory.FULL;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ExamTarget examTarget = ExamTarget.IBPS_SO_IT;
+
+	/** Day 1–30 for CHALLENGE series mocks; null otherwise */
+	private Integer seriesDay;
+
 	/** Minimum net score to clear mock (IBPS-style qualifying bar) */
 	@Column(nullable = false)
 	private double cutoffMarks = 10.0;
@@ -66,6 +77,12 @@ public class MockTest {
 	public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }
 	public boolean isAllowRetake() { return allowRetake; }
 	public void setAllowRetake(boolean allowRetake) { this.allowRetake = allowRetake; }
+	public MockCategory getMockCategory() { return mockCategory; }
+	public void setMockCategory(MockCategory mockCategory) { this.mockCategory = mockCategory; }
+	public ExamTarget getExamTarget() { return examTarget; }
+	public void setExamTarget(ExamTarget examTarget) { this.examTarget = examTarget; }
+	public Integer getSeriesDay() { return seriesDay; }
+	public void setSeriesDay(Integer seriesDay) { this.seriesDay = seriesDay; }
 	public double getCutoffMarks() { return cutoffMarks; }
 	public void setCutoffMarks(double cutoffMarks) { this.cutoffMarks = cutoffMarks; }
 	public Instant getCreatedAt() { return createdAt; }

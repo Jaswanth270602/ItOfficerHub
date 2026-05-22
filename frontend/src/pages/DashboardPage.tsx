@@ -2,13 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { MockExamCard } from '@/components/MockExamCard'
+import { PrepStatsCard } from '@/components/PrepStatsCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { normalizeMock, type MockExam } from '@/types/mock'
 import {
   Award,
+  ArrowRight,
   Calendar,
-  CheckCircle2,
   Clock,
   Crown,
   FileQuestion,
@@ -23,24 +26,6 @@ import {
   Users,
   Zap,
 } from 'lucide-react'
-
-interface Mock {
-  id: number
-  title: string
-  description: string
-  difficulty: string
-  questionCount: number
-  timeLimitMinutes: number
-  attemptsCount: number
-  allowRetake: boolean
-  publishedAt?: string
-  featuredToday?: boolean
-  attempted: boolean
-  userAttemptCount: number
-  bestNetScore: number | null
-  latestAttemptId: number | null
-  latestClearedCutoff: boolean
-}
 
 interface HallEntry {
   rank: number
@@ -128,7 +113,7 @@ function MarkingPill({ label, value, tone }: { label: string; value: string; ton
 }
 
 export function DashboardPage() {
-  const [mocks, setMocks] = useState<Mock[]>([])
+  const [mocks, setMocks] = useState<MockExam[]>([])
   const [overview, setOverview] = useState<Overview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -142,16 +127,7 @@ export function DashboardPage() {
     Promise.all([api.get('/public/dashboard'), api.get(mocksUrl)])
       .then(([dash, mocksRes]) => {
         setOverview(dash.data)
-        const data = mocksRes.data.map((m: Mock & { attempted?: boolean }) => ({
-          ...m,
-          attempted: m.attempted ?? false,
-          userAttemptCount: m.userAttemptCount ?? 0,
-          bestNetScore: m.bestNetScore ?? null,
-          latestAttemptId: m.latestAttemptId ?? null,
-          latestClearedCutoff: m.latestClearedCutoff ?? false,
-          featuredToday: m.featuredToday ?? false,
-        }))
-        setMocks(data)
+        setMocks(mocksRes.data.map((m: MockExam) => normalizeMock(m)))
       })
       .catch((e) => setError(apiErrorMessage(e, 'Could not load dashboard')))
       .finally(() => setLoading(false))
@@ -166,6 +142,7 @@ export function DashboardPage() {
     () => mocks.filter((m) => !featured || m.id !== featured.id),
     [mocks, featured]
   )
+  const previewMocks = useMemo(() => otherMocks.slice(0, 4), [otherMocks])
   const featuredMockState = featured ? mocks.find((m) => m.id === featured.id) : undefined
 
   const startMock = (mockId: number) => {
@@ -186,14 +163,14 @@ export function DashboardPage() {
         <div className="relative flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-2xl">
             <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neon-cyan mb-3">
-              <Sparkles className="h-3.5 w-3.5" /> IBPS SO IT Officer · Live arena
+              <Sparkles className="h-3.5 w-3.5" /> IBPS SO IT Officer · Free mock tests
             </p>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              Mock Test Command Center
+              Your daily mock test arena
             </h1>
             <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-              One fresh mock drops when admin hits Publish. Climb the hall of fame, own the featured board, and
-              share wins in Prep Mail.
+              Practice with a new full-length mock every day — real exam timing, P/N marking, cutoff, rank and
+              percentile. Compete with fellow aspirants and sharpen your score before the actual IBPS SO IT exam.
             </p>
             <div className="flex flex-wrap gap-2 mt-5">
               <MarkingPill label="P marks" value={`+${pMark}`} tone="green" />
@@ -205,7 +182,7 @@ export function DashboardPage() {
           {overview?.platformStats && (
             <div className="grid grid-cols-2 gap-3 min-w-[200px]">
               {[
-                { label: 'Live mocks', value: overview.platformStats.totalMocks, icon: Zap },
+                { label: 'Active mocks', value: overview.platformStats.totalMocks, icon: Zap },
                 { label: 'Aspirants', value: overview.platformStats.totalUsers, icon: Users },
                 { label: 'Attempts', value: overview.platformStats.totalAttempts, icon: TrendingUp },
                 { label: 'Avg score', value: `${overview.platformStats.averageScorePercent}%`, icon: Target },
@@ -225,7 +202,7 @@ export function DashboardPage() {
       </section>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">Refreshes hall of fame &amp; featured mock every minute</p>
+        <p className="text-sm text-slate-500">Rankings refresh as more aspirants complete mocks</p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="cursor-pointer" onClick={load} disabled={loading}>
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} /> Refresh
@@ -246,7 +223,7 @@ export function DashboardPage() {
         </p>
       )}
 
-      {loading && <p className="text-slate-400 text-center py-16">Loading command center...</p>}
+      {loading && <p className="text-slate-400 text-center py-16">Loading your mocks...</p>}
 
       {!loading && (
         <>
@@ -257,12 +234,12 @@ export function DashboardPage() {
               <CardHeader className="relative">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30">
-                    <Flame className="h-3 w-3" /> Mock of the day
+                    <Flame className="h-3 w-3" /> Today&apos;s mock
                   </span>
                   {featured?.publishedAt && (
                     <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-cyber-800 text-slate-300 border border-cyber-600">
                       <Calendar className="h-3 w-3" />
-                      Released {formatReleaseDate(featured.publishedAt)}
+                      Live since {formatReleaseDate(featured.publishedAt)}
                     </span>
                   )}
                 </div>
@@ -273,9 +250,9 @@ export function DashboardPage() {
                   </>
                 ) : (
                   <>
-                    <CardTitle className="text-xl text-slate-300">No live mock yet</CardTitle>
+                    <CardTitle className="text-xl text-slate-300">Today&apos;s mock coming soon</CardTitle>
                     <CardDescription>
-                      Admin publishes one mock at a time — check back after the next drop.
+                      A new IBPS SO IT practice set will be available here shortly. Check back later today.
                     </CardDescription>
                   </>
                 )}
@@ -319,11 +296,11 @@ export function DashboardPage() {
                       <Button className="cursor-pointer gap-2" onClick={() => startMock(featured.id)}>
                         {featuredMockState?.attempted ? (
                           <>
-                            <RotateCcw className="h-4 w-4" /> Retake featured mock
+                            <RotateCcw className="h-4 w-4" /> Retake today&apos;s mock
                           </>
                         ) : (
                           <>
-                            <Play className="h-4 w-4" /> Start today&apos;s mock
+                            <Play className="h-4 w-4" /> Attempt today&apos;s mock
                           </>
                         )}
                       </Button>
@@ -337,7 +314,7 @@ export function DashboardPage() {
             <Card className="border-amber-500/30 bg-gradient-to-b from-amber-950/20 to-cyber-950">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <Crown className="h-5 w-5 text-amber-400" /> Profile of the day
+                  <Crown className="h-5 w-5 text-amber-400" /> Aspirant of the day
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -353,35 +330,37 @@ export function DashboardPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="rounded-lg bg-cyber-900/80 p-3 border border-cyber-700">
-                        <p className="text-slate-500 text-xs">Featured score</p>
+                        <p className="text-slate-500 text-xs">Net score</p>
                         <p className="font-bold text-neon-cyan tabular-nums">
                           {overview.profileOfTheDay.featuredNetScore.toFixed(2)}
                         </p>
                       </div>
                       <div className="rounded-lg bg-cyber-900/80 p-3 border border-cyber-700">
-                        <p className="text-slate-500 text-xs">Rank</p>
+                        <p className="text-slate-500 text-xs">All-India rank</p>
                         <p className="font-bold tabular-nums">#{overview.profileOfTheDay.featuredRank}</p>
                       </div>
                       <div className="rounded-lg bg-cyber-900/80 p-3 border border-cyber-700 col-span-2">
-                        <p className="text-slate-500 text-xs">Aggregate best (all mocks)</p>
+                        <p className="text-slate-500 text-xs">Total across all mocks</p>
                         <p className="font-bold text-green-400 tabular-nums">
                           {overview.profileOfTheDay.aggregateScore.toFixed(2)} pts
                         </p>
                       </div>
                     </div>
                     <p className="text-xs text-slate-500 line-clamp-2">
-                      Leading on {overview.profileOfTheDay.featuredMockTitle} ·{' '}
-                      {overview.profileOfTheDay.mocksAttempted} mocks attempted
+                      Top on {overview.profileOfTheDay.featuredMockTitle} ·{' '}
+                      {overview.profileOfTheDay.mocksAttempted} mocks completed
                     </p>
                   </div>
                 ) : (
                   <p className="text-sm text-slate-500 text-center py-8">
-                    Be the first to attempt today&apos;s mock and claim this spot.
+                    Attempt today&apos;s mock — lead the board to become aspirant of the day.
                   </p>
                 )}
               </CardContent>
             </Card>
           </div>
+
+          {isAuthenticated && <PrepStatsCard />}
 
           {/* Leaderboards row */}
           <div className="grid lg:grid-cols-2 gap-6 mb-10">
@@ -391,7 +370,7 @@ export function DashboardPage() {
                   <Trophy className="h-5 w-5 text-amber-400" />
                   Today&apos;s mock · Top 10
                 </CardTitle>
-                <CardDescription>Best unique score on the featured mock only</CardDescription>
+                <CardDescription>All-India rank by best net score on today&apos;s mock (retakes don&apos;t count)</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {overview?.todaysMockLeaderboard && overview.todaysMockLeaderboard.length > 0 ? (
@@ -424,7 +403,9 @@ export function DashboardPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-slate-500 px-4 py-10 text-center">No scores yet — start the featured mock.</p>
+                  <p className="text-sm text-slate-500 px-4 py-10 text-center">
+                    No scores yet — be the first to attempt today&apos;s mock.
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -433,9 +414,9 @@ export function DashboardPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Award className="h-5 w-5 text-neon-purple" />
-                  Hall of fame · Aggregate Top 10
+                  All-India hall of fame
                 </CardTitle>
-                <CardDescription>Sum of your best net scores across every published mock</CardDescription>
+                <CardDescription>Top aspirants by combined best net scores across all live mocks</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {overview?.hallOfFameTop10 && overview.hallOfFameTop10.length > 0 ? (
@@ -464,105 +445,56 @@ export function DashboardPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-slate-500 px-4 py-10 text-center">Publish mocks to unlock the hall of fame.</p>
+                  <p className="text-sm text-slate-500 px-4 py-10 text-center">
+                    Complete a few mocks to appear on the all-India leaderboard.
+                  </p>
                 )}
               </CardContent>
             </Card>
           </div>
 
-          {/* All mocks library */}
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <FileQuestion className="h-5 w-5 text-neon-blue" /> Mock library
-            </h2>
-            <p className="text-sm text-slate-500 mt-1">Every published exam — older drops stay available for practice</p>
+          {/* Recent mocks preview */}
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <FileQuestion className="h-5 w-5 text-neon-blue" /> More practice mocks
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">Recent exams — browse all subjects on the Mocks tab</p>
+            </div>
+            {(otherMocks.length > 0 || mocks.length > 0) && (
+              <Link to="/mocks">
+                <Button variant="outline" size="sm" className="cursor-pointer gap-2">
+                  View all <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-5">
-            {otherMocks.map((m) => (
-              <Card
-                key={m.id}
-                className={cn(
-                  'transition-all hover:shadow-lg hover:shadow-neon-blue/5',
-                  m.attempted ? 'border-green-600/30' : 'hover:border-neon-blue/40',
-                  m.featuredToday && 'ring-1 ring-neon-cyan/20'
-                )}
-              >
-                <CardHeader>
-                  <div className="flex justify-between items-start gap-2">
-                    <CardTitle className="pr-2 text-lg">{m.title}</CardTitle>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <span className="text-xs px-2 py-1 rounded bg-neon-purple/20 text-neon-purple">
-                        {m.difficulty}
-                      </span>
-                      {m.publishedAt && (
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-800 text-slate-400 border border-cyber-700">
-                          {formatReleaseDate(m.publishedAt)}
-                        </span>
-                      )}
-                      {m.attempted && (
-                        <span className="text-xs px-2 py-1 rounded bg-green-600/20 text-green-400 flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Done
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <CardDescription>{m.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-4 text-sm text-slate-400 mb-3">
-                    <span className="flex items-center gap-1">
-                      <FileQuestion className="h-4 w-4" /> {m.questionCount} Qs
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" /> {m.timeLimitMinutes} min
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-4 w-4" /> {m.attemptsCount}
-                    </span>
-                  </div>
-                  {m.attempted && m.bestNetScore != null && (
-                    <p className="text-sm mb-4">
-                      Best: <strong className="text-neon-cyan">{m.bestNetScore.toFixed(2)}</strong>
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {m.attempted && m.latestAttemptId && (
-                      <Link to={`/result/${m.latestAttemptId}`} className="flex-1 min-w-[120px]">
-                        <Button variant="outline" className="w-full cursor-pointer">
-                          Report
-                        </Button>
-                      </Link>
-                    )}
-                    {(!m.attempted || m.allowRetake) && (
-                      <Button
-                        className={cn('cursor-pointer flex-1 min-w-[120px]', m.attempted && 'gap-2')}
-                        onClick={() => startMock(m.id)}
-                      >
-                        {m.attempted ? (
-                          <>
-                            <RotateCcw className="h-4 w-4" /> Retake
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4" /> Start
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+            {previewMocks.map((m) => (
+              <MockExamCard key={m.id} mock={m} onStart={startMock} compact />
             ))}
-            {otherMocks.length === 0 && !featured && !error && (
+            {previewMocks.length === 0 && !featured && !error && (
               <Card className="col-span-2 border-dashed border-cyber-700">
                 <CardContent className="py-16 text-center text-slate-400">
                   <Sparkles className="h-10 w-10 mx-auto mb-3 text-slate-600" />
-                  No published mocks yet. Import &amp; publish from Admin.
+                  <p className="mb-4">No extra mocks yet. Today&apos;s mock is above when live.</p>
+                  <Link to="/mocks">
+                    <Button variant="outline" className="cursor-pointer">
+                      Browse mocks
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             )}
           </div>
+          {otherMocks.length > 4 && (
+            <p className="text-center mt-6">
+              <Link to="/mocks" className="text-neon-cyan text-sm hover:underline inline-flex items-center gap-1">
+                +{otherMocks.length - 4} more mocks — view all <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </p>
+          )}
         </>
       )}
     </div>

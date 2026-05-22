@@ -9,5 +9,10 @@ public record ImportMockRequest(
 		@NotBlank String title,
 		String description,
 		@NotBlank String difficulty,
-		@NotEmpty @Valid List<ImportQuestionDto> questions
+		@NotEmpty @Valid List<ImportQuestionDto> questions,
+		String mockCategory,
+		String examTarget,
+		Integer seriesDay,
+		Integer timeLimitMinutes,
+		Integer questionCount
 ) {}

@@ -124,10 +124,16 @@ public class AdminService {
 		mock.setDescription(request.description());
 		mock.setDifficulty(Difficulty.valueOf(request.difficulty().trim().toUpperCase()));
 		int count = request.questions().size();
-		mock.setQuestionCount(count > 0 ? count : 20);
-		mock.setTimeLimitMinutes(15);
+		int qCount = request.questionCount() != null && request.questionCount() > 0
+				? request.questionCount()
+				: (count > 0 ? count : 20);
+		mock.setQuestionCount(qCount);
+		mock.setTimeLimitMinutes(request.timeLimitMinutes() != null ? request.timeLimitMinutes() : 15);
 		mock.setPublished(false);
 		mock.setAllowRetake(true);
+		mock.setMockCategory(parseCategory(request.mockCategory()));
+		mock.setExamTarget(parseExamTarget(request.examTarget()));
+		mock.setSeriesDay(request.seriesDay());
 		mock = mockTestRepository.save(mock);
 
 		int index = 1;
@@ -152,6 +158,24 @@ public class AdminService {
 			index++;
 		}
 		return toAdminDto(mock);
+	}
+
+	private MockCategory parseCategory(String raw) {
+		if (raw == null || raw.isBlank()) return MockCategory.FULL;
+		try {
+			return MockCategory.valueOf(raw.trim().toUpperCase());
+		} catch (IllegalArgumentException e) {
+			return MockCategory.FULL;
+		}
+	}
+
+	private ExamTarget parseExamTarget(String raw) {
+		if (raw == null || raw.isBlank()) return ExamTarget.IBPS_SO_IT;
+		try {
+			return ExamTarget.valueOf(raw.trim().toUpperCase());
+		} catch (IllegalArgumentException e) {
+			return ExamTarget.IBPS_SO_IT;
+		}
 	}
 
 	private MockTest findMock(Long id) {

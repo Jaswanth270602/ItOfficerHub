@@ -5,10 +5,13 @@ import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { MocksPage } from '@/pages/MocksPage'
 import { MockTestPage } from '@/pages/MockTestPage'
 import { ResultPage } from '@/pages/ResultPage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { CommunityPage } from '@/pages/CommunityPage'
+import { RevisionPage } from '@/pages/RevisionPage'
+import { SyllabusPage } from '@/pages/SyllabusPage'
 import { AdminLoginPage } from '@/pages/admin/AdminLoginPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { AdminMockPage } from '@/pages/admin/AdminMockPage'
@@ -36,8 +39,11 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/mocks" element={<MocksPage />} />
+            <Route path="/syllabus" element={<SyllabusPage />} />
             <Route path="/mock/:mockId" element={<PrivateRoute><MockTestPage /></PrivateRoute>} />
             <Route path="/result/:attemptId" element={<PrivateRoute><ResultPage /></PrivateRoute>} />
+            <Route path="/revision" element={<PrivateRoute><RevisionPage /></PrivateRoute>} />
             <Route path="/history" element={<PrivateRoute><HistoryPage /></PrivateRoute>} />
             <Route path="/community" element={<PrivateRoute><CommunityPage /></PrivateRoute>} />
           </Route>
