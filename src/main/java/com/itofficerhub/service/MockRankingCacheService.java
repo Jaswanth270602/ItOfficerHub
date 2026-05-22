@@ -55,6 +55,7 @@ public class MockRankingCacheService {
 			}
 			entries.add(new LeaderboardEntryDto(
 					prevRank,
+					a.getUser().getId(),
 					userDisplayService.displayName(a.getUser()),
 					Math.round(a.getNetScore() * 100) / 100.0,
 					a.getCorrectCount(),

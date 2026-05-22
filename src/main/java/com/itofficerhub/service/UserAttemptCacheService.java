@@ -44,7 +44,10 @@ public class UserAttemptCacheService {
 		for (TestAttempt a : attemptRepository.findSubmittedByUserWithMock(userId)) {
 			byMock.computeIfAbsent(a.getMockTest().getId(), k -> new ArrayList<>()).add(a);
 		}
-		return mockTestRepository.findByPublishedTrueOrderByCreatedAtDesc().stream()
+		Long featuredId = mockTestRepository.findFeaturedMock()
+				.map(m -> m.getId())
+				.orElse(null);
+		return mockTestRepository.findPublishedOrderByReleaseDesc().stream()
 				.map(m -> {
 					List<TestAttempt> mine = byMock.getOrDefault(m.getId(), List.of());
 					boolean attempted = !mine.isEmpty();
@@ -60,6 +63,8 @@ public class UserAttemptCacheService {
 							m.getTimeLimitMinutes(),
 							publicService.cachedAttemptCount(m.getId()),
 							m.isAllowRetake(),
+							m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt(),
+							featuredId != null && featuredId.equals(m.getId()),
 							attempted,
 							mine.size(),
 							attempted ? best : null,

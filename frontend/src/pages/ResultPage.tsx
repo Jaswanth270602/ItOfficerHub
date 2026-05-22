@@ -188,13 +188,13 @@ export function ResultPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <StatCell
-          label="Positive marks"
+          label="P marks"
           value={`+${result.positiveMarks.toFixed(2)}`}
           sub={`${result.correctCount} correct`}
           accent="text-green-400"
         />
         <StatCell
-          label="Negative marks"
+          label="N marks"
           value={`−${result.negativeMarks.toFixed(2)}`}
           sub={`${result.wrongCount} wrong`}
           accent="text-red-400"
@@ -351,9 +351,9 @@ export function ResultPage() {
                   <span>
                     Marks:{' '}
                     {r.correct ? (
-                      <strong className="text-green-400">+{result.marksPerCorrect}</strong>
+                      <strong className="text-green-400">P +{result.marksPerCorrect}</strong>
                     ) : r.attempted ? (
-                      <strong className="text-red-400">−{result.negativePerWrong}</strong>
+                      <strong className="text-red-400">N −{result.negativePerWrong}</strong>
                     ) : (
                       <strong>0</strong>
                     )}

@@ -30,6 +30,9 @@ public class MockTest {
 	@Column(nullable = false)
 	private boolean published = false;
 
+	/** Set when admin publishes — used for “mock of the day” and release date badge */
+	private Instant publishedAt;
+
 	@Column(nullable = false)
 	private boolean allowRetake = true;
 
@@ -59,6 +62,8 @@ public class MockTest {
 	public void setTimeLimitMinutes(int timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }
 	public boolean isPublished() { return published; }
 	public void setPublished(boolean published) { this.published = published; }
+	public Instant getPublishedAt() { return publishedAt; }
+	public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }
 	public boolean isAllowRetake() { return allowRetake; }
 	public void setAllowRetake(boolean allowRetake) { this.allowRetake = allowRetake; }
 	public double getCutoffMarks() { return cutoffMarks; }

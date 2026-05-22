@@ -48,7 +48,8 @@ public class PublicService {
 						m.getQuestionCount(),
 						m.getTimeLimitMinutes(),
 						self.cachedAttemptCount(m.getId()),
-						m.isAllowRetake()))
+						m.isAllowRetake(),
+						m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt()))
 				.toList();
 	}
 

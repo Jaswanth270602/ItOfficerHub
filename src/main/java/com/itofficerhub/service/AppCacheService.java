@@ -22,6 +22,11 @@ public class AppCacheService {
 		clear(CacheNames.PUBLISHED_MOCKS);
 		evictKey(CacheNames.USER_MOCK_STATUS, userId);
 		evictKey(CacheNames.USER_HISTORY, userId);
+		clear(CacheNames.DASHBOARD_OVERVIEW);
+	}
+
+	public void evictDashboardOverview() {
+		clear(CacheNames.DASHBOARD_OVERVIEW);
 	}
 
 	public void evictUserInbox(long userId) {
@@ -37,6 +42,7 @@ public class AppCacheService {
 		clear(CacheNames.PUBLISHED_MOCKS);
 		clear(CacheNames.PUBLIC_STATS);
 		clear(CacheNames.MOCK_ATTEMPT_COUNT);
+		clear(CacheNames.DASHBOARD_OVERVIEW);
 	}
 
 	private void evictKey(String cacheName, Object key) {

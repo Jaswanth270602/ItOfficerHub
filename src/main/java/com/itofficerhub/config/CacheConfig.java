@@ -25,7 +25,8 @@ public class CacheConfig {
 				build(CacheNames.MOCK_LEADERBOARD, 90, 512),
 				build(CacheNames.USER_INBOX, 25, 2048),
 				build(CacheNames.USER_MOCK_STATUS, 45, 2048),
-				build(CacheNames.USER_HISTORY, 45, 2048)));
+				build(CacheNames.USER_HISTORY, 45, 2048),
+				build(CacheNames.DASHBOARD_OVERVIEW, 60, 16)));
 		return manager;
 	}
 

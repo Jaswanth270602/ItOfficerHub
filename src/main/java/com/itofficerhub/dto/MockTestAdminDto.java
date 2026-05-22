@@ -1,5 +1,7 @@
 package com.itofficerhub.dto;
 
+import java.time.Instant;
+
 public record MockTestAdminDto(
 		Long id,
 		String title,
@@ -9,5 +11,6 @@ public record MockTestAdminDto(
 		int timeLimitMinutes,
 		boolean published,
 		boolean allowRetake,
-		long attemptsCount
+		long attemptsCount,
+		Instant publishedAt
 ) {}

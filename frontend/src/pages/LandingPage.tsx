@@ -4,7 +4,7 @@ import api from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { BarChart3, Clock, FileQuestion, Target, Users, Zap, Award, Minus, Plus } from 'lucide-react'
+import { BarChart3, Clock, FileQuestion, Target, Users, Zap, Award } from 'lucide-react'
 
 interface Stats {
   totalMocks: number
@@ -31,8 +31,8 @@ export function LandingPage() {
 
   useEffect(() => {
     api.get('/public/stats').then((r) => setStats(r.data)).catch(() => {})
-    api.get('/public/mocks').then((r) => {
-      if (r.data?.length > 0) setFeatured(r.data[0])
+    api.get('/public/dashboard').then((r) => {
+      if (r.data?.mockOfTheDay) setFeatured(r.data.mockOfTheDay)
     }).catch(() => {})
   }, [])
 
@@ -60,7 +60,7 @@ export function LandingPage() {
           </span>
         </h1>
         <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-2">
-          20 Questions · 15 Minutes · +1 / −0.25 Marking
+          20 Questions · 15 Minutes · P +1 · N −0.25 marking
         </p>
         <p className="text-slate-500 mb-10">Real exam-style scoring, percentile rank & solution review. Login required to attempt.</p>
       </section>
@@ -82,9 +82,9 @@ export function LandingPage() {
                 <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {featured.attemptsCount} test-takers</span>
               </div>
               <div className="flex items-center gap-4 text-xs text-slate-500 mb-6 p-3 rounded-lg bg-cyber-800/50">
-                <span className="flex items-center gap-1 text-green-400"><Plus className="h-3 w-3" /> +1 correct</span>
-                <span className="flex items-center gap-1 text-red-400"><Minus className="h-3 w-3" /> −0.25 wrong</span>
-                <span>0 unattempted</span>
+                <span className="text-slate-400">P correct <strong className="text-green-400">+1</strong></span>
+                <span className="text-slate-400">N wrong <strong className="text-red-400">−0.25</strong></span>
+                <span>Unattempted 0</span>
               </div>
               <Button size="lg" className="w-full cursor-pointer" onClick={handleStart}>
                 <Target className="h-5 w-5" /> Start Mock Test

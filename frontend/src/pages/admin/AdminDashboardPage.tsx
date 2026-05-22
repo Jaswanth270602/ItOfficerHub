@@ -22,6 +22,7 @@ interface MockAdmin {
   published: boolean
   allowRetake: boolean
   attemptsCount: number
+  publishedAt: string | null
 }
 
 export function AdminDashboardPage() {
@@ -77,12 +78,17 @@ export function AdminDashboardPage() {
             <CardHeader className="flex flex-row justify-between items-center py-4">
               <div>
                 <CardTitle className="text-base">{m.title}</CardTitle>
-                <p className="text-sm text-slate-400">{m.difficulty} · {m.questionCount} Q · {m.attemptsCount} attempts · {m.published ? 'Published' : 'Draft'}</p>
+                <p className="text-sm text-slate-400">
+                  {m.difficulty} · {m.questionCount} Q · {m.attemptsCount} attempts ·{' '}
+                  {m.published
+                    ? `Live${m.publishedAt ? ` · ${new Date(m.publishedAt).toLocaleString()}` : ''}`
+                    : 'Draft — publish when ready for mock of the day'}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Link to={`/admin/mocks/${m.id}`}><Button size="sm" variant="outline">Manage</Button></Link>
                 <Button size="sm" variant="outline" onClick={() => togglePublish(m.id)}>
-                  {m.published ? 'Unpublish' : 'Publish'}
+                  {m.published ? 'Unpublish' : 'Publish (mock of the day)'}
                 </Button>
                 <Button size="sm" variant="destructive" onClick={() => deleteMock(m.id)}>Delete</Button>
               </div>

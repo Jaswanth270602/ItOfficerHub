@@ -189,8 +189,12 @@ export function MockTestPage() {
       </div>
 
       <div className="flex flex-wrap gap-3 text-sm mb-6 p-4 rounded-lg border border-cyber-700 bg-cyber-900/40">
-        <span className="text-green-400">+{marksCorrect} correct</span>
-        <span className="text-red-400">−{marksWrong} wrong</span>
+        <span className="text-slate-400">
+          P correct <strong className="text-green-400">+{marksCorrect}</strong>
+        </span>
+        <span className="text-slate-400">
+          N wrong <strong className="text-red-400">−{marksWrong}</strong>
+        </span>
         <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-medium">{unattempted} not answered</span>
         <span className="px-2 py-0.5 rounded bg-violet-500/15 text-violet-300 font-medium">{markedCount} for review</span>
         <span className="text-slate-500">Max {projectedMax} · Cutoff 10</span>

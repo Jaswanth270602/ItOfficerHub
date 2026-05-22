@@ -2,7 +2,7 @@ package com.itofficerhub.dto;
 
 import java.time.Instant;
 
-public record MockTestSummaryDto(
+public record MockOfDayDto(
 		Long id,
 		String title,
 		String description,
@@ -11,5 +11,8 @@ public record MockTestSummaryDto(
 		int timeLimitMinutes,
 		long attemptsCount,
 		boolean allowRetake,
-		Instant publishedAt
+		double cutoffMarks,
+		Instant publishedAt,
+		double marksPerCorrect,
+		double marksPerWrong
 ) {}

@@ -75,7 +75,12 @@ public class AdminService {
 			throw new ApiException(HttpStatus.BAD_REQUEST,
 					"Need at least " + m.getQuestionCount() + " questions before publishing");
 		}
-		m.setPublished(!m.isPublished());
+		if (m.isPublished()) {
+			m.setPublished(false);
+		} else {
+			m.setPublished(true);
+			m.setPublishedAt(java.time.Instant.now());
+		}
 		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
 		appCacheService.evictPublicCatalog();
 		return dto;
@@ -181,7 +186,7 @@ public class AdminService {
 	private MockTestAdminDto toAdminDto(MockTest m) {
 		return new MockTestAdminDto(m.getId(), m.getTitle(), m.getDescription(), m.getDifficulty().name(),
 				m.getQuestionCount(), m.getTimeLimitMinutes(), m.isPublished(), m.isAllowRetake(),
-				attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()));
+				attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()), m.getPublishedAt());
 	}
 
 	private QuestionAdminDto toQuestionDto(Question q) {

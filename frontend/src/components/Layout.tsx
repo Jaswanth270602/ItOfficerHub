@@ -69,7 +69,7 @@ export function Layout() {
       <footer className="border-t border-cyber-700/40 py-8 mt-auto">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500">
           <span>© {new Date().getFullYear()} ItOfficerHub</span>
-          <span>Free IBPS SO IT Officer mock tests · +1 / −0.25 · 15 min</span>
+          <span>Free IBPS SO IT Officer mock tests · P +1 · N 0.25 · 15 min</span>
         </div>
       </footer>
     </div>

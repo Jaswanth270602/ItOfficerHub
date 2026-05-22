@@ -12,4 +12,5 @@ public final class CacheNames {
 	public static final String USER_INBOX = "userInbox";
 	public static final String USER_MOCK_STATUS = "userMockStatus";
 	public static final String USER_HISTORY = "userHistory";
+	public static final String DASHBOARD_OVERVIEW = "dashboardOverview";
 }

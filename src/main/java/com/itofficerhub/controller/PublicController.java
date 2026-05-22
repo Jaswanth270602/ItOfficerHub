@@ -1,7 +1,9 @@
 package com.itofficerhub.controller;
 
+import com.itofficerhub.dto.DashboardOverviewDto;
 import com.itofficerhub.dto.MockTestSummaryDto;
 import com.itofficerhub.dto.PublicStatsDto;
+import com.itofficerhub.service.DashboardService;
 import com.itofficerhub.service.PublicService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -11,9 +13,16 @@ import java.util.List;
 public class PublicController {
 
 	private final PublicService publicService;
+	private final DashboardService dashboardService;
 
-	public PublicController(PublicService publicService) {
+	public PublicController(PublicService publicService, DashboardService dashboardService) {
 		this.publicService = publicService;
+		this.dashboardService = dashboardService;
+	}
+
+	@GetMapping("/dashboard")
+	public DashboardOverviewDto dashboard() {
+		return dashboardService.getOverview();
 	}
 
 	@GetMapping("/stats")

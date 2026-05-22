@@ -1,5 +1,7 @@
 package com.itofficerhub.dto;
 
+import java.time.Instant;
+
 public record MockWithUserStatusDto(
 		Long id,
 		String title,
@@ -9,6 +11,8 @@ public record MockWithUserStatusDto(
 		int timeLimitMinutes,
 		long attemptsCount,
 		boolean allowRetake,
+		Instant publishedAt,
+		boolean featuredToday,
 		boolean attempted,
 		int userAttemptCount,
 		Double bestNetScore,
