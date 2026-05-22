@@ -126,12 +126,14 @@ public class AttemptService {
 		attempt.setTimeTakenSeconds(request.timeTakenSeconds());
 		attempt.setSubmitted(true);
 		attempt.setSubmittedAt(Instant.now());
+		attempt = attemptRepository.saveAndFlush(attempt);
+		appCacheService.evictAfterMockSubmit(attempt.getMockTest().getId(), attempt.getUser().getId());
 		snapshotRank(attempt);
 		attempt = attemptRepository.save(attempt);
-		appCacheService.evictAfterMockSubmit(attempt.getMockTest().getId(), attempt.getUser().getId());
 		return buildResult(attempt);
 	}
 
+	@Transactional(readOnly = true)
 	public AttemptResultDto getResult(Long attemptId) {
 		TestAttempt attempt = loadOwnedAttempt(attemptId);
 		if (!attempt.isSubmitted()) {
@@ -316,7 +318,7 @@ public class AttemptService {
 	private double round2(double v) { return Math.round(v * 100) / 100.0; }
 
 	private TestAttempt loadOwnedAttempt(Long attemptId) {
-		TestAttempt attempt = attemptRepository.findById(attemptId)
+		TestAttempt attempt = attemptRepository.findByIdWithMockAndUser(attemptId)
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Attempt not found"));
 		UserPrincipal user = getCurrentUser();
 		if (!attempt.getUser().getId().equals(user.getId())) {

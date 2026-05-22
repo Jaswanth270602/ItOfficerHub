@@ -68,7 +68,7 @@ public class SocialService {
 		User me = getCurrentUser().getUser();
 		long unread = messageRepository.countUnreadForUser(me.getId());
 		List<ChatMessage> fresh = since != null
-				? messageRepository.findNewForUserSince(me.getId(), since)
+				? messageRepository.findNewForUserAfter(me.getId(), since)
 				: List.of();
 		List<ChatMessageDto> dtos = fresh.stream().map(m -> toMessageDto(m, me.getId())).toList();
 		// Lightweight poll — inbox is loaded separately (avoids heavy rebuild every few seconds)
@@ -80,7 +80,10 @@ public class SocialService {
 		User me = getCurrentUser().getUser();
 		requireMember(conversationId, me.getId());
 		markRead(conversationId, me.getId());
-		return messageRepository.findSince(conversationId, since).stream()
+		List<ChatMessage> rows = since != null
+				? messageRepository.findForConversationAfter(conversationId, since)
+				: messageRepository.findAllForConversation(conversationId);
+		return rows.stream()
 				.filter(m -> m.getMessageType() == MessageType.SYSTEM
 						|| !userBlockRepository.isBlockedEitherWay(me.getId(), m.getSender().getId()))
 				.map(m -> toMessageDto(m, me.getId()))

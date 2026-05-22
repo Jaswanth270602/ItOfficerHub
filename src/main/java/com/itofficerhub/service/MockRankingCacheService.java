@@ -24,7 +24,7 @@ public class MockRankingCacheService {
 		this.self = self;
 	}
 
-	@Cacheable(cacheNames = CacheNames.MOCK_RANKING, key = "#mockId")
+	/** Not cached — storing JPA entities in Caffeine causes lazy-load errors outside a session. */
 	public List<TestAttempt> bestAttemptsPerUser(long mockId) {
 		List<TestAttempt> all = attemptRepository.findSubmittedByMockWithUser(mockId);
 		Map<Long, TestAttempt> best = new HashMap<>();

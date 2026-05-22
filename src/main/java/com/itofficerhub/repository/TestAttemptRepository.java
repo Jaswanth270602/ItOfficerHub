@@ -9,6 +9,14 @@ import java.util.List;
 
 public interface TestAttemptRepository extends JpaRepository<TestAttempt, Long> {
 
+	@Query("""
+			SELECT a FROM TestAttempt a
+			JOIN FETCH a.mockTest
+			JOIN FETCH a.user
+			WHERE a.id = :id
+			""")
+	java.util.Optional<TestAttempt> findByIdWithMockAndUser(@Param("id") Long id);
+
 	List<TestAttempt> findByUserIdAndSubmittedTrueOrderBySubmittedAtDesc(Long userId);
 
 	@Query("""

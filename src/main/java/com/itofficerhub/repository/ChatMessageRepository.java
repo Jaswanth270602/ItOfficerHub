@@ -14,10 +14,18 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 			SELECT m FROM ChatMessage m
 			JOIN FETCH m.sender s
 			WHERE m.conversation.id = :convId
-			AND (:since IS NULL OR m.createdAt > :since)
 			ORDER BY m.createdAt ASC
 			""")
-	List<ChatMessage> findSince(@Param("convId") Long convId, @Param("since") Instant since);
+	List<ChatMessage> findAllForConversation(@Param("convId") Long convId);
+
+	@Query("""
+			SELECT m FROM ChatMessage m
+			JOIN FETCH m.sender s
+			WHERE m.conversation.id = :convId
+			AND m.createdAt > :since
+			ORDER BY m.createdAt ASC
+			""")
+	List<ChatMessage> findForConversationAfter(@Param("convId") Long convId, @Param("since") Instant since);
 
 	Optional<ChatMessage> findTopByConversationIdOrderByCreatedAtDesc(Long conversationId);
 
@@ -36,8 +44,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 			JOIN FETCH m.conversation c
 			JOIN ConversationMember cm ON cm.conversation = c
 			WHERE cm.user.id = :userId
-			AND (:since IS NULL OR m.createdAt > :since)
+			AND m.createdAt > :since
 			ORDER BY m.createdAt ASC
 			""")
-	List<ChatMessage> findNewForUserSince(@Param("userId") Long userId, @Param("since") Instant since);
+	List<ChatMessage> findNewForUserAfter(@Param("userId") Long userId, @Param("since") Instant since);
 }

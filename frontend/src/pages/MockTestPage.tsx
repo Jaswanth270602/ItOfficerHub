@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import api from '@/lib/api'
+import api, { apiErrorMessage } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -33,19 +33,26 @@ export function MockTestPage() {
   const [started, setStarted] = useState(false)
   const [submitOpen, setSubmitOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [submitError, setSubmitError] = useState('')
 
   const submitTest = useCallback(async () => {
     if (!attemptId) return
+    setSubmitError('')
     const timeTaken = timeLimit * 60 - secondsLeft
     const answerList = Object.entries(answers).map(([questionId, selectedOption]) => ({
       questionId: Number(questionId),
       selectedOption,
     }))
-    const { data } = await api.post(`/attempts/${attemptId}/submit`, {
-      timeTakenSeconds: timeTaken,
-      answers: answerList,
-    })
-    navigate(`/result/${data.attemptId}`)
+    try {
+      const { data } = await api.post(`/attempts/${attemptId}/submit`, {
+        timeTakenSeconds: timeTaken,
+        answers: answerList,
+      })
+      navigate(`/result/${data.attemptId}`)
+    } catch (e) {
+      setSubmitError(apiErrorMessage(e, 'Could not submit your test. Please try again.'))
+      setSubmitOpen(false)
+    }
   }, [attemptId, answers, timeLimit, secondsLeft, navigate])
 
   useEffect(() => {
@@ -267,6 +274,7 @@ export function MockTestPage() {
                       <li>Marked for review: {markedCount}</li>
                       <li>Unattempted: {unattempted} (0 marks, no negative)</li>
                     </ul>
+                    {submitError && <p className="text-sm text-red-400">{submitError}</p>}
                     <div className="flex gap-3 justify-end">
                       <Button variant="outline" className="cursor-pointer" onClick={() => setSubmitOpen(false)}>
                         Continue test

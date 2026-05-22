@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import api from '@/lib/api'
+import api, { apiErrorMessage } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -103,9 +103,16 @@ export function ResultPage() {
   const [showSolutions, setShowSolutions] = useState(false)
   const [showCompetitive, setShowCompetitive] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
-    api.get(`/attempts/${attemptId}/result`).then((r) => setResult(r.data)).catch(() => {})
+    if (!attemptId) return
+    setLoadError('')
+    setResult(null)
+    api
+      .get(`/attempts/${attemptId}/result`)
+      .then((r) => setResult(r.data))
+      .catch((e) => setLoadError(apiErrorMessage(e, 'Could not load your report. Try again from Dashboard.')))
   }, [attemptId])
 
   const myLeaderboard = useMemo(
@@ -121,6 +128,17 @@ export function ResultPage() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+  }
+
+  if (loadError) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-20 text-center space-y-4">
+        <p className="text-red-400">{loadError}</p>
+        <Link to="/dashboard">
+          <Button className="cursor-pointer">Back to dashboard</Button>
+        </Link>
+      </div>
+    )
   }
 
   if (!result) return <div className="text-center py-20 text-slate-400">Loading results...</div>

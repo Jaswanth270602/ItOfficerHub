@@ -28,9 +28,15 @@ public class UniqueRankingService {
 	public UniqueRankResult computeForAttempt(TestAttempt attempt) {
 		long mockId = attempt.getMockTest().getId();
 		long totalAttempts = attemptRepository.countByMockTestIdAndSubmittedTrue(mockId);
-		List<TestAttempt> ranked = rankingCache.bestAttemptsPerUser(mockId);
-		long uniqueStudents = ranked.size();
+		List<TestAttempt> ranked = new java.util.ArrayList<>(rankingCache.bestAttemptsPerUser(mockId));
 		long userId = attempt.getUser().getId();
+		if (attempt.isSubmitted() && ranked.stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
+			ranked.add(attempt);
+			ranked.sort(java.util.Comparator.comparingDouble(TestAttempt::getNetScore).reversed()
+					.thenComparingInt(TestAttempt::getTimeTakenSeconds)
+					.thenComparing(a -> a.getSubmittedAt() != null ? a.getSubmittedAt() : a.getStartedAt()));
+		}
+		long uniqueStudents = ranked.size();
 
 		long rank = 1;
 		int displayRank = 1;
