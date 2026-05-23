@@ -1,17 +1,8 @@
 const WARM_SESSION_KEY = 'itoh_server_ready'
 
-/** Same-origin `/health` in production; derived from VITE_API_URL when set. */
+/** Always same-origin — works on itofficerhub.in and Render URL alike. */
 export function healthCheckUrl(): string {
-  const api = import.meta.env.VITE_API_URL?.trim()
-  if (api) {
-    try {
-      const u = new URL(api, window.location.origin)
-      return `${u.origin}/health`
-    } catch {
-      /* fall through */
-    }
-  }
-  return `${window.location.origin}/health`
+  return new URL('/health', window.location.origin).href
 }
 
 export function isServerWarmInSession(): boolean {
@@ -30,8 +21,9 @@ export function markServerWarmInSession(): void {
   }
 }
 
-const PING_TIMEOUT_MS = 12_000
-const RETRY_DELAY_MS = 2_500
+const PING_TIMEOUT_MS = 8_000
+const RETRY_DELAY_MS = 2_000
+const MAX_WAIT_MS = 90_000
 
 export async function pingHealth(signal?: AbortSignal): Promise<boolean> {
   const controller = new AbortController()
@@ -48,7 +40,7 @@ export async function pingHealth(signal?: AbortSignal): Promise<boolean> {
     })
     if (!res.ok) return false
     const text = (await res.text()).trim()
-    return text === 'UP' || res.ok
+    return text.includes('UP')
   } catch {
     return false
   } finally {
@@ -57,9 +49,10 @@ export async function pingHealth(signal?: AbortSignal): Promise<boolean> {
   }
 }
 
-/** Retry until success or outer abort. */
+/** Retry until success, abort, or max wait. */
 export async function waitForServer(signal: AbortSignal): Promise<boolean> {
-  while (!signal.aborted) {
+  const deadline = Date.now() + MAX_WAIT_MS
+  while (!signal.aborted && Date.now() < deadline) {
     if (await pingHealth(signal)) return true
     await new Promise((r) => window.setTimeout(r, RETRY_DELAY_MS))
   }
