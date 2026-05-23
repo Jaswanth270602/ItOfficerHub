@@ -3,7 +3,7 @@ import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Copy, FileJson, ExternalLink, Hash } from 'lucide-react'
+import { Copy, FileJson, Hash } from 'lucide-react'
 import { EXAM_TARGET_LABELS, MOCK_CATEGORY_LABELS } from '@/lib/catalog'
 
 interface Props {
