@@ -1,6 +1,6 @@
-/** Canonical site URL — set VITE_SITE_URL at build time (e.g. https://itofficerhub.onrender.com) */
+/** Canonical site URL — set VITE_SITE_URL at build time (e.g. https://itofficerhub.in) */
 export const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined)?.replace(/\/$/, '')
-  || 'https://itofficerhub.onrender.com'
+  || 'https://itofficerhub.in'
 
 export const SITE_NAME = 'ItOfficerHub'
 export const SITE_TAGLINE = 'Free IBPS SO IT Officer, PSU IT & TCS NQT Mock Tests'

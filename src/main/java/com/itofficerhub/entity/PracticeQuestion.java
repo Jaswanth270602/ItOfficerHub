@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "practice_questions", uniqueConstraints = @UniqueConstraint(columnNames = { "section_id", "subtopic_slug", "question_number" }))
+@Table(name = "practice_questions", uniqueConstraints = @UniqueConstraint(
+		name = "uq_practice_section_subtopic_qnum",
+		columnNames = { "section_id", "subtopic_slug", "question_number" }))
 public class PracticeQuestion {
 
 	@Id

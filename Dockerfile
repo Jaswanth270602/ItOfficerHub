@@ -5,7 +5,7 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend .
 ENV VITE_API_URL=
-ARG VITE_SITE_URL=https://itofficerhub.onrender.com
+ARG VITE_SITE_URL=https://itofficerhub.in
 ENV VITE_SITE_URL=$VITE_SITE_URL
 RUN npm run build
 

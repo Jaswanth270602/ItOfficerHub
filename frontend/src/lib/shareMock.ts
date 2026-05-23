@@ -1,8 +1,7 @@
-import { SITE_URL } from '@/lib/seo'
+import { shareSitePath } from '@/lib/siteUrl'
 
 export function mockShareUrl(mockId: number): string {
-  const base = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
-  return `${base.replace(/\/$/, '')}/mock/${mockId}`
+  return shareSitePath(`/mock/${mockId}`)
 }
 
 export function mockShareText(mockTitle: string, mockId: number): string {

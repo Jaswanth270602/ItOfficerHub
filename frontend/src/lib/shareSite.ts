@@ -1,8 +1,7 @@
-import { SITE_URL } from '@/lib/seo'
+import { shareBaseUrl, shareSitePath } from '@/lib/siteUrl'
 
 export function siteShareUrl(): string {
-  const base = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
-  return `${base.replace(/\/$/, '')}/`
+  return shareSitePath('/')
 }
 
 export function siteShareText(): string {
@@ -26,3 +25,6 @@ export async function copySiteLink(): Promise<boolean> {
     return false
   }
 }
+
+// Re-export for components that need the base
+export { shareBaseUrl }

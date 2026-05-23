@@ -173,7 +173,7 @@ export function LandingPage() {
             '@type': 'WebPage',
             name: 'ItOfficerHub — IT Officer Hub',
             description: 'Free IBPS SO IT Officer and TCS NQT mock tests with rank and solutions.',
-            url: 'https://itofficerhub.onrender.com/',
+            url: 'https://itofficerhub.in/',
             isPartOf: { '@type': 'WebSite', name: 'ItOfficerHub' },
           },
         ]}

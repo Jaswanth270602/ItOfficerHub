@@ -112,21 +112,14 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 					    explanation VARCHAR(8000),
 					    solution_image_url VARCHAR(2000),
 					    published BOOLEAN NOT NULL DEFAULT true,
+					    question_number INT NOT NULL DEFAULT 1,
 					    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 					    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-					    CONSTRAINT uq_practice_section_subtopic UNIQUE (section_id, subtopic_slug)
+					    CONSTRAINT uq_practice_section_subtopic_qnum UNIQUE (section_id, subtopic_slug, question_number)
 					)
 					""");
 		}
-		if (!columnExists("practice_questions", "question_number")) {
-			jdbc.execute("ALTER TABLE practice_questions ADD COLUMN IF NOT EXISTS question_number INT NOT NULL DEFAULT 1");
-			jdbc.execute("ALTER TABLE practice_questions DROP CONSTRAINT IF EXISTS uq_practice_section_subtopic");
-			jdbc.execute("""
-					ALTER TABLE practice_questions
-					ADD CONSTRAINT uq_practice_section_subtopic_qnum
-					UNIQUE (section_id, subtopic_slug, question_number)
-					""");
-		}
+		patchPracticeQuestionConstraints();
 		if (!columnExists("users", "phone")) {
 			jdbc.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)");
 			jdbc.execute("""
@@ -163,5 +156,57 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 				WHERE table_schema = 'public' AND table_name = ?
 				""", Integer.class, table);
 		return count != null && count > 0;
+	}
+
+	private void patchPracticeQuestionConstraints() {
+		if (!tableExists("practice_questions")) {
+			return;
+		}
+		jdbc.execute("ALTER TABLE practice_questions ADD COLUMN IF NOT EXISTS question_number INT NOT NULL DEFAULT 1");
+		jdbc.execute("UPDATE practice_questions SET question_number = 1 WHERE question_number IS NULL OR question_number < 1");
+
+		Integer legacyUnique = jdbc.queryForObject("""
+				SELECT COUNT(*) FROM pg_constraint c
+				JOIN pg_class t ON c.conrelid = t.oid
+				WHERE t.relname = 'practice_questions'
+				  AND c.contype = 'u'
+				  AND c.conname <> 'uq_practice_section_subtopic_qnum'
+				""", Integer.class);
+		if (legacyUnique != null && legacyUnique > 0) {
+			log.warn("practice_questions: dropping {} legacy unique constraint(s)", legacyUnique);
+			jdbc.execute("""
+					DO $$
+					DECLARE r RECORD;
+					BEGIN
+					  FOR r IN
+					    SELECT c.conname
+					    FROM pg_constraint c
+					    JOIN pg_class t ON c.conrelid = t.oid
+					    WHERE t.relname = 'practice_questions'
+					      AND c.contype = 'u'
+					      AND c.conname <> 'uq_practice_section_subtopic_qnum'
+					  LOOP
+					    EXECUTE format('ALTER TABLE practice_questions DROP CONSTRAINT IF EXISTS %I', r.conname);
+					  END LOOP;
+					END $$
+					""");
+		}
+
+		Integer correctUnique = jdbc.queryForObject("""
+				SELECT COUNT(*) FROM pg_constraint c
+				JOIN pg_class t ON c.conrelid = t.oid
+				WHERE t.relname = 'practice_questions'
+				  AND c.contype = 'u'
+				  AND c.conname = 'uq_practice_section_subtopic_qnum'
+				""", Integer.class);
+		if (correctUnique == null || correctUnique == 0) {
+			log.warn("practice_questions: adding uq_practice_section_subtopic_qnum");
+			jdbc.execute("ALTER TABLE practice_questions DROP CONSTRAINT IF EXISTS uq_practice_section_subtopic_qnum");
+			jdbc.execute("""
+					ALTER TABLE practice_questions
+					ADD CONSTRAINT uq_practice_section_subtopic_qnum
+					UNIQUE (section_id, subtopic_slug, question_number)
+					""");
+		}
 	}
 }

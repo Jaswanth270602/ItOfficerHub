@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://itofficerhub.onrender.com/</loc>
+    <loc>https://itofficerhub.in/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://itofficerhub.onrender.com/dashboard</loc>
+    <loc>https://itofficerhub.in/dashboard</loc>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://itofficerhub.onrender.com/mocks</loc>
+    <loc>https://itofficerhub.in/mocks</loc>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://itofficerhub.onrender.com/tcs-nqt</loc>
+    <loc>https://itofficerhub.in/tcs-nqt</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://itofficerhub.onrender.com/syllabus</loc>
+    <loc>https://itofficerhub.in/syllabus</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://itofficerhub.onrender.com/login</loc>
+    <loc>https://itofficerhub.in/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://itofficerhub.onrender.com/register</loc>
+    <loc>https://itofficerhub.in/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
