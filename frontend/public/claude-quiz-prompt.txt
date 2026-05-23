@@ -11,17 +11,30 @@ EXAM RULES:
 - 4 options A–D per question; exactly ONE correct (correctOption: "A"|"B"|"C"|"D")
 - IBPS SO IT syllabus style; practical traps; no duplicate stems
 - orderIndex 1 through 20
+- Every question MUST have "topic" set to the syllabus chapter (used for weak/strong analytics on the result report)
 
-EXPLANATION QUALITY (mandatory for every question):
-- Minimum 4 lines of teaching text in "explanation" (use \n for line breaks)
-- Structure with bullet points using lines starting with "• " (at least 4 bullets)
-- Include: why correct option wins, why others fail, exam tip, memory hook
-- Add a mini ASCII diagram OR Mermaid flowchart inside explanation (3–8 lines), e.g.:
-  Flow: Client → Firewall → Load Balancer → App Server → DB
-- End explanation with "References:" line listing 1–2 real sources (RFC number, Oracle/MySQL doc, OWASP, NPTEL unit, official IBPS syllabus topic name)
+EXPLANATION QUALITY (mandatory — reject-level if short):
+- Minimum 8–12 lines in "explanation" (use \n for line breaks)
+- At least 6 bullet lines starting with "• " covering:
+  • Core concept in plain English
+  • Why the correct option is right (step-by-step)
+  • Why EACH wrong option fails (A, B, C, D individually)
+  • Common exam trap / distractor pattern
+  • Memory hook or mnemonic
+  • One-line "exam tip" for IBPS SO IT
+- REQUIRED diagram block (pick one):
+  A) Mermaid flowchart (preferred), 5–12 lines, e.g.:
+     graph TD
+       A[Client] --> B[Firewall]
+       B --> C[Load Balancer]
+       C --> D[App Server]
+       D --> E[(Database)]
+  B) OR ASCII flow with arrows (-->, →) showing protocol/data flow
+  Label the block with a line like "Flowchart:" or "ASCII diagram:" before the diagram
+- End with "References:" and 2 real sources (RFC, Oracle/MySQL doc, OWASP, NPTEL unit, official syllabus topic)
 
 OPTIONAL VISUAL:
-- If a diagram helps, set "solutionImageUrl" to a public HTTPS image URL (diagram/flowchart). Leave null if none.
+- If a diagram helps beyond text, set "solutionImageUrl" to a public HTTPS image URL. Leave null if none.
 
 JSON SCHEMA (follow exactly):
 
@@ -40,7 +53,7 @@ JSON SCHEMA (follow exactly):
       "optionC": "...",
       "optionD": "...",
       "correctOption": "C",
-      "explanation": "• Point one...\n• Point two...\n• Point three...\n• Point four...\n\nASCII diagram:\n  A --> B --> C\n\nReferences: RFC 7231; IBPS SO IT — Networking",
+      "explanation": "• Concept...\n• Why C wins...\n• Why A fails...\n• Why B fails...\n• Why D fails...\n• Trap...\n• Memory hook...\n• Exam tip...\n\nFlowchart:\ngraph TD\n  A --> B --> C\n\nReferences: RFC 7231; IBPS SO IT — Networking",
       "solutionImageUrl": null,
       "topic": "NETWORKING",
       "orderIndex": 1
@@ -48,13 +61,13 @@ JSON SCHEMA (follow exactly):
   ]
 }
 
-VALID topic values (uppercase): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS
+VALID topic values (uppercase, required on every question): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
 
 VALID difficulty: EASY, MEDIUM, HARD
 
-OPTIONAL mock tags (for filters on Mocks page):
+OPTIONAL mock tags:
 - mockCategory: FULL | SECTIONAL | PYQ | CHALLENGE
-- examTarget: IBPS_SO_IT | NIACL_IT | LIC_IT | GIC_IT | RBI_IT | PSU_IT_GENERAL | MIXED
+- examTarget: IBPS_SO_IT | NIACL_IT | LIC_IT | GIC_IT | RBI_IT | PSU_IT_GENERAL | TCS_NQT | MIXED
 - seriesDay: 1-30 only when mockCategory is CHALLENGE
 
-Before you output, self-check: 20 questions, each explanation ≥4 lines with • bullets, diagram present, References line present, valid JSON only.
+Before you output, self-check: 20 questions; each topic set; each explanation ≥200 chars, ≥6 • bullets, diagram with --> or graph TD, References: line, valid JSON only.

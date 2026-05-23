@@ -8,6 +8,7 @@ public record UserPrepStatsDto(
 		int currentStreakDays,
 		double bestNetScore,
 		long revisionBookmarkCount,
+		int prepPoints,
 		List<TopicBreakdownDto> lifetimeTopicBreakdown,
 		List<ChallengeDayDto> challengePlan
 ) {

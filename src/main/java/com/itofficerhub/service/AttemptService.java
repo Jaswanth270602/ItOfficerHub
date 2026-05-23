@@ -24,12 +24,13 @@ public class AttemptService {
 	private final AppCacheService appCacheService;
 	private final TopicAnalyticsService topicAnalyticsService;
 	private final RevisionService revisionService;
+	private final PrepPointsService prepPointsService;
 
 	public AttemptService(TestAttemptRepository attemptRepository, AttemptAnswerRepository answerRepository,
 			MockTestRepository mockTestRepository, QuestionRepository questionRepository,
 			UniqueRankingService uniqueRankingService, UserAttemptCacheService userAttemptCache,
 			AppCacheService appCacheService, TopicAnalyticsService topicAnalyticsService,
-			RevisionService revisionService) {
+			RevisionService revisionService, PrepPointsService prepPointsService) {
 		this.attemptRepository = attemptRepository;
 		this.answerRepository = answerRepository;
 		this.mockTestRepository = mockTestRepository;
@@ -39,6 +40,7 @@ public class AttemptService {
 		this.appCacheService = appCacheService;
 		this.topicAnalyticsService = topicAnalyticsService;
 		this.revisionService = revisionService;
+		this.prepPointsService = prepPointsService;
 	}
 
 	@Transactional
@@ -129,13 +131,22 @@ public class AttemptService {
 		}
 		applyScoring(attempt);
 		attempt.setTimeTakenSeconds(request.timeTakenSeconds());
+		boolean firstAttemptOnMock = prepPointsService.isFirstSubmittedAttempt(
+				attempt.getUser().getId(), attempt.getMockTest().getId());
 		attempt.setSubmitted(true);
 		attempt.setSubmittedAt(Instant.now());
 		attempt = attemptRepository.saveAndFlush(attempt);
 		appCacheService.evictAfterMockSubmit(attempt.getMockTest().getId(), attempt.getUser().getId());
 		snapshotRank(attempt);
 		attempt = attemptRepository.save(attempt);
-		return buildResult(attempt);
+		ExamScoring.Breakdown b = ExamScoring.compute(
+				attempt.getTotalQuestions(), attempt.getCorrectCount(), attempt.getWrongCount());
+		double pctMarks = b.maxMarks() > 0 ? (attempt.getNetScore() / b.maxMarks()) * 100.0 : 0;
+		boolean cleared = attempt.getNetScore() >= attempt.getMockTest().getCutoffMarks();
+		int pointsEarned = firstAttemptOnMock
+				? prepPointsService.awardFirstAttempt(attempt.getUser().getId(), pctMarks, cleared)
+				: 0;
+		return buildResult(attempt, firstAttemptOnMock, pointsEarned);
 	}
 
 	@Transactional(readOnly = true)
@@ -230,10 +241,14 @@ public class AttemptService {
 				attempt.getWrongCount());
 		RankStats stats = rankStatsFor(attempt);
 		double pctMarks = b.maxMarks() > 0 ? (attempt.getNetScore() / b.maxMarks()) * 100.0 : 0;
-		return buildDto(attempt, List.of(), stats, b, pctMarks);
+		return buildDto(attempt, List.of(), stats, b, pctMarks, false, 0);
 	}
 
 	private AttemptResultDto buildResult(TestAttempt attempt) {
+		return buildResult(attempt, false, 0);
+	}
+
+	private AttemptResultDto buildResult(TestAttempt attempt, boolean firstAttemptOnMock, int pointsEarned) {
 		ensureScoring(attempt);
 		List<Question> questions = questionRepository.findByMockTestIdOrderByOrderIndexAsc(attempt.getMockTest().getId());
 		List<AttemptAnswer> answers = answerRepository.findByAttemptIdOrderByQuestionOrderIndexAsc(attempt.getId());
@@ -263,7 +278,7 @@ public class AttemptService {
 				attempt.getWrongCount());
 		RankStats stats = rankStatsFor(attempt);
 		double pctMarks = b.maxMarks() > 0 ? (attempt.getNetScore() / b.maxMarks()) * 100.0 : 0;
-		return buildDto(attempt, reviews, stats, b, pctMarks);
+		return buildDto(attempt, reviews, stats, b, pctMarks, firstAttemptOnMock, pointsEarned);
 	}
 
 	private List<LeaderboardEntryDto> buildLeaderboard(TestAttempt current, long mockId) {
@@ -271,7 +286,8 @@ public class AttemptService {
 	}
 
 	private AttemptResultDto buildDto(TestAttempt attempt, List<AttemptResultDto.QuestionReviewDto> reviews,
-			RankStats stats, ExamScoring.Breakdown b, double pctMarks) {
+			RankStats stats, ExamScoring.Breakdown b, double pctMarks,
+			boolean firstAttemptOnMock, int pointsEarned) {
 		double cutoff = attempt.getMockTest().getCutoffMarks();
 		double net = attempt.getNetScore();
 		boolean cleared = net >= cutoff;
@@ -320,7 +336,10 @@ public class AttemptService {
 				attempt.getMockTest().isAllowRetake(),
 				share,
 				topicBreakdown,
-				bookmarked);
+				bookmarked,
+				firstAttemptOnMock,
+				pointsEarned,
+				prepPointsService.getTotalPoints(attempt.getUser().getId()));
 	}
 
 	private Set<Long> bookmarkedIdsForUser(long userId) {

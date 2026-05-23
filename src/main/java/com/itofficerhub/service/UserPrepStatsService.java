@@ -27,13 +27,16 @@ public class UserPrepStatsService {
 	private final MockTestRepository mockTestRepository;
 	private final RevisionBookmarkRepository bookmarkRepository;
 	private final TopicAnalyticsService topicAnalyticsService;
+	private final PrepPointsService prepPointsService;
 
 	public UserPrepStatsService(TestAttemptRepository attemptRepository, MockTestRepository mockTestRepository,
-			RevisionBookmarkRepository bookmarkRepository, TopicAnalyticsService topicAnalyticsService) {
+			RevisionBookmarkRepository bookmarkRepository, TopicAnalyticsService topicAnalyticsService,
+			PrepPointsService prepPointsService) {
 		this.attemptRepository = attemptRepository;
 		this.mockTestRepository = mockTestRepository;
 		this.bookmarkRepository = bookmarkRepository;
 		this.topicAnalyticsService = topicAnalyticsService;
+		this.prepPointsService = prepPointsService;
 	}
 
 	@Transactional(readOnly = true)
@@ -63,6 +66,7 @@ public class UserPrepStatsService {
 				streak,
 				Math.round(bestNet * 100) / 100.0,
 				revisionCount,
+				prepPointsService.getTotalPoints(userId),
 				topicBreakdown,
 				challenge);
 	}

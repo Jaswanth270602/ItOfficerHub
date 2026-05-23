@@ -43,12 +43,19 @@ export default function App() {
             <Route path="/mocks" element={<MocksPage />} />
             <Route path="/tcs-nqt" element={<TcsNqtPage />} />
             <Route path="/syllabus" element={<SyllabusPage />} />
-            <Route path="/mock/:mockId" element={<PrivateRoute><MockTestPage /></PrivateRoute>} />
             <Route path="/result/:attemptId" element={<PrivateRoute><ResultPage /></PrivateRoute>} />
             <Route path="/revision" element={<PrivateRoute><RevisionPage /></PrivateRoute>} />
             <Route path="/history" element={<PrivateRoute><HistoryPage /></PrivateRoute>} />
             <Route path="/community" element={<PrivateRoute><CommunityPage /></PrivateRoute>} />
           </Route>
+          <Route
+            path="/mock/:mockId"
+            element={
+              <PrivateRoute>
+                <MockTestPage />
+              </PrivateRoute>
+            }
+          />
           <Route path="/admin" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
           <Route path="/admin/mocks/:id" element={<AdminRoute><AdminMockPage /></AdminRoute>} />

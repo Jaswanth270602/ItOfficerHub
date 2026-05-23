@@ -35,7 +35,10 @@ public record AttemptResultDto(
 		boolean allowRetake,
 		String shareMessage,
 		List<TopicBreakdownDto> topicBreakdown,
-		java.util.Set<Long> bookmarkedQuestionIds
+		java.util.Set<Long> bookmarkedQuestionIds,
+		boolean firstAttemptOnMock,
+		int pointsEarned,
+		int totalPrepPoints
 ) {
 	public record QuestionReviewDto(
 			Long questionId,

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { topicShort } from '@/lib/topics'
-import { BookMarked, Flame, Target, TrendingDown } from 'lucide-react'
+import { BookMarked, Flame, Sparkles, Target, TrendingDown } from 'lucide-react'
 
 interface TopicRow {
   topic: string
@@ -24,6 +24,7 @@ interface PrepStats {
   currentStreakDays: number
   bestNetScore: number
   revisionBookmarkCount: number
+  prepPoints: number
   lifetimeTopicBreakdown: TopicRow[]
   challengePlan: { day: number; mockId: number | null; title: string; published: boolean; attempted: boolean }[]
 }
@@ -64,7 +65,12 @@ export function PrepStatsCard() {
         <CardDescription>Streak, weak topics, and revision bucket — all from your attempts</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="rounded-lg border border-neon-purple/30 bg-violet-950/20 p-3 text-center">
+            <Sparkles className="h-4 w-4 text-neon-purple mx-auto mb-1" />
+            <p className="text-xl font-bold tabular-nums text-neon-purple">{stats.prepPoints ?? 0}</p>
+            <p className="text-[10px] text-slate-500 uppercase">Prep points</p>
+          </div>
           <div className="rounded-lg border border-cyber-700 bg-cyber-900/60 p-3 text-center">
             <Flame className="h-4 w-4 text-amber-400 mx-auto mb-1" />
             <p className="text-xl font-bold tabular-nums">{stats.currentStreakDays}</p>

@@ -136,6 +136,7 @@ public class AdminService {
 
 	@Transactional
 	public MockTestAdminDto importMock(ImportMockRequest request) {
+		validateImportQuestions(request.questions());
 		MockTest mock = new MockTest();
 		mock.setTitle(request.title().trim());
 		mock.setDescription(request.description());
@@ -176,6 +177,49 @@ public class AdminService {
 			index++;
 		}
 		return toAdminDto(mock);
+	}
+
+	private void validateImportQuestions(List<ImportQuestionDto> questions) {
+		if (questions == null || questions.isEmpty()) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "At least one question is required");
+		}
+		int i = 0;
+		for (ImportQuestionDto q : questions) {
+			i++;
+			if (q.topic() == null || q.topic().isBlank()) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Question " + i + ": topic is required (syllabus chapter for analytics)");
+			}
+			try {
+				Topic.valueOf(q.topic().trim().toUpperCase());
+			} catch (IllegalArgumentException e) {
+				throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + i + ": invalid topic " + q.topic());
+			}
+			String exp = q.explanation();
+			if (exp == null || exp.trim().length() < 200) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Question " + i + ": explanation must be at least 200 characters with bullets and a diagram");
+			}
+			if (!exp.contains("•")) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Question " + i + ": explanation must include bullet lines starting with •");
+			}
+			if (!hasDiagramInExplanation(exp)) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Question " + i + ": explanation must include an ASCII/Mermaid flowchart (e.g. A --> B or graph TD)");
+			}
+			if (!exp.toLowerCase().contains("references:")) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Question " + i + ": explanation must end with a References: line");
+			}
+		}
+	}
+
+	private static boolean hasDiagramInExplanation(String exp) {
+		String lower = exp.toLowerCase();
+		return exp.contains("-->") || exp.contains("→") || exp.contains("graph ")
+				|| exp.contains("flowchart") || exp.contains("sequenceDiagram")
+				|| lower.contains("ascii diagram") || lower.contains("flow:");
 	}
 
 	private MockCategory parseCategory(String raw) {

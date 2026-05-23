@@ -47,6 +47,9 @@ public class User {
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt = Instant.now();
 
+	@Column(nullable = false)
+	private int prepPoints = 0;
+
 	public Long getId() { return id; }
 	public void setId(Long id) { this.id = id; }
 	public String getEmail() { return email; }
@@ -73,4 +76,6 @@ public class User {
 	public void setShowInDirectory(boolean showInDirectory) { this.showInDirectory = showInDirectory; }
 	public Instant getCreatedAt() { return createdAt; }
 	public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+	public int getPrepPoints() { return prepPoints; }
+	public void setPrepPoints(int prepPoints) { this.prepPoints = prepPoints; }
 }

@@ -61,4 +61,10 @@ public interface TestAttemptRepository extends JpaRepository<TestAttempt, Long> 
 			WHERE a.mockTest.id = :mockId AND a.submitted = true
 			""")
 	List<TestAttempt> findSubmittedByMockWithUser(@Param("mockId") Long mockId);
+
+	@Query("""
+			SELECT COUNT(a) FROM TestAttempt a
+			WHERE a.user.id = :userId AND a.mockTest.id = :mockId AND a.submitted = true
+			""")
+	long countSubmittedByUserAndMock(@Param("userId") Long userId, @Param("mockId") Long mockId);
 }

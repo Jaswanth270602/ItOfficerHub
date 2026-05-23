@@ -58,6 +58,12 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 					""");
 			log.info("revision_bookmarks created");
 		}
+		if (!columnExists("users", "prep_points")) {
+			log.warn("users.prep_points missing — adding column");
+			jdbc.execute("""
+					ALTER TABLE users ADD COLUMN IF NOT EXISTS prep_points INTEGER NOT NULL DEFAULT 0
+					""");
+		}
 		if (!columnExists("mock_tests", "mock_code")) {
 			log.warn("mock_tests.mock_code missing — adding column");
 			jdbc.execute("""

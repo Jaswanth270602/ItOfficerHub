@@ -21,13 +21,12 @@ EXAM RULES:
 - IBPS SO IT syllabus style; practical traps; no duplicate stems
 - orderIndex 1 through 20
 
-EXPLANATION QUALITY (mandatory for every question):
-- Minimum 4 lines of teaching text in "explanation" (use \n for line breaks)
-- Structure with bullet points using lines starting with "• " (at least 4 bullets)
-- Include: why correct option wins, why others fail, exam tip, memory hook
-- Add a mini ASCII diagram OR Mermaid flowchart inside explanation (3–8 lines), e.g.:
-  Flow: Client → Firewall → Load Balancer → App Server → DB
-- End explanation with "References:" line listing 1–2 real sources (RFC number, Oracle/MySQL doc, OWASP, NPTEL unit, official IBPS syllabus topic name)
+EXPLANATION QUALITY (mandatory — import API rejects short/missing diagrams):
+- Minimum 8 lines / 200+ characters in "explanation" (use \n for line breaks)
+- At least 6 bullet lines starting with "• " (why correct, why each wrong option fails, trap, hook, exam tip)
+- **Required** Mermaid `graph TD` flowchart OR ASCII diagram with `-->` / `→` arrows (label with "Flowchart:" or "ASCII diagram:")
+- End with "References:" and 2 real sources
+- **topic** is **required** on every question (syllabus chapter — powers weak/strong topic report after the exam)
 
 OPTIONAL VISUAL:
 - If a diagram helps, set "solutionImageUrl" to a public HTTPS image URL (diagram/flowchart). Leave null if none.
@@ -61,7 +60,7 @@ VALID topic values (uppercase): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, W
 
 VALID difficulty: EASY, MEDIUM, HARD
 
-Before you output, self-check: 20 questions, each explanation ≥4 lines with • bullets, diagram present, References line present, valid JSON only.
+Before you output, self-check: 20 questions, each has topic, explanation ≥200 chars with ≥6 • bullets, diagram present, References line present, valid JSON only.
 ```
 
 ---
@@ -86,7 +85,7 @@ Before you output, self-check: 20 questions, each explanation ≥4 lines with �
 | questions | Yes | 20 recommended |
 | explanation | Strongly required | Multi-line + bullets + diagram + references |
 | solutionImageUrl | No | HTTPS URL to diagram image |
-| topic | No | From list above |
+| topic | **Yes** | Syllabus chapter — required for analytics (import fails if missing) |
 | mockCategory | No | FULL, SECTIONAL, PYQ, CHALLENGE (30-day plan uses CHALLENGE + seriesDay) |
 | examTarget | No | IBPS_SO_IT, NIACL_IT, LIC_IT, GIC_IT, RBI_IT, PSU_IT_GENERAL, MIXED |
 | seriesDay | No | 1–30 when mockCategory is CHALLENGE |
@@ -98,7 +97,8 @@ Before you output, self-check: 20 questions, each explanation ≥4 lines with �
 | Problem | Fix |
 |---------|-----|
 | Claude wrapped JSON in ``` | Modal strips fences; or delete fences manually |
-| Short explanations | Re-run prompt; emphasize "minimum 4 lines + bullets" |
+| Short explanations / no diagram | Re-run prompt; need 200+ chars, 6+ bullets, Mermaid or `-->` diagram |
+| Import rejected on topic | Set `topic` on every question from the valid list |
 | Invalid topic | Use uppercase values from list |
 | Publish fails | Ensure question count matches mock setting (usually 20) |
 

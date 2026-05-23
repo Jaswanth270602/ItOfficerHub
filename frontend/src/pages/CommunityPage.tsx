@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { AddGroupMembersPanel, MemberPickerList, type StudentPick } from '@/components/AddGroupMembersPanel'
-import { Ban, Mail, MessageCircle, RefreshCw, Send, Shield, Trophy, UserPlus, UserRoundPlus, Users } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Ban, Mail, MessageCircle, Plus, RefreshCw, Send, Shield, Trophy, UserPlus, UserRoundPlus, Users } from 'lucide-react'
 
 interface Profile {
   userId: number
@@ -86,6 +87,7 @@ export function CommunityPage() {
   const [createMemberIds, setCreateMemberIds] = useState<Set<number>>(new Set())
   const [pickerStudents, setPickerStudents] = useState<StudentPick[]>([])
   const [showAddMembers, setShowAddMembers] = useState(false)
+  const [showCreateGroup, setShowCreateGroup] = useState(false)
   const [actionError, setActionError] = useState('')
   const [inboxLoading, setInboxLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
@@ -154,20 +156,9 @@ export function CommunityPage() {
   }, [activeId])
 
   useEffect(() => {
-    const init = async () => {
-      if (!sessionStorage.getItem('prepSquadJoined')) {
-        try {
-          await api.post('/social/groups/prep-squad/join')
-          sessionStorage.setItem('prepSquadJoined', '1')
-        } catch {
-          /* group may already exist */
-        }
-      }
-      loadInbox()
-      api.get('/social/profile/me').then((r) => setProfile(r.data)).catch(() => {})
-      loadStudents()
-    }
-    init()
+    loadInbox()
+    api.get('/social/profile/me').then((r) => setProfile(r.data)).catch(() => {})
+    loadStudents()
   }, [loadInbox, loadStudents])
 
   useEffect(() => {
@@ -272,6 +263,7 @@ export function CommunityPage() {
       setGroupDesc('')
       setCreateMemberIds(new Set())
       setCreatePickerOpen(false)
+      setShowCreateGroup(false)
       loadInbox()
       setActiveId(data.id)
     } catch (e: unknown) {
@@ -299,15 +291,24 @@ export function CommunityPage() {
   const memberIds = activeConv?.members.map((m) => m.userId) ?? []
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-[90rem] mx-auto px-4 md:px-6 py-6 md:py-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Mail className="h-7 w-7 text-neon-cyan" /> Prep Mail
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+            <Mail className="h-8 w-8 text-neon-cyan" /> Prep Mail
           </h1>
-          <p className="text-slate-400 text-sm">DMs, prep groups, score cards · polls every 4s</p>
+          <p className="text-slate-400 text-sm md:text-base">Direct messages, prep groups, and score cards</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
+          {tab === 'inbox' && (
+            <Button
+              size="sm"
+              className="cursor-pointer gap-1"
+              onClick={() => setShowCreateGroup(true)}
+            >
+              <Plus className="h-4 w-4" /> Add group
+            </Button>
+          )}
           {(['inbox', 'students', 'profile'] as const).map((t) => (
             <Button
               key={t}
@@ -487,19 +488,30 @@ export function CommunityPage() {
       )}
 
       {tab === 'inbox' && (
-        <div className="grid lg:grid-cols-3 gap-4 min-h-[500px] lg:h-[calc(100vh-220px)]">
-          <Card className="lg:col-span-1 flex flex-col overflow-hidden">
-            <CardHeader className="py-3 border-b border-cyber-700">
+        <div className="grid lg:grid-cols-[minmax(280px,340px)_1fr] gap-4 min-h-[560px] lg:h-[calc(100vh-180px)]">
+          <Card className="flex flex-col overflow-hidden">
+            <CardHeader className="py-3 border-b border-cyber-700 flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">Conversations</CardTitle>
+              <Button
+                size="sm"
+                variant="outline"
+                className="cursor-pointer h-8 text-xs lg:hidden"
+                onClick={() => setShowCreateGroup(true)}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto p-2 space-y-1 min-h-[200px]">
+            <CardContent className="flex-1 overflow-y-auto p-2 space-y-1 min-h-[240px]">
               {inboxLoading && (
                 <p className="text-sm text-slate-500 text-center py-8">Loading conversations...</p>
               )}
               {!inboxLoading && inbox.length === 0 && (
-                <p className="text-sm text-slate-500 text-center py-8 px-2">
-                  No chats yet. Create a group or message someone from Students.
-                </p>
+                <div className="text-sm text-slate-500 text-center py-8 px-2 space-y-3">
+                  <p>No chats yet.</p>
+                  <Button size="sm" className="cursor-pointer" onClick={() => setShowCreateGroup(true)}>
+                    <Plus className="h-4 w-4" /> Create a prep group
+                  </Button>
+                </div>
               )}
               {inbox.map((c) => (
                 <button
@@ -521,40 +533,11 @@ export function CommunityPage() {
                 </button>
               ))}
             </CardContent>
-            <div className="p-3 border-t border-cyber-700 space-y-2">
-              <p className="text-xs font-medium text-slate-400">New prep group</p>
-              <Input placeholder="Group name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
-              <Input
-                placeholder="Description (optional)"
-                value={groupDesc}
-                onChange={(e) => setGroupDesc(e.target.value)}
-              />
+            <div className="p-3 border-t border-cyber-700">
               <Button
-                type="button"
                 size="sm"
                 variant="outline"
                 className="w-full cursor-pointer text-xs"
-                onClick={() => setCreatePickerOpen(!createPickerOpen)}
-              >
-                <UserRoundPlus className="h-4 w-4" />
-                {createMemberIds.size > 0
-                  ? `${createMemberIds.size} friend(s) selected`
-                  : 'Add friends (optional)'}
-              </Button>
-              {createPickerOpen && (
-                <MemberPickerList
-                  students={pickerStudents}
-                  selected={createMemberIds}
-                  onToggle={toggleCreateMember}
-                />
-              )}
-              <Button size="sm" className="w-full cursor-pointer" onClick={createGroup} disabled={!groupName.trim()}>
-                <Users className="h-4 w-4" /> Create group
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full cursor-pointer"
                 onClick={() => setTab('students')}
               >
                 Browse student directory
@@ -562,7 +545,7 @@ export function CommunityPage() {
             </div>
           </Card>
 
-          <Card className="lg:col-span-2 flex flex-col overflow-hidden min-h-[400px]">
+          <Card className="flex flex-col overflow-hidden min-h-[480px] lg:min-h-0">
             {activeConv ? (
               <>
                 <CardHeader className="py-3 border-b border-cyber-700 space-y-2">
@@ -597,7 +580,7 @@ export function CommunityPage() {
                     </div>
                   )}
                 </CardHeader>
-                <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+                <CardContent className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 text-base">
                   {messagesLoading && (
                     <p className="text-sm text-slate-500 text-center py-8">Loading messages...</p>
                   )}
@@ -607,7 +590,7 @@ export function CommunityPage() {
                   {messages.map((m) => (
                     <div
                       key={m.id}
-                      className={cn('max-w-[85%]', m.senderId === user?.userId ? 'ml-auto text-right' : '')}
+                      className={cn('max-w-[min(100%,42rem)]', m.senderId === user?.userId ? 'ml-auto text-right' : '')}
                     >
                       <p className="text-xs text-slate-500 mb-1">
                         {m.senderAvatarEmoji} {m.senderDisplayName}
@@ -628,7 +611,7 @@ export function CommunityPage() {
                       ) : (
                         <p
                           className={cn(
-                            'p-3 rounded-lg text-sm inline-block text-left',
+                            'p-4 rounded-xl text-base inline-block text-left leading-relaxed',
                             m.messageType === 'SYSTEM'
                               ? 'bg-cyber-800/50 text-slate-400 italic'
                               : 'bg-cyber-800',
@@ -642,8 +625,9 @@ export function CommunityPage() {
                   ))}
                   <div ref={messagesEnd} />
                 </CardContent>
-                <div className="p-3 border-t border-cyber-700 flex gap-2">
+                <div className="p-4 border-t border-cyber-700 flex gap-3">
                   <Input
+                    className="text-base py-6"
                     placeholder="Type a message..."
                     value={text}
                     onChange={(e) => setText(e.target.value)}
@@ -666,6 +650,46 @@ export function CommunityPage() {
           </Card>
         </div>
       )}
+
+      <Dialog open={showCreateGroup} onOpenChange={setShowCreateGroup}>
+        <DialogContent className="border-cyber-600 bg-cyber-950 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-neon-cyan" /> New prep group
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Group name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
+            <Input
+              placeholder="Description (optional)"
+              value={groupDesc}
+              onChange={(e) => setGroupDesc(e.target.value)}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="w-full cursor-pointer"
+              onClick={() => setCreatePickerOpen(!createPickerOpen)}
+            >
+              <UserRoundPlus className="h-4 w-4" />
+              {createMemberIds.size > 0
+                ? `${createMemberIds.size} friend(s) selected`
+                : 'Add friends (optional)'}
+            </Button>
+            {createPickerOpen && (
+              <MemberPickerList
+                students={pickerStudents}
+                selected={createMemberIds}
+                onToggle={toggleCreateMember}
+              />
+            )}
+            <Button className="w-full cursor-pointer" onClick={createGroup} disabled={!groupName.trim()}>
+              Create group
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {activeId && isGroup && (
         <AddGroupMembersPanel
