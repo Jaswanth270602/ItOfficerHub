@@ -10,6 +10,8 @@ import {
   MOCK_CATEGORY_LABELS,
   matchesCategoryFilter,
   matchesExamFilter,
+  matchesTrack,
+  TCS_NQT_TARGET,
   type ExamTargetFilter,
   type MockCategoryFilter,
 } from '@/lib/catalog'
@@ -20,6 +22,7 @@ import {
   type TopicCode,
 } from '@/lib/topics'
 import { normalizeMock, type MockExam } from '@/types/mock'
+import { Seo } from '@/components/Seo'
 import { Filter, Layers, RefreshCw, Search } from 'lucide-react'
 
 export function MocksPage() {
@@ -76,6 +79,7 @@ export function MocksPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return mocks.filter((m) => {
+      if (!matchesTrack(m.examTarget, 'it')) return false
       if (!matchesTopicFilter(m.topics, m.cumulative, activeFilter)) return false
       if (!matchesCategoryFilter(m.mockCategory, categoryFilter)) return false
       if (!matchesExamFilter(m.examTarget, examFilter)) return false
@@ -95,7 +99,14 @@ export function MocksPage() {
   }
 
   return (
-    <div className="page-container py-8 pb-16">
+    <>
+      <Seo
+        path="/mocks"
+        title="IBPS SO IT Officer Mock Tests — CN, DBMS, OS, Security"
+        description="Free IBPS SO IT Officer and PSU IT mock tests by subject — Computer Networks, DBMS, Operating Systems, Security, Web, DS. Sectional, PYQ, full-length. ItOfficerHub IT Officer Hub."
+        keywords="IBPS SO IT Officer mock test, IBPS IT Officer, PSU IT Officer mock, computer networks mock, DBMS mock test, OS MCQ, IT officer professional knowledge, bank IT officer preparation"
+      />
+      <div className="page-container py-8 pb-16">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="page-title flex items-center gap-2">
@@ -180,7 +191,9 @@ export function MocksPage() {
           >
             All exams
           </button>
-          {Object.entries(EXAM_TARGET_LABELS).map(([code, label]) => (
+          {Object.entries(EXAM_TARGET_LABELS)
+            .filter(([code]) => code !== TCS_NQT_TARGET)
+            .map(([code, label]) => (
             <button
               key={code}
               type="button"
@@ -196,6 +209,13 @@ export function MocksPage() {
             </button>
           ))}
         </div>
+
+        <p className="text-xs text-slate-500">
+          Campus / TCS NQT aptitude →{' '}
+          <Link to="/tcs-nqt" className="text-sky-400 hover:underline">
+            TCS NQT section
+          </Link>
+        </p>
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
@@ -252,5 +272,6 @@ export function MocksPage() {
         </Link>
       </p>
     </div>
+    </>
   )
 }

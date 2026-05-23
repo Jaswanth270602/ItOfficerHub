@@ -89,6 +89,17 @@ Login: `admin@itofficerhub.com` / password = whatever you set as `ADMIN_PASSWORD
 
 ---
 
+## SEO (after deploy)
+
+1. **Google Search Console** — add property for your live URL (or custom domain).
+2. Submit sitemap: `https://YOUR-DOMAIN/sitemap.xml`
+3. If you use a **custom domain** (not `*.onrender.com`):
+   - Set Render build arg / env `VITE_SITE_URL=https://yourdomain.com` for correct canonical URLs
+   - Update `frontend/public/sitemap.xml` and `robots.txt` with your domain
+4. Pages include meta tags, Open Graph, Twitter cards, FAQ schema, and keyword-rich landing copy.
+
+---
+
 ## Database migrations (Flyway)
 
 On each deploy, Spring runs SQL in `src/main/resources/db/migration/` before the app serves traffic.

@@ -25,6 +25,7 @@ public final class ExamTargetDisplay {
 			case RBI_IT -> "RBI IT Officer";
 			case PSU_IT_GENERAL -> "PSU IT (General)";
 			case MIXED -> "Mixed PSU / Bank IT";
+			case TCS_NQT -> "TCS NQT (Aptitude)";
 		};
 	}
 }

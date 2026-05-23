@@ -28,6 +28,9 @@ public final class TopicDisplay {
 			case SOFTWARE_ENGINEERING -> "SE";
 			case CLOUD_COMPUTING -> "CLOUD";
 			case DIGITAL_ELECTRONICS -> "DE";
+			case QUANTITATIVE_APTITUDE -> "QUANT";
+			case LOGICAL_REASONING -> "LR";
+			case VERBAL_ABILITY -> "VERB";
 		};
 	}
 
@@ -43,6 +46,9 @@ public final class TopicDisplay {
 			case SOFTWARE_ENGINEERING -> "Software Engineering";
 			case CLOUD_COMPUTING -> "Cloud Computing";
 			case DIGITAL_ELECTRONICS -> "Digital Electronics";
+			case QUANTITATIVE_APTITUDE -> "Quantitative Aptitude";
+			case LOGICAL_REASONING -> "Logical Reasoning";
+			case VERBAL_ABILITY -> "Verbal Ability";
 		};
 	}
 }

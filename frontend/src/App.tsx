@@ -11,6 +11,7 @@ import { ResultPage } from '@/pages/ResultPage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { CommunityPage } from '@/pages/CommunityPage'
 import { RevisionPage } from '@/pages/RevisionPage'
+import { TcsNqtPage } from '@/pages/TcsNqtPage'
 import { SyllabusPage } from '@/pages/SyllabusPage'
 import { AdminLoginPage } from '@/pages/admin/AdminLoginPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mocks" element={<MocksPage />} />
+            <Route path="/tcs-nqt" element={<TcsNqtPage />} />
             <Route path="/syllabus" element={<SyllabusPage />} />
             <Route path="/mock/:mockId" element={<PrivateRoute><MockTestPage /></PrivateRoute>} />
             <Route path="/result/:attemptId" element={<PrivateRoute><ResultPage /></PrivateRoute>} />

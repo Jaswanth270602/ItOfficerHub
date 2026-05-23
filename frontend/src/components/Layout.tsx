@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button } from './ui/button'
-import { BookMarked, ClipboardList, Cpu, GraduationCap, Layers, LogOut, Mail } from 'lucide-react'
+import { BookMarked, Building2, ClipboardList, Cpu, GraduationCap, Layers, LogOut, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -31,7 +31,12 @@ export function Layout() {
             </NavLink>
             <NavLink to="/mocks" className={navLinkClass}>
               <span className="flex items-center gap-1">
-                <Layers className="h-4 w-4 hidden sm:inline" /> Mocks
+                <Layers className="h-4 w-4 hidden sm:inline" /> Bank IT
+              </span>
+            </NavLink>
+            <NavLink to="/tcs-nqt" className={navLinkClass}>
+              <span className="flex items-center gap-1">
+                <Building2 className="h-4 w-4 hidden sm:inline" /> TCS NQT
               </span>
             </NavLink>
             <NavLink to="/syllabus" className={navLinkClass}>
@@ -81,10 +86,19 @@ export function Layout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="border-t border-cyber-700/40 py-8 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500">
-          <span>© {new Date().getFullYear()} ItOfficerHub</span>
-          <span>Free IBPS SO IT Officer mock tests · P +1 · N 0.25 · 15 min</span>
+      <footer className="border-t border-cyber-700/40 py-10 mt-auto">
+        <div className="max-w-6xl mx-auto px-4">
+          <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-6" aria-label="Footer navigation">
+            <Link to="/dashboard" className="text-slate-400 hover:text-white">Dashboard</Link>
+            <Link to="/mocks" className="text-slate-400 hover:text-white">IBPS SO IT Mocks</Link>
+            <Link to="/tcs-nqt" className="text-slate-400 hover:text-white">TCS NQT Aptitude</Link>
+            <Link to="/syllabus" className="text-slate-400 hover:text-white">IT Officer Syllabus</Link>
+            <Link to="/register" className="text-slate-400 hover:text-white">Sign up free</Link>
+          </nav>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500">
+            <span>© {new Date().getFullYear()} ItOfficerHub — IT Officer Hub</span>
+            <span>Free IBPS SO IT &amp; TCS NQT mocks · P +1 · N 0.25</span>
+          </div>
         </div>
       </footer>
     </div>

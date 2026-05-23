@@ -11,6 +11,9 @@ export type TopicCode =
   | 'SOFTWARE_ENGINEERING'
   | 'CLOUD_COMPUTING'
   | 'DIGITAL_ELECTRONICS'
+  | 'QUANTITATIVE_APTITUDE'
+  | 'LOGICAL_REASONING'
+  | 'VERBAL_ABILITY'
 
 export interface TopicCatalogItem {
   code: string
@@ -34,6 +37,9 @@ export const TOPIC_SHORT: Record<string, string> = {
   SOFTWARE_ENGINEERING: 'SE',
   CLOUD_COMPUTING: 'CLOUD',
   DIGITAL_ELECTRONICS: 'DE',
+  QUANTITATIVE_APTITUDE: 'QUANT',
+  LOGICAL_REASONING: 'LR',
+  VERBAL_ABILITY: 'VERB',
 }
 
 export function topicShort(code: string): string {

@@ -76,6 +76,7 @@ public class PublicService {
 				mockTopicService.isCumulative(topics),
 				m.getMockCategory().name(),
 				m.getExamTarget().name(),
-				m.getSeriesDay());
+				m.getSeriesDay(),
+				m.getMockCode());
 	}
 }

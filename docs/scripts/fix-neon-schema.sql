@@ -20,3 +20,6 @@ CREATE TABLE IF NOT EXISTS revision_bookmarks (
 );
 
 CREATE INDEX IF NOT EXISTS idx_revision_bookmarks_user_id ON revision_bookmarks (user_id);
+
+ALTER TABLE mock_tests ADD COLUMN IF NOT EXISTS mock_code VARCHAR(32);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_mock_tests_mock_code ON mock_tests (mock_code) WHERE mock_code IS NOT NULL;

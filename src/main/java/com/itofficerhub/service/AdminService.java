@@ -17,14 +17,17 @@ public class AdminService {
 	private final UserRepository userRepository;
 	private final TestAttemptRepository attemptRepository;
 	private final AppCacheService appCacheService;
+	private final MockCodeService mockCodeService;
 
 	public AdminService(MockTestRepository mockTestRepository, QuestionRepository questionRepository,
-			UserRepository userRepository, TestAttemptRepository attemptRepository, AppCacheService appCacheService) {
+			UserRepository userRepository, TestAttemptRepository attemptRepository, AppCacheService appCacheService,
+			MockCodeService mockCodeService) {
 		this.mockTestRepository = mockTestRepository;
 		this.questionRepository = questionRepository;
 		this.userRepository = userRepository;
 		this.attemptRepository = attemptRepository;
 		this.appCacheService = appCacheService;
+		this.mockCodeService = mockCodeService;
 	}
 
 	public AdminDashboardDto dashboard() {
@@ -39,6 +42,13 @@ public class AdminService {
 		return mockTestRepository.findAll().stream().map(this::toAdminDto).toList();
 	}
 
+	public MockCodePreviewDto previewNextCode(String examTargetRaw) {
+		ExamTarget target = parseExamTarget(examTargetRaw);
+		String prefix = mockCodeService.prefixFor(target);
+		String next = mockCodeService.previewNextCode(target);
+		return new MockCodePreviewDto(target.name(), prefix, next);
+	}
+
 	public MockTestAdminDto getMock(Long id) {
 		return toAdminDto(findMock(id));
 	}
@@ -47,6 +57,13 @@ public class AdminService {
 	public MockTestAdminDto createMock(MockTestRequest request) {
 		MockTest m = new MockTest();
 		applyMockRequest(m, request);
+		if (request.examTarget() != null) {
+			m.setExamTarget(parseExamTarget(request.examTarget()));
+		}
+		if (request.mockCategory() != null) {
+			m.setMockCategory(parseCategory(request.mockCategory()));
+		}
+		mockCodeService.assignCode(m);
 		return toAdminDto(mockTestRepository.save(m));
 	}
 
@@ -134,6 +151,7 @@ public class AdminService {
 		mock.setMockCategory(parseCategory(request.mockCategory()));
 		mock.setExamTarget(parseExamTarget(request.examTarget()));
 		mock.setSeriesDay(request.seriesDay());
+		mockCodeService.assignCode(mock);
 		mock = mockTestRepository.save(mock);
 
 		int index = 1;
@@ -210,7 +228,8 @@ public class AdminService {
 	private MockTestAdminDto toAdminDto(MockTest m) {
 		return new MockTestAdminDto(m.getId(), m.getTitle(), m.getDescription(), m.getDifficulty().name(),
 				m.getQuestionCount(), m.getTimeLimitMinutes(), m.isPublished(), m.isAllowRetake(),
-				attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()), m.getPublishedAt());
+				attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()), m.getPublishedAt(),
+				m.getMockCode(), m.getExamTarget().name(), m.getMockCategory().name());
 	}
 
 	private QuestionAdminDto toQuestionDto(Question q) {

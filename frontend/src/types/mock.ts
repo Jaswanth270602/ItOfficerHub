@@ -19,6 +19,7 @@ export interface MockExam {
   mockCategory?: string
   examTarget?: string
   seriesDay?: number | null
+  mockCode?: string | null
 }
 
 export function normalizeMock(m: MockExam & { attempted?: boolean }): MockExam {
@@ -35,5 +36,6 @@ export function normalizeMock(m: MockExam & { attempted?: boolean }): MockExam {
     mockCategory: m.mockCategory,
     examTarget: m.examTarget,
     seriesDay: m.seriesDay ?? null,
+    mockCode: m.mockCode ?? null,
   }
 }

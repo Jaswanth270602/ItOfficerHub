@@ -16,6 +16,9 @@ interface Dashboard {
 interface MockAdmin {
   id: number
   title: string
+  mockCode?: string | null
+  examTarget?: string
+  mockCategory?: string
   difficulty: string
   questionCount: number
   timeLimitMinutes: number
@@ -77,9 +80,17 @@ export function AdminDashboardPage() {
           <Card key={m.id}>
             <CardHeader className="flex flex-row justify-between items-center py-4">
               <div>
-                <CardTitle className="text-base">{m.title}</CardTitle>
+                <CardTitle className="text-base flex flex-wrap items-center gap-2">
+                  {m.mockCode && (
+                    <span className="font-mono text-xs text-neon-cyan border border-neon-cyan/30 px-1.5 py-0.5 rounded">
+                      {m.mockCode}
+                    </span>
+                  )}
+                  {m.title}
+                </CardTitle>
                 <p className="text-sm text-slate-400">
-                  {m.difficulty} · {m.questionCount} Q · {m.attemptsCount} attempts ·{' '}
+                  {m.examTarget?.replace(/_/g, ' ') ?? '—'} · {m.mockCategory ?? 'FULL'} · {m.difficulty} · {m.questionCount} Q ·{' '}
+                  {m.attemptsCount} attempts ·{' '}
                   {m.published
                     ? `Live${m.publishedAt ? ` · ${new Date(m.publishedAt).toLocaleString()}` : ''}`
                     : 'Draft — publish when ready for mock of the day'}

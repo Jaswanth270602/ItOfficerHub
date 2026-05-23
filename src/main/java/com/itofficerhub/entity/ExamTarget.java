@@ -7,5 +7,7 @@ public enum ExamTarget {
 	GIC_IT,
 	RBI_IT,
 	PSU_IT_GENERAL,
-	MIXED
+	MIXED,
+	/** TCS National Qualifier Test — aptitude for campus hiring */
+	TCS_NQT
 }

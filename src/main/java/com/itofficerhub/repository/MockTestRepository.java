@@ -27,4 +27,6 @@ public interface MockTestRepository extends JpaRepository<MockTest, Long> {
 	}
 
 	long countByPublishedTrue();
+
+	long countByExamTarget(com.itofficerhub.entity.ExamTarget examTarget);
 }

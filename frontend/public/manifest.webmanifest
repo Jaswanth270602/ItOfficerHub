@@ -1,11 +1,13 @@
 {
-  "name": "ItOfficerHub — IBPS SO IT Mocks",
+  "name": "ItOfficerHub — IBPS SO IT & TCS NQT Mocks",
   "short_name": "ItOfficerHub",
-  "description": "Free IBPS SO IT Officer and PSU IT mock tests with rank and solutions",
+  "description": "Free IBPS SO IT Officer, PSU IT, and TCS NQT aptitude mock tests with All-India rank and solutions — IT Officer Hub",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#070b14",
   "theme_color": "#3b82f6",
+  "lang": "en-IN",
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/favicon.svg",

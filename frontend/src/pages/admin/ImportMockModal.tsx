@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Copy, FileJson, ExternalLink } from 'lucide-react'
+import { Copy, FileJson, ExternalLink, Hash } from 'lucide-react'
+import { EXAM_TARGET_LABELS, MOCK_CATEGORY_LABELS } from '@/lib/catalog'
 
 interface Props {
   open: boolean
@@ -24,11 +25,29 @@ function stripMarkdownFences(text: string): string {
   return cleaned
 }
 
+const inputClass =
+  'mt-1 w-full rounded-lg border border-cyber-700 bg-cyber-900/80 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue'
+
 export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
   const [jsonText, setJsonText] = useState('')
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [difficulty, setDifficulty] = useState('MEDIUM')
+  const [examTarget, setExamTarget] = useState('IBPS_SO_IT')
+  const [mockCategory, setMockCategory] = useState('FULL')
+  const [seriesDay, setSeriesDay] = useState('')
+  const [nextCode, setNextCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    api
+      .get('/admin/mocks/next-code', { params: { examTarget } })
+      .then((r) => setNextCode(r.data.nextCode))
+      .catch(() => setNextCode(''))
+  }, [open, examTarget])
 
   const copyClaudePrompt = async () => {
     try {
@@ -51,18 +70,25 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
         setError('JSON must include a "questions" array with at least 1 question')
         return
       }
-      if (!parsed.title) {
-        setError('JSON must include a "title" field')
+      const payload = {
+        ...parsed,
+        title: title.trim() || parsed.title,
+        description: description.trim() || parsed.description || '',
+        difficulty: difficulty || parsed.difficulty,
+        examTarget,
+        mockCategory,
+        seriesDay: seriesDay ? parseInt(seriesDay, 10) : parsed.seriesDay ?? null,
+      }
+      if (!payload.title) {
+        setError('Enter a mock title above (or include title in JSON)')
         return
       }
-      if (!parsed.difficulty) {
-        setError('JSON must include a "difficulty" field (EASY, MEDIUM, or HARD)')
-        return
-      }
-      await api.post('/admin/mocks/import', parsed)
+      await api.post('/admin/mocks/import', payload)
       onSuccess()
       onOpenChange(false)
       setJsonText('')
+      setTitle('')
+      setDescription('')
     } catch (err: unknown) {
       if (err instanceof SyntaxError) {
         setError('Invalid JSON — remove markdown code fences and try again')
@@ -80,32 +106,107 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileJson className="h-5 w-5 text-neon-cyan" /> Import Mock (Paste JSON)
+            <FileJson className="h-5 w-5 text-neon-cyan" /> Import mock
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4 p-4 rounded-xl border border-cyber-700 bg-cyber-950/50">
+            <div className="sm:col-span-2">
+              <Label htmlFor="mock-title">Test title *</Label>
+              <input
+                id="mock-title"
+                className={inputClass}
+                placeholder="IBPS SO IT — Networking Mock 1"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label htmlFor="mock-desc">Subtitle / description</Label>
+              <input
+                id="mock-desc"
+                className={inputClass}
+                placeholder="20 Q · 15 min · mixed syllabus"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="exam-target">Category (exam track)</Label>
+              <select
+                id="exam-target"
+                className={inputClass}
+                value={examTarget}
+                onChange={(e) => setExamTarget(e.target.value)}
+              >
+                {Object.entries(EXAM_TARGET_LABELS).map(([code, label]) => (
+                  <option key={code} value={code}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="mock-type">Mock type</Label>
+              <select
+                id="mock-type"
+                className={inputClass}
+                value={mockCategory}
+                onChange={(e) => setMockCategory(e.target.value)}
+              >
+                {Object.entries(MOCK_CATEGORY_LABELS).map(([code, label]) => (
+                  <option key={code} value={code}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="difficulty">Difficulty</Label>
+              <select id="difficulty" className={inputClass} value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                <option value="EASY">Easy</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HARD">Hard</option>
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="series-day">Challenge day (optional)</Label>
+              <input
+                id="series-day"
+                type="number"
+                min={1}
+                max={30}
+                className={inputClass}
+                placeholder="1–30"
+                value={seriesDay}
+                onChange={(e) => setSeriesDay(e.target.value)}
+              />
+            </div>
+            <div className="sm:col-span-2 flex items-center gap-2 text-sm text-neon-cyan font-mono bg-neon-cyan/5 border border-neon-cyan/20 rounded-lg px-3 py-2">
+              <Hash className="h-4 w-4 shrink-0" />
+              Auto ID on save: <strong>{nextCode || '…'}</strong>
+              <span className="text-slate-500 font-sans text-xs ml-1">(sequential per category)</span>
+            </div>
+          </div>
+
           <p className="text-sm text-slate-400">
-            Open{' '}
-            <a href="https://claude.ai" target="_blank" rel="noreferrer" className="text-neon-blue hover:underline inline-flex items-center gap-1">
-              Claude.ai <ExternalLink className="h-3 w-3" />
-            </a>
-            , paste the daily prompt (detailed solutions + diagrams + references), paste JSON back here.
+            Paste Claude JSON below (questions + explanations). Title & category above override JSON if set.
           </p>
           <Button type="button" variant="outline" className="w-full cursor-pointer" onClick={copyClaudePrompt}>
-            <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : 'Copy Claude prompt to clipboard'}
+            <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : 'Copy Claude prompt'}
           </Button>
           <div>
-            <Label>JSON from Claude (full mock object)</Label>
+            <Label>Questions JSON</Label>
             <textarea
-              className="mt-2 w-full h-64 rounded-lg border border-cyber-700 bg-cyber-900/80 p-3 text-sm font-mono text-slate-200 focus:outline-none focus:ring-2 focus:ring-neon-blue"
-              placeholder='{"title":"...","difficulty":"MEDIUM","questions":[...]}'
+              className="mt-2 w-full h-52 rounded-lg border border-cyber-700 bg-cyber-900/80 p-3 text-sm font-mono text-slate-200 focus:outline-none focus:ring-2 focus:ring-neon-blue"
+              placeholder='{"questions":[...]} or full mock object'
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
             />
           </div>
           {error && <p className="text-red-400 text-sm">{error}</p>}
-          <Button className="w-full" onClick={importMock} disabled={loading || !jsonText.trim()}>
-            {loading ? 'Importing...' : 'Create Mock from JSON'}
+          <Button className="w-full cursor-pointer" onClick={importMock} disabled={loading || !jsonText.trim()}>
+            {loading ? 'Importing…' : 'Create mock'}
           </Button>
         </div>
       </DialogContent>

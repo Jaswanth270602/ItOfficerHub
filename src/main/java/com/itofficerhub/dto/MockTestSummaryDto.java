@@ -16,5 +16,6 @@ public record MockTestSummaryDto(
 		boolean cumulative,
 		String mockCategory,
 		String examTarget,
-		Integer seriesDay
+		Integer seriesDay,
+		String mockCode
 ) {}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#070b14"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <linearGradient id="text" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="600" y="260" text-anchor="middle" font-family="system-ui,sans-serif" font-size="72" font-weight="700" fill="url(#text)">ItOfficerHub</text>
+  <text x="600" y="340" text-anchor="middle" font-family="system-ui,sans-serif" font-size="36" fill="#94a3b8">IBPS SO IT Officer · PSU IT · TCS NQT Aptitude</text>
+  <text x="600" y="400" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" fill="#64748b">Free mock tests · Rank · Cutoff · Solutions</text>
+</svg>

@@ -13,6 +13,16 @@ export const EXAM_TARGET_LABELS: Record<string, string> = {
   RBI_IT: 'RBI IT',
   PSU_IT_GENERAL: 'PSU IT',
   MIXED: 'Mixed PSU',
+  TCS_NQT: 'TCS NQT',
+}
+
+export const TCS_NQT_TARGET = 'TCS_NQT'
+
+export type ExamTrack = 'it' | 'tcs'
+
+export function matchesTrack(examTarget: string | undefined, track: ExamTrack): boolean {
+  if (track === 'tcs') return examTarget === TCS_NQT_TARGET
+  return examTarget !== TCS_NQT_TARGET
 }
 
 export type MockCategoryFilter = 'ALL' | 'FULL' | 'SECTIONAL' | 'PYQ' | 'CHALLENGE'

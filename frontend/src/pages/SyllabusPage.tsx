@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Seo } from '@/components/Seo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TOPIC_SHORT } from '@/lib/topics'
@@ -24,6 +25,13 @@ const EXAMS = [
 
 export function SyllabusPage() {
   return (
+    <>
+      <Seo
+        path="/syllabus"
+        title="IBPS SO IT Officer Syllabus — PSU IT Professional Knowledge"
+        description="Complete IBPS SO IT Officer and PSU IT syllabus — Computer Networks, DBMS, OS, Security, Web, Data Structures, Cloud. Subject-wise mock test preparation on ItOfficerHub."
+        keywords="IBPS SO IT syllabus, IT Officer syllabus, PSU IT Officer syllabus, computer networks syllabus, DBMS for IBPS IT, IT officer professional knowledge topics"
+      />
     <div className="page-container py-10 pb-20">
       <h1 className="page-title mb-2">IBPS SO IT &amp; PSU IT syllabus</h1>
       <p className="page-subtitle max-w-3xl mb-10">
@@ -70,6 +78,16 @@ export function SyllabusPage() {
         ))}
       </div>
 
+      <h2 className="text-xl font-semibold mb-4 mt-12">TCS NQT · Aptitude (campus)</h2>
+      <Card className="mb-10 border-sky-500/30">
+        <CardContent className="pt-6">
+          <p className="text-slate-300 mb-3">Quant, logical reasoning and verbal — set exam target TCS NQT when importing.</p>
+          <Link to="/tcs-nqt" className="text-sky-400 text-sm hover:underline">
+            Go to TCS NQT mocks →
+          </Link>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-wrap gap-3">
         <Link to="/mocks">
           <Button className="cursor-pointer">Practice by subject</Button>
@@ -79,5 +97,6 @@ export function SyllabusPage() {
         </Link>
       </div>
     </div>
+    </>
   )
 }

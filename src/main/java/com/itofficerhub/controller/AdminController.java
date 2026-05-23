@@ -71,6 +71,11 @@ public class AdminController {
 		adminService.deleteQuestion(id);
 	}
 
+	@GetMapping("/mocks/next-code")
+	public MockCodePreviewDto previewNextCode(@RequestParam(defaultValue = "IBPS_SO_IT") String examTarget) {
+		return adminService.previewNextCode(examTarget);
+	}
+
 	@PostMapping("/mocks/import")
 	public MockTestAdminDto importMock(@Valid @RequestBody ImportMockRequest request) {
 		return adminService.importMock(request);

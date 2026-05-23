@@ -47,6 +47,10 @@ public class MockTest {
 	/** Day 1–30 for CHALLENGE series mocks; null otherwise */
 	private Integer seriesDay;
 
+	/** Display ID e.g. IBPS-001, TCS-003 — unique, category-prefixed */
+	@Column(unique = true, length = 32)
+	private String mockCode;
+
 	/** Minimum net score to clear mock (IBPS-style qualifying bar) */
 	@Column(nullable = false)
 	private double cutoffMarks = 10.0;
@@ -83,6 +87,8 @@ public class MockTest {
 	public void setExamTarget(ExamTarget examTarget) { this.examTarget = examTarget; }
 	public Integer getSeriesDay() { return seriesDay; }
 	public void setSeriesDay(Integer seriesDay) { this.seriesDay = seriesDay; }
+	public String getMockCode() { return mockCode; }
+	public void setMockCode(String mockCode) { this.mockCode = mockCode; }
 	public double getCutoffMarks() { return cutoffMarks; }
 	public void setCutoffMarks(double cutoffMarks) { this.cutoffMarks = cutoffMarks; }
 	public Instant getCreatedAt() { return createdAt; }

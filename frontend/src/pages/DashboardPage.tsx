@@ -4,6 +4,7 @@ import api, { apiErrorMessage } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { MockExamCard } from '@/components/MockExamCard'
 import { PrepStatsCard } from '@/components/PrepStatsCard'
+import { Seo } from '@/components/Seo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -155,7 +156,13 @@ export function DashboardPage() {
   const nMark = overview?.marksPerWrong ?? 0.25
 
   return (
-    <div className="page-container py-8 pb-16">
+    <>
+      <Seo
+        path="/dashboard"
+        title="Dashboard — Daily IBPS SO IT Mock & All-India Rank"
+        description="ItOfficerHub dashboard — today's IBPS SO IT Officer mock, All-India leaderboard, hall of fame, prep stats, and recent mocks. Free IT Officer Hub."
+      />
+      <div className="page-container py-8 pb-16">
       {/* Hero */}
       <section className="relative mb-10 overflow-hidden rounded-2xl border border-cyber-600/80 bg-gradient-to-br from-cyber-900 via-cyber-950 to-cyber-900 p-6 md:p-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.15),transparent_50%)]" />
@@ -498,5 +505,6 @@ export function DashboardPage() {
         </>
       )}
     </div>
+    </>
   )
 }

@@ -12,5 +12,8 @@ public record MockTestAdminDto(
 		boolean published,
 		boolean allowRetake,
 		long attemptsCount,
-		Instant publishedAt
+		Instant publishedAt,
+		String mockCode,
+		String examTarget,
+		String mockCategory
 ) {}
