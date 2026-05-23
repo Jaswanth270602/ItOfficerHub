@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ServerWarmupGate } from '@/components/ServerWarmupGate'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { Layout } from '@/components/Layout'
 import { LandingPage } from '@/pages/LandingPage'
@@ -37,8 +38,9 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+      <ServerWarmupGate>
+        <BrowserRouter>
+          <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -68,8 +70,9 @@ export default function App() {
           <Route path="/admin" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
           <Route path="/admin/mocks/:id" element={<AdminRoute><AdminMockPage /></AdminRoute>} />
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </ServerWarmupGate>
     </AuthProvider>
   )
 }
