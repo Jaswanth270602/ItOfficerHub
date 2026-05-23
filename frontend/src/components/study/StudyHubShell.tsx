@@ -83,7 +83,7 @@ export function StudyHubShell() {
             <div className="flex items-center gap-2 shrink-0 text-xs">
               {catalog && (
                 <span className="hidden sm:inline text-slate-500 tabular-nums">
-                  {catalog.availableQuestions}/{catalog.totalSubtopics} live
+                  {catalog.availableQuestions} MCQs · {catalog.filledSubtopics}/{catalog.totalSubtopics} topics
                 </span>
               )}
               <Link to="/mocks" className="text-neon-cyan hover:underline whitespace-nowrap">

@@ -8,5 +8,6 @@ public record TopicBreakdownDto(
 		int correct,
 		int wrong,
 		int unattempted,
-		double accuracyPercent
+		double accuracyPercent,
+		java.util.List<TopicTagBreakdownDto> tags
 ) {}

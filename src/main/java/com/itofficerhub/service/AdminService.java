@@ -235,6 +235,9 @@ public class AdminService {
 			if (q.topic() != null && !q.topic().isBlank()) {
 				question.setTopic(Topic.valueOf(q.topic().trim().toUpperCase()));
 			}
+			if (q.topicTag() != null && !q.topicTag().isBlank()) {
+				question.setTopicTag(q.topicTag().trim());
+			}
 			question.setOrderIndex(q.orderIndex() != null ? q.orderIndex() : index);
 			questionRepository.save(question);
 			index++;
@@ -253,29 +256,52 @@ public class AdminService {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
 						"Question " + i + ": topic is required (syllabus chapter for analytics)");
 			}
+			Topic topic;
 			try {
-				Topic.valueOf(q.topic().trim().toUpperCase());
+				topic = Topic.valueOf(q.topic().trim().toUpperCase());
 			} catch (IllegalArgumentException e) {
 				throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + i + ": invalid topic " + q.topic());
 			}
 			String exp = q.explanation();
-			if (exp == null || exp.trim().length() < 200) {
+			if (exp == null || exp.trim().length() < 400) {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must be at least 200 characters with bullets and a diagram");
+						"Question " + i + ": explanation must be at least 400 characters with full option breakdown");
 			}
-			if (!exp.contains("•")) {
+			if (!exp.toLowerCase().contains("option breakdown")) {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must include bullet lines starting with •");
+						"Question " + i + ": explanation must include an \"Option breakdown:\" section with all 4 options");
 			}
-			if (!hasDiagramInExplanation(exp)) {
+			if (!explainsAllOptions(exp)) {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must include an ASCII/Mermaid flowchart (e.g. A --> B or graph TD)");
+						"Question " + i + ": explanation must cover Option A, B, C, and D individually");
 			}
 			if (!exp.toLowerCase().contains("references:")) {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must end with a References: line");
+						"Question " + i + ": explanation must include a References: line");
+			}
+			if (!hasSolutionStepsOrDiagram(exp, topic)) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Question " + i + ": add Solution steps (numbered) for quant questions OR a flowchart for tech topics");
 			}
 		}
+	}
+
+	private static boolean explainsAllOptions(String exp) {
+		String upper = exp.toUpperCase();
+		return upper.contains("OPTION A") && upper.contains("OPTION B")
+				&& upper.contains("OPTION C") && upper.contains("OPTION D");
+	}
+
+	private static boolean hasSolutionStepsOrDiagram(String exp, Topic topic) {
+		if (hasDiagramInExplanation(exp)) {
+			return true;
+		}
+		if (topic == Topic.QUANTITATIVE_APTITUDE || topic == Topic.LOGICAL_REASONING
+				|| topic == Topic.VERBAL_ABILITY) {
+			long numbered = exp.lines().filter(l -> l.trim().matches("\\d+\\.\\s.+")).count();
+			return exp.toLowerCase().contains("solution steps") && numbered >= 3;
+		}
+		return false;
 	}
 
 	private static boolean hasDiagramInExplanation(String exp) {

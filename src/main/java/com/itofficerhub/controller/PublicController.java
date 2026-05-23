@@ -65,6 +65,29 @@ public class PublicController {
 		return practiceService.section(sectionId);
 	}
 
+	@GetMapping("/practice/sections/{sectionId}/topics/{subtopicSlug}/questions")
+	public java.util.List<com.itofficerhub.dto.PracticeQuestionSummaryDto> practiceQuestionList(
+			@PathVariable String sectionId,
+			@PathVariable String subtopicSlug) {
+		return practiceService.listQuestions(sectionId, subtopicSlug);
+	}
+
+	@GetMapping("/practice/sections/{sectionId}/topics/{subtopicSlug}/questions/{questionNumber}")
+	public com.itofficerhub.dto.PracticeQuestionDto practiceQuestionByNumber(
+			@PathVariable String sectionId,
+			@PathVariable String subtopicSlug,
+			@PathVariable int questionNumber) {
+		return practiceService.getQuestionByNumber(sectionId, subtopicSlug, questionNumber);
+	}
+
+	@GetMapping("/practice/sections/{sectionId}/topics/{subtopicSlug}/questions/{questionNumber}/reveal")
+	public PracticeService.PracticeRevealDto practiceRevealByNumber(
+			@PathVariable String sectionId,
+			@PathVariable String subtopicSlug,
+			@PathVariable int questionNumber) {
+		return practiceService.revealAnswerByNumber(sectionId, subtopicSlug, questionNumber);
+	}
+
 	@GetMapping("/practice/sections/{sectionId}/topics/{subtopicSlug}")
 	public com.itofficerhub.dto.PracticeQuestionDto practiceQuestion(
 			@PathVariable String sectionId,

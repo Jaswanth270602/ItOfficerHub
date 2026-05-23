@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { CommunityWelcomeCard } from '@/components/community/CommunityWelcomeCard'
+import { hasSeenWelcome } from '@/lib/communityModals'
 import { MockExamCard } from '@/components/MockExamCard'
 import { PrepStatsCard } from '@/components/PrepStatsCard'
 import { UpcomingMockBanner } from '@/components/UpcomingMockBanner'
@@ -130,8 +132,11 @@ export function DashboardPage() {
   const [overview, setOverview] = useState<Overview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, user, welcomeOpen, dismissWelcome } = useAuth()
   const navigate = useNavigate()
+
+  const showWelcomeCard =
+    welcomeOpen && isAuthenticated && !!user?.userId && !hasSeenWelcome(user.userId)
 
   const load = () => {
     setLoading(true)
@@ -175,6 +180,9 @@ export function DashboardPage() {
         description="ItOfficerHub dashboard — today's IBPS SO IT Officer mock, All-India leaderboard, hall of fame, prep stats, and recent mocks. Free IT Officer Hub."
       />
       <div className="page-container py-6 sm:py-8 pb-12 sm:pb-16">
+      {showWelcomeCard && (
+        <CommunityWelcomeCard userName={user?.name} onDismiss={dismissWelcome} />
+      )}
       {/* Hero */}
       <section className="relative mb-8 sm:mb-10 overflow-hidden rounded-xl sm:rounded-2xl border border-cyber-600/80 bg-gradient-to-br from-cyber-900 via-cyber-950 to-cyber-900 p-4 sm:p-6 md:p-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.15),transparent_50%)]" />

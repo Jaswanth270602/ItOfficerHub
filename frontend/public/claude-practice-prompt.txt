@@ -1,24 +1,32 @@
 You are a senior IBPS Specialist Officer (IT Officer) content author for ItOfficerHub Study Q&A.
 
-TASK: Generate exactly ONE MCQ for the subtopic below. Output ONLY valid JSON (no markdown fences, no commentary).
+TASK: Generate exactly 20 MCQs for ONE subtopic. Output ONLY valid JSON (no markdown fences, no commentary).
 
-SUBTOPIC (edit these 2 lines only):
+SUBTOPIC (edit these 4 lines only):
 - sectionId: "networking"
 - subtopicSlug: "osi-tcp-ip"
+- sectionTitle: "Networking"
+- subtopicTitle: "OSI & TCP/IP"
 
 RULES:
+- Exactly 20 questions in the "questions" array (questionNumber 1–20)
+- Same sectionId and subtopicSlug on every row
 - 4 options A–D; exactly one correct (correctOption: "A"|"B"|"C"|"D")
-- IBPS SO IT / PSU IT style; practical distractors
-- explanation: minimum 80 characters, at least 2 bullet lines starting with "• "
-- topic: use the section's main topic enum (see valid values below)
+- IBPS SO IT / PSU IT style; varied difficulty; no duplicate stems
+- Every explanation: ≥300 characters, "Option breakdown:" with Option A, B, C, D, ✓ CORRECT marked
+- For numerical questions include "Solution steps:" with numbered working
+- Use \n for line breaks in JSON explanations
 
 JSON SCHEMA:
 
 {
+  "sectionId": "networking",
+  "subtopicSlug": "osi-tcp-ip",
   "questions": [
     {
       "sectionId": "networking",
       "subtopicSlug": "osi-tcp-ip",
+      "questionNumber": 1,
       "topic": "NETWORKING",
       "questionText": "...",
       "optionA": "...",
@@ -26,25 +34,13 @@ JSON SCHEMA:
       "optionC": "...",
       "optionD": "...",
       "correctOption": "C",
-      "explanation": "• Why C is correct...\n• Why A is wrong...\n• Exam tip for IBPS IT Officer...",
+      "explanation": "Core concept:\n• ...\n\nOption breakdown:\n• Option A — ...\n• Option B — ...\n• Option C — ✓ CORRECT — ...\n• Option D — ...\n\nExam tip:\n• ...",
       "solutionImageUrl": null,
       "published": true
     }
   ]
 }
 
-VALID sectionId + subtopicSlug pairs (use exactly):
+VALID sectionId + subtopicSlug pairs — use exactly from PracticeCatalog (networking, dbms, operating-systems, security, web-technologies, data-structures, computer-organization, software-engineering, cloud-digital).
 
-networking: osi-tcp-ip | ip-addressing | routing-switching | dns-dhcp | firewalls-nat | network-protocols
-dbms: normalization | sql-queries | indexing | transactions-acid | er-modeling | nosql-basics
-operating-systems: process-threads | cpu-scheduling | deadlocks | memory-management | file-systems
-security: encryption-basics | malware-attacks | authentication | owasp-basics | network-security
-web-technologies: http-rest | html-css-js | web-servers | cookies-sessions
-data-structures: arrays-stacks-queues | linked-lists | trees-graphs | sorting-searching | complexity
-computer-organization: cpu-registers | cache-memory | io-systems | instruction-cycle
-software-engineering: sdlc-models | testing-types | agile-scrum | uml-basics
-cloud-digital: iaas-paas-saas | virtualization | boolean-algebra | number-systems
-
-VALID topic enums: NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS
-
-Admin import: paste JSON at /admin → Import Practice Q&A.
+Admin: ItOfficerHub → Admin → Practice Q&A → expand subject → Import on subtopic. Copy prompt is pre-filled per subtopic in the UI.

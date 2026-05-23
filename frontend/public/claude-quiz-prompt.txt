@@ -11,27 +11,78 @@ EXAM RULES:
 - 4 options A–D per question; exactly ONE correct (correctOption: "A"|"B"|"C"|"D")
 - IBPS SO IT syllabus style; practical traps; no duplicate stems
 - orderIndex 1 through 20
-- Every question MUST have "topic" set to the syllabus chapter (used for weak/strong analytics on the result report)
+- Every question MUST have "topic" (syllabus chapter) AND "topicTag" (specific sub-topic attribute for analytics)
 
-EXPLANATION QUALITY (mandatory — reject-level if short):
-- Minimum 8–12 lines in "explanation" (use \n for line breaks)
-- At least 6 bullet lines starting with "• " covering:
-  • Core concept in plain English
-  • Why the correct option is right (step-by-step)
-  • Why EACH wrong option fails (A, B, C, D individually)
-  • Common exam trap / distractor pattern
-  • Memory hook or mnemonic
-  • One-line "exam tip" for IBPS SO IT
-- REQUIRED diagram block (pick one):
-  A) Mermaid flowchart (preferred), 5–12 lines, e.g.:
-     graph TD
-       A[Client] --> B[Firewall]
-       B --> C[Load Balancer]
-       C --> D[App Server]
-       D --> E[(Database)]
-  B) OR ASCII flow with arrows (-->, →) showing protocol/data flow
-  Label the block with a line like "Flowchart:" or "ASCII diagram:" before the diagram
-- End with "References:" and 2 real sources (RFC, Oracle/MySQL doc, OWASP, NPTEL unit, official syllabus topic)
+EXPLANATION QUALITY (mandatory — short or one-line answers are REJECTED):
+
+Every "explanation" must be a FULL TEACHING NOTE for students (minimum 400 characters, target 15–25 lines).
+Use literal \n in JSON for every line break. Use blank lines (\n\n) between sections so spacing renders correctly in the app.
+
+Pick ONE format based on question type:
+
+━━━ FORMAT A — Calculation / numerical / formula-based (Quant, subnetting, complexity, Boolean, etc.) ━━━
+
+Structure exactly like this (replace content; keep section headers):
+
+Core concept:
+• One-line definition of what is being tested
+
+Solution steps:
+1. Write the formula or rule used
+2. Substitute given values (show numbers)
+3. Intermediate calculation with working
+4. Final result and which option matches
+
+Option breakdown:
+• Option A — [what this value/statement means] — INCORRECT because [specific reason]
+• Option B — [meaning] — INCORRECT because [reason]
+• Option C — [meaning] — ✓ CORRECT — matches step 4 above
+• Option D — [meaning] — INCORRECT because [reason]
+
+Common trap:
+• One line on the typical IBPS distractor
+
+Exam tip:
+• One actionable memory hook for the exam hall
+
+References:
+RFC or syllabus source 1; source 2
+
+━━━ FORMAT B — Direct / conceptual MCQ (definitions, “which is true”, protocol behaviour, theory) ━━━
+
+Structure exactly like this:
+
+Core concept:
+• 2–3 lines explaining the underlying idea in plain English (not one sentence)
+
+Option breakdown:
+• Option A — [restated option text in simpler words] — INCORRECT because [why it is wrong / when it would be true]
+• Option B — [restated] — INCORRECT because [reason]
+• Option C — [restated] — ✓ CORRECT because [2–3 lines: definition, example, why it fits the stem]
+• Option D — [restated] — INCORRECT because [reason]
+
+Key distinction:
+• Compare the closest two options (often the trap pair)
+
+Exam tip:
+• One line students can recall under time pressure
+
+References:
+IBPS SO IT syllabus topic; official doc or standard name
+
+━━━ DIAGRAM (tech / process questions only — skip for pure Quant or Verbal) ━━━
+After "Exam tip:" and before "References:", add EITHER:
+- Mermaid flowchart (5–12 lines), e.g. graph TD with A --> B --> C
+- OR ASCII flow with arrows (-->, →)
+Label with a line "Flowchart:" before the diagram.
+Skip diagram block entirely for QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY unless a visual is essential.
+
+CRITICAL RULES:
+- NEVER give a one-line or 2-line explanation. Students expect textbook-quality solutions.
+- ALWAYS include all four options in "Option breakdown:" — each option gets its own • line.
+- Mark the correct option with "✓ CORRECT" on that bullet.
+- Show math/working on separate numbered lines (numbered steps), not crammed into one sentence.
+- Preserve \n and \n\n — the app renders them with line breaks.
 
 OPTIONAL VISUAL:
 - If a diagram helps beyond text, set "solutionImageUrl" to a public HTTPS image URL. Leave null if none.
@@ -53,15 +104,18 @@ JSON SCHEMA (follow exactly):
       "optionC": "...",
       "optionD": "...",
       "correctOption": "C",
-      "explanation": "• Concept...\n• Why C wins...\n• Why A fails...\n• Why B fails...\n• Why D fails...\n• Trap...\n• Memory hook...\n• Exam tip...\n\nFlowchart:\ngraph TD\n  A --> B --> C\n\nReferences: RFC 7231; IBPS SO IT — Networking",
+      "explanation": "Core concept:\n• TCP three-way handshake establishes a reliable byte stream before data transfer.\n\nOption breakdown:\n• Option A — SYN only — INCORRECT because handshake needs SYN-ACK and ACK, not SYN alone\n• Option B — UDP connection — INCORRECT because UDP is connectionless\n• Option C — SYN, SYN-ACK, ACK — ✓ CORRECT because this is the standard 3-step TCP setup\n• Option D — FIN, ACK — INCORRECT because FIN terminates; it does not establish a connection\n\nKey distinction:\n• SYN starts setup; FIN ends — do not swap them in MCQs\n\nExam tip:\n• Remember S-S-A order: client SYN → server SYN-ACK → client ACK\n\nFlowchart:\ngraph TD\n  C[Client SYN] --> S[Server SYN-ACK]\n  S --> A[Client ACK]\n\nReferences: RFC 793; IBPS SO IT — Networking",
       "solutionImageUrl": null,
       "topic": "NETWORKING",
+      "topicTag": "TCP/IP & OSI Model",
       "orderIndex": 1
     }
   ]
 }
 
 VALID topic values (uppercase, required on every question): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
+
+topicTag (required, 2–6 words): specific sub-topic shown on result report, e.g. "Deadlock & Semaphores", "Normalization & Keys", "Paging & Virtual Memory", "SQL Joins", "OWASP Top 10"
 
 VALID difficulty: EASY, MEDIUM, HARD
 
@@ -70,4 +124,10 @@ OPTIONAL mock tags:
 - examTarget: IBPS_SO_IT | NIACL_IT | LIC_IT | GIC_IT | RBI_IT | PSU_IT_GENERAL | TCS_NQT | MIXED
 - seriesDay: 1-30 only when mockCategory is CHALLENGE
 
-Before you output, self-check: 20 questions; each topic set; each explanation ≥200 chars, ≥6 • bullets, diagram with --> or graph TD, References: line, valid JSON only.
+Before you output, self-check EACH question:
+- explanation ≥ 400 characters
+- has "Option breakdown:" with four • Option A/B/C/D lines
+- correct option marked ✓ CORRECT
+- has "References:" line
+- tech topics include diagram OR quant topics include "Solution steps:" with ≥ 3 numbered steps
+- valid JSON only; 20 questions; topic + topicTag on every question

@@ -13,5 +13,6 @@ public record ImportPracticeItem(
 		@NotBlank String optionD,
 		@NotBlank String correctOption,
 		@NotBlank String explanation,
+		Integer questionNumber,
 		String solutionImageUrl,
 		Boolean published) {}

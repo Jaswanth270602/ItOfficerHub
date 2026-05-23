@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
 import { SolutionExplanation } from '@/components/exam/SolutionExplanation'
+import { ShareMockButton } from '@/components/exam/ShareMockButton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -44,6 +45,15 @@ interface Review {
   topic: string
 }
 
+interface TopicTagBreakdown {
+  tag: string
+  total: number
+  correct: number
+  wrong: number
+  unattempted: number
+  accuracyPercent: number
+}
+
 interface TopicBreakdown {
   topic: string
   shortLabel: string
@@ -53,6 +63,7 @@ interface TopicBreakdown {
   wrong: number
   unattempted: number
   accuracyPercent: number
+  tags?: TopicTagBreakdown[]
 }
 
 interface Result {
@@ -96,6 +107,42 @@ function formatTime(s: number) {
   const m = Math.floor(s / 60)
   const sec = s % 60
   return `${m}m ${sec}s`
+}
+
+function TopicTagChips({
+  tags,
+  filter,
+}: {
+  tags?: TopicTagBreakdown[]
+  filter: 'weak' | 'strong' | 'all'
+}) {
+  if (!tags?.length) return null
+  const shown =
+    filter === 'weak'
+      ? tags.filter((t) => t.wrong > 0 || t.accuracyPercent < 60)
+      : filter === 'strong'
+        ? tags.filter((t) => t.correct + t.wrong > 0 && t.accuracyPercent >= 70)
+        : tags
+  if (!shown.length) return null
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {shown.map((t) => (
+        <span
+          key={t.tag}
+          className={cn(
+            'text-[11px] px-2 py-0.5 rounded-full border tabular-nums',
+            t.accuracyPercent >= 70
+              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+              : t.accuracyPercent >= 40
+                ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                : 'border-red-500/40 bg-red-500/10 text-red-300'
+          )}
+        >
+          {t.tag} · {Math.round(t.accuracyPercent)}%
+        </span>
+      ))}
+    </div>
+  )
 }
 
 function StatCell({
@@ -236,6 +283,11 @@ export function ResultPage() {
       {/* Hero */}
       <section className="relative mb-6 sm:mb-8 overflow-hidden rounded-xl sm:rounded-2xl border border-cyber-600/80 bg-gradient-to-br from-cyber-900 via-cyber-950 to-cyber-900 p-4 sm:p-6 md:p-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(34,211,238,0.12),transparent_50%)]" />
+        <ShareMockButton
+          mockId={result.mockTestId}
+          mockTitle={result.mockTitle}
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10"
+        />
         <div className="relative text-center">
           <p className="text-xs uppercase tracking-widest text-neon-cyan mb-2">Performance report</p>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 break-words px-2">{result.mockTitle}</h1>
@@ -348,7 +400,7 @@ export function ResultPage() {
                     <CardTitle className="text-lg flex items-center gap-2 text-red-300">
                       <TrendingDown className="h-5 w-5" /> Needs revision
                     </CardTitle>
-                    <p className="text-xs text-slate-500">Chapters where you lost marks — focus here next</p>
+                    <p className="text-xs text-slate-500">Chapters where you lost marks — topic tags show weak sub-areas</p>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {weakTopics.map((t) => (
@@ -357,7 +409,8 @@ export function ResultPage() {
                           <span className="font-medium text-white">{t.fullLabel}</span>
                           <span className="text-red-400">{Math.round(t.accuracyPercent)}%</span>
                         </div>
-                        <p className="text-xs text-slate-500">
+                        <TopicTagChips tags={t.tags} filter="weak" />
+                        <p className="text-xs text-slate-500 mt-1">
                           {t.correct} correct · {t.wrong} wrong · {t.unattempted} skipped
                         </p>
                       </div>
@@ -371,7 +424,7 @@ export function ResultPage() {
                     <CardTitle className="text-lg flex items-center gap-2 text-emerald-300">
                       <TrendingUp className="h-5 w-5" /> Strong areas
                     </CardTitle>
-                    <p className="text-xs text-slate-500">Chapters you handled well in this mock</p>
+                    <p className="text-xs text-slate-500">Strong chapters — tags show sub-topics you nailed</p>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {strongTopics.map((t) => (
@@ -380,7 +433,8 @@ export function ResultPage() {
                           <span className="font-medium text-white">{t.fullLabel}</span>
                           <span className="text-emerald-400">{Math.round(t.accuracyPercent)}%</span>
                         </div>
-                        <p className="text-xs text-slate-500">
+                        <TopicTagChips tags={t.tags} filter="strong" />
+                        <p className="text-xs text-slate-500 mt-1">
                           {t.correct}/{t.total} questions
                         </p>
                       </div>
@@ -398,14 +452,14 @@ export function ResultPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {result.topicBreakdown.map((t) => (
-                <div key={t.topic}>
+                <div key={t.topic} className="pb-1">
                   <div className="flex justify-between text-sm mb-1.5">
                     <span className="text-slate-200">{t.fullLabel}</span>
                     <span className="text-slate-400">
                       {t.correct}/{t.total} · <strong className="text-white">{Math.round(t.accuracyPercent)}%</strong>
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-2 rounded-full bg-slate-800 overflow-hidden mb-2">
                     <div
                       className={cn(
                         'h-full rounded-full transition-all',
@@ -414,6 +468,7 @@ export function ResultPage() {
                       style={{ width: `${t.accuracyPercent}%` }}
                     />
                   </div>
+                  <TopicTagChips tags={t.tags} filter="all" />
                 </div>
               ))}
             </CardContent>
@@ -497,16 +552,22 @@ export function ResultPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 justify-center mb-8">
+        <ShareMockButton
+          mockId={result.mockTestId}
+          mockTitle={result.mockTitle}
+          variant="pill"
+          className="col-span-2 sm:col-span-1 justify-center"
+        />
         <Link to={`/community?shareAttempt=${result.attemptId}`} className="col-span-2 sm:col-span-1">
           <Button variant="outline" className="cursor-pointer w-full sm:w-auto min-h-[44px]">
             <Mail className="h-4 w-4" /> Share in Prep Mail
           </Button>
         </Link>
         <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm" onClick={nativeShare}>
-          <Share2 className="h-4 w-4 shrink-0" /> Share
+          <Share2 className="h-4 w-4 shrink-0" /> Share score
         </Button>
         <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm" onClick={copyShare}>
-          <Copy className="h-4 w-4 shrink-0" /> {copied ? 'Copied' : 'Copy'}
+          <Copy className="h-4 w-4 shrink-0" /> {copied ? 'Copied' : 'Copy score'}
         </Button>
         <Link to="/revision" className="col-span-1">
           <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm">
@@ -597,7 +658,7 @@ export function ResultPage() {
                 {r.explanation && (
                   <div className="p-5 md:p-6 rounded-xl bg-cyber-800/60 border border-cyber-700">
                     <p className="text-sm font-semibold text-neon-purple mb-4 uppercase tracking-wide">Detailed solution</p>
-                    <SolutionExplanation text={r.explanation} />
+                    <SolutionExplanation text={r.explanation} correctOption={r.correctOption} />
                   </div>
                 )}
 

@@ -8,6 +8,7 @@ import {
   scheduleExamCheckpoint,
 } from '@/lib/examCheckpoint'
 import { clearExamDraft, loadExamDraft, saveExamDraft } from '@/lib/examDraft'
+import { ShareMockButton } from '@/components/exam/ShareMockButton'
 import { ExamDisclaimerStrip } from '@/components/exam/ExamDisclaimerStrip'
 import { ExamInstructionsPanel } from '@/components/exam/ExamInstructionsPanel'
 import { ExamSandTimer } from '@/components/exam/ExamSandTimer'
@@ -303,6 +304,7 @@ export function MockTestPage() {
         onRulesAckChange={setRulesAcknowledged}
         submitError={submitError || startError}
         onStart={startExam}
+        mockId={Number(mockId)}
       />
     )
   }
@@ -371,6 +373,9 @@ export function MockTestPage() {
           <div className="sm:hidden font-mono text-lg font-bold text-neon-cyan tabular-nums">
             {Math.floor(secondsLeft / 60)}:{(secondsLeft % 60).toString().padStart(2, '0')}
           </div>
+          {mockId && (
+            <ShareMockButton mockId={Number(mockId)} mockTitle={title} className="shrink-0" />
+          )}
           <Button
             size="sm"
             className="cursor-pointer shrink-0 min-h-[44px] sm:min-h-10 sm:h-11 bg-gradient-to-r from-emerald-600 to-neon-blue hover:opacity-90 gap-2 shadow-lg shadow-emerald-900/30 px-3 sm:px-4"

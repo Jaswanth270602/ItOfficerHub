@@ -45,6 +45,10 @@ public class Question {
 	@Column(nullable = false)
 	private int orderIndex;
 
+	/** Fine-grained tag from import (e.g. Deadlock, TCP/IP) for result analytics. */
+	@Column(name = "topic_tag", length = 128)
+	private String topicTag;
+
 	public Long getId() { return id; }
 	public void setId(Long id) { this.id = id; }
 	public MockTest getMockTest() { return mockTest; }
@@ -69,4 +73,6 @@ public class Question {
 	public void setTopic(Topic topic) { this.topic = topic; }
 	public int getOrderIndex() { return orderIndex; }
 	public void setOrderIndex(int orderIndex) { this.orderIndex = orderIndex; }
+	public String getTopicTag() { return topicTag; }
+	public void setTopicTag(String topicTag) { this.topicTag = topicTag; }
 }

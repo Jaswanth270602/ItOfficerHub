@@ -12,5 +12,6 @@ public record ImportQuestionDto(
 		String explanation,
 		String solutionImageUrl,
 		String topic,
-		Integer orderIndex
+		Integer orderIndex,
+		String topicTag
 ) {}

@@ -8,15 +8,27 @@ import java.util.Optional;
 
 public interface PracticeQuestionRepository extends JpaRepository<PracticeQuestion, Long> {
 
-	Optional<PracticeQuestion> findBySectionIdAndSubtopicSlugAndPublishedTrue(String sectionId, String subtopicSlug);
+	Optional<PracticeQuestion> findBySectionIdAndSubtopicSlugAndQuestionNumberAndPublishedTrue(
+			String sectionId, String subtopicSlug, int questionNumber);
 
-	Optional<PracticeQuestion> findBySectionIdAndSubtopicSlug(String sectionId, String subtopicSlug);
+	Optional<PracticeQuestion> findBySectionIdAndSubtopicSlugAndQuestionNumber(
+			String sectionId, String subtopicSlug, int questionNumber);
 
-	@Query("SELECT p.sectionId AS sectionId, p.subtopicSlug AS subtopicSlug FROM PracticeQuestion p WHERE p.published = true")
-	List<SubtopicKey> findPublishedKeys();
+	List<PracticeQuestion> findBySectionIdAndSubtopicSlugAndPublishedTrueOrderByQuestionNumberAsc(
+			String sectionId, String subtopicSlug);
 
-	interface SubtopicKey {
+	long countBySectionIdAndSubtopicSlugAndPublishedTrue(String sectionId, String subtopicSlug);
+
+	@Query("""
+			SELECT p.sectionId AS sectionId, p.subtopicSlug AS subtopicSlug, COUNT(p) AS cnt
+			FROM PracticeQuestion p WHERE p.published = true
+			GROUP BY p.sectionId, p.subtopicSlug
+			""")
+	List<SubtopicCount> countPublishedBySubtopic();
+
+	interface SubtopicCount {
 		String getSectionId();
 		String getSubtopicSlug();
+		long getCnt();
 	}
 }

@@ -1,9 +1,23 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { MobileBottomNav, MobileHeaderMenu } from '@/components/MobileNav'
+import { LogoutThankYouModal } from '@/components/community/LogoutThankYouModal'
+import { CommunityWelcomeModal } from '@/components/community/CommunityWelcomeModal'
 import { Button } from './ui/button'
 import { AppLogo } from '@/components/AppLogo'
-import { BookMarked, BookOpen, Building2, ClipboardList, GraduationCap, Layers, LogOut, Mail, ShieldCheck, Trophy, Users } from 'lucide-react'
+import {
+  BookMarked,
+  BookOpen,
+  Building2,
+  ClipboardList,
+  GraduationCap,
+  Layers,
+  LogOut,
+  Mail,
+  ShieldCheck,
+  Trophy,
+  Users,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -13,16 +27,36 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   )
 
 export function Layout() {
-  const { user, logout, isAuthenticated } = useAuth()
+  const { user, logout, isAuthenticated, welcomeOpen, goodbyeOpen, dismissWelcome, dismissGoodbye } = useAuth()
+  const location = useLocation()
+  const onDashboard = location.pathname === '/dashboard'
 
   return (
     <div className="min-h-screen flex flex-col min-h-[100dvh]">
+      <LogoutThankYouModal
+        open={goodbyeOpen}
+        onOpenChange={(open) => {
+          if (!open) dismissGoodbye()
+        }}
+      />
+      {onDashboard && isAuthenticated && (
+        <CommunityWelcomeModal
+          open={welcomeOpen}
+          onOpenChange={(open) => {
+            if (!open) dismissWelcome()
+          }}
+          userName={user?.name}
+        />
+      )}
+
       <header className="border-b border-cyber-700/50 bg-cyber-900/70 backdrop-blur-lg sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
           <AppLogo textClassName="text-base sm:text-lg" />
 
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2 min-w-0 overflow-x-auto">
-            <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
+            <NavLink to="/dashboard" className={navLinkClass}>
+              Dashboard
+            </NavLink>
             <NavLink to="/study" className={navLinkClass}>
               <span className="flex items-center gap-1">
                 <BookOpen className="h-4 w-4" /> Study Q&A
@@ -63,17 +97,21 @@ export function Layout() {
                 <span className="text-xs text-slate-500 hidden xl:inline truncate max-w-[100px]" title={user?.name}>
                   {user?.name}
                 </span>
-                <Button variant="ghost" size="sm" className="cursor-pointer shrink-0" onClick={logout} aria-label="Logout">
+                <Button variant="ghost" size="sm" className="cursor-pointer shrink-0" onClick={() => logout()} aria-label="Logout">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm" className="cursor-pointer">Login</Button>
+                  <Button variant="ghost" size="sm" className="cursor-pointer">
+                    Login
+                  </Button>
                 </Link>
                 <Link to="/register">
-                  <Button size="sm" className="cursor-pointer">Sign up</Button>
+                  <Button size="sm" className="cursor-pointer">
+                    Sign up
+                  </Button>
                 </Link>
               </>
             )}
@@ -82,7 +120,9 @@ export function Layout() {
           <div className="flex lg:hidden items-center gap-2 shrink-0">
             {!isAuthenticated && (
               <Link to="/login">
-                <Button size="sm" className="cursor-pointer text-xs h-8 px-2">Login</Button>
+                <Button size="sm" className="cursor-pointer text-xs h-8 px-2">
+                  Login
+                </Button>
               </Link>
             )}
             <MobileHeaderMenu />
@@ -107,21 +147,37 @@ export function Layout() {
             <div className="flex flex-col items-center sm:items-start gap-2 p-4 rounded-lg border border-cyber-700/50 bg-cyber-900/30">
               <Trophy className="h-6 w-6 text-amber-400" />
               <p className="text-sm font-medium text-white">Fair rankings</p>
-              <p className="text-xs text-slate-500 leading-relaxed">Daily board = today&apos;s mock · Aggregate = total best scores</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Daily board = today&apos;s mock · Aggregate = total best scores
+              </p>
             </div>
             <div className="flex flex-col items-center sm:items-start gap-2 p-4 rounded-lg border border-cyber-700/50 bg-cyber-900/30">
               <Users className="h-6 w-6 text-neon-cyan" />
               <p className="text-sm font-medium text-white">Built for aspirants</p>
-              <p className="text-xs text-slate-500 leading-relaxed">IBPS SO IT, PSU IT &amp; TCS NQT — by IT officers, for IT officers</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                IBPS SO IT, PSU IT &amp; TCS NQT — by IT officers, for IT officers
+              </p>
             </div>
           </div>
           <nav className="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:gap-x-6 text-sm mb-6" aria-label="Footer navigation">
-            <Link to="/dashboard" className="text-slate-400 hover:text-white py-1">Dashboard</Link>
-            <Link to="/study" className="text-slate-400 hover:text-white py-1">Study Q&A</Link>
-            <Link to="/mocks" className="text-slate-400 hover:text-white py-1">IBPS SO IT Mocks</Link>
-            <Link to="/tcs-nqt" className="text-slate-400 hover:text-white py-1">TCS NQT Aptitude</Link>
-            <Link to="/syllabus" className="text-slate-400 hover:text-white py-1">Syllabus</Link>
-            <Link to="/register" className="text-slate-400 hover:text-white py-1">Sign up free</Link>
+            <Link to="/dashboard" className="text-slate-400 hover:text-white py-1">
+              Dashboard
+            </Link>
+            <Link to="/study" className="text-slate-400 hover:text-white py-1">
+              Study Q&A
+            </Link>
+            <Link to="/mocks" className="text-slate-400 hover:text-white py-1">
+              IBPS SO IT Mocks
+            </Link>
+            <Link to="/tcs-nqt" className="text-slate-400 hover:text-white py-1">
+              TCS NQT Aptitude
+            </Link>
+            <Link to="/syllabus" className="text-slate-400 hover:text-white py-1">
+              Syllabus
+            </Link>
+            <Link to="/register" className="text-slate-400 hover:text-white py-1">
+              Sign up free
+            </Link>
           </nav>
           <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 text-xs sm:text-sm text-slate-500 text-center">
             <span>© {new Date().getFullYear()} ItOfficerHub — IT Officer Hub</span>

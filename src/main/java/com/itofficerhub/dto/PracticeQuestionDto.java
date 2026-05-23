@@ -7,6 +7,8 @@ public record PracticeQuestionDto(
 		String subtopicSlug,
 		String subtopicTitle,
 		String topic,
+		int questionNumber,
+		int totalInSubtopic,
 		String questionText,
 		String optionA,
 		String optionB,

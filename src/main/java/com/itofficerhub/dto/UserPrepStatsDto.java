@@ -10,7 +10,11 @@ public record UserPrepStatsDto(
 		long revisionBookmarkCount,
 		int prepPoints,
 		List<TopicBreakdownDto> lifetimeTopicBreakdown,
-		List<ChallengeDayDto> challengePlan
+		List<ChallengeDayDto> challengePlan,
+		List<DailyActivityDto> prepDutyLog,
+		int activeDaysLast365,
+		int longestStreakDays,
+		int consistencyPercent
 ) {
 	public record ChallengeDayDto(int day, Long mockId, String title, boolean published, boolean attempted) {}
 }

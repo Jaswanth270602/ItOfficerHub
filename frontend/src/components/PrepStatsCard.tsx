@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
+import { PrepDutyRoster } from '@/components/PrepDutyRoster'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { topicShort } from '@/lib/topics'
+import type { DailyActivity } from '@/lib/practiceCatalog'
 import { BookMarked, Flame, Sparkles, Target, TrendingDown } from 'lucide-react'
 
 interface TopicRow {
@@ -27,6 +29,10 @@ interface PrepStats {
   prepPoints: number
   lifetimeTopicBreakdown: TopicRow[]
   challengePlan: { day: number; mockId: number | null; title: string; published: boolean; attempted: boolean }[]
+  prepDutyLog?: DailyActivity[]
+  activeDaysLast365?: number
+  longestStreakDays?: number
+  consistencyPercent?: number
 }
 
 export function PrepStatsCard() {
@@ -62,9 +68,17 @@ export function PrepStatsCard() {
         <CardTitle className="flex items-center gap-2 text-lg">
           <Target className="h-5 w-5 text-neon-cyan" /> Your prep pulse
         </CardTitle>
-        <CardDescription>Streak, weak topics, and revision bucket — all from your attempts</CardDescription>
+        <CardDescription>Duty roster, streak, weak topics, and revision bucket</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <PrepDutyRoster
+          log={stats.prepDutyLog ?? []}
+          activeDaysLast365={stats.activeDaysLast365 ?? 0}
+          longestStreakDays={stats.longestStreakDays ?? 0}
+          consistencyPercent={stats.consistencyPercent ?? 0}
+          currentStreakDays={stats.currentStreakDays}
+        />
+
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="rounded-lg border border-neon-purple/30 bg-violet-950/20 p-3 text-center">
             <Sparkles className="h-4 w-4 text-neon-purple mx-auto mb-1" />

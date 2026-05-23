@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import api from '@/lib/api'
 import { ScheduleMockModal } from '@/components/admin/ScheduleMockModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImportMockModal } from './ImportMockModal'
-import { ImportPracticeModal } from './ImportPracticeModal'
 import { BarChart3, BookOpen, CalendarClock, FileJson, FileQuestion, Users, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -46,7 +45,6 @@ export function AdminDashboardPage() {
   const [stats, setStats] = useState<Dashboard | null>(null)
   const [mocks, setMocks] = useState<MockAdmin[]>([])
   const [importOpen, setImportOpen] = useState(false)
-  const [practiceImportOpen, setPracticeImportOpen] = useState(false)
   const [scheduleFor, setScheduleFor] = useState<MockAdmin | null>(null)
   const [practiceStats, setPracticeStats] = useState<{ available: number; total: number } | null>(null)
 
@@ -95,9 +93,11 @@ export function AdminDashboardPage() {
           <Button className="w-full sm:w-auto cursor-pointer" onClick={() => setImportOpen(true)}>
             <FileJson className="h-4 w-4 shrink-0" /> Import Mock
           </Button>
-          <Button variant="outline" className="w-full sm:w-auto cursor-pointer gap-1" onClick={() => setPracticeImportOpen(true)}>
-            <BookOpen className="h-4 w-4 shrink-0" /> Practice Q&A
-          </Button>
+          <Link to="/admin/practice" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full cursor-pointer gap-1">
+              <BookOpen className="h-4 w-4 shrink-0" /> Practice Q&amp;A
+            </Button>
+          </Link>
           <Link to="/study" className="w-full sm:w-auto">
             <Button variant="outline" className="w-full cursor-pointer">Study Hub</Button>
           </Link>
@@ -106,8 +106,11 @@ export function AdminDashboardPage() {
 
       {practiceStats && (
         <p className="text-sm text-slate-400 mb-4">
-          Study Q&A: <strong className="text-neon-cyan">{practiceStats.available}</strong> / {practiceStats.total}{' '}
-          topic slots filled — import one MCQ per subtopic for launch.
+          Study Q&amp;A: <strong className="text-neon-cyan">{practiceStats.available}</strong> MCQs live across{' '}
+          {practiceStats.total} subtopics —{' '}
+          <Link to="/admin/practice" className="text-neon-cyan hover:underline">
+            manage &amp; import by subtopic
+          </Link>
         </p>
       )}
 
@@ -188,7 +191,6 @@ export function AdminDashboardPage() {
       </div>
 
       <ImportMockModal open={importOpen} onOpenChange={setImportOpen} onSuccess={load} />
-      <ImportPracticeModal open={practiceImportOpen} onOpenChange={setPracticeImportOpen} onSuccess={load} />
       {scheduleFor && (
         <ScheduleMockModal
           open={!!scheduleFor}

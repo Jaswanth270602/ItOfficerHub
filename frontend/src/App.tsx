@@ -17,10 +17,12 @@ import { SyllabusPage } from '@/pages/SyllabusPage'
 import { StudyHubShell } from '@/components/study/StudyHubShell'
 import { StudyHubHomePage } from '@/pages/study/StudyHubHomePage'
 import { StudySectionPage } from '@/pages/study/StudySectionPage'
+import { StudySubtopicPage } from '@/pages/study/StudySubtopicPage'
 import { StudyQuestionPage } from '@/pages/study/StudyQuestionPage'
 import { AdminLoginPage } from '@/pages/admin/AdminLoginPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { AdminMockPage } from '@/pages/admin/AdminMockPage'
+import { AdminPracticePage } from '@/pages/admin/AdminPracticePage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -52,7 +54,8 @@ export default function App() {
             <Route path="/study" element={<StudyHubShell />}>
               <Route index element={<StudyHubHomePage />} />
               <Route path=":sectionId" element={<StudySectionPage />} />
-              <Route path=":sectionId/:subtopicSlug" element={<StudyQuestionPage />} />
+              <Route path=":sectionId/:subtopicSlug" element={<StudySubtopicPage />} />
+              <Route path=":sectionId/:subtopicSlug/q/:questionNum" element={<StudyQuestionPage />} />
             </Route>
             <Route path="/result/:attemptId" element={<PrivateRoute><ResultPage /></PrivateRoute>} />
             <Route path="/revision" element={<PrivateRoute><RevisionPage /></PrivateRoute>} />
@@ -69,6 +72,7 @@ export default function App() {
           </Route>
           <Route path="/admin" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+          <Route path="/admin/practice" element={<AdminRoute><AdminPracticePage /></AdminRoute>} />
           <Route path="/admin/mocks/:id" element={<AdminRoute><AdminMockPage /></AdminRoute>} />
           </Routes>
         </BrowserRouter>

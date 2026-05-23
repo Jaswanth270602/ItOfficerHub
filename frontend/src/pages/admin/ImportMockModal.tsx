@@ -190,7 +190,7 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
           </div>
 
           <p className="text-sm text-slate-400">
-            Paste Claude JSON below (questions + explanations). Title & category above override JSON if set.
+            Paste Claude JSON below. Each explanation needs full option breakdown (A–D), line breaks via \n, and Solution steps or a flowchart.
           </p>
           <Button type="button" variant="outline" className="w-full cursor-pointer" onClick={copyClaudePrompt}>
             <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : 'Copy Claude prompt'}

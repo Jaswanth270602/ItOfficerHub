@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import api from './api'
+import { markWelcomeSeen } from './communityModals'
 
 interface User {
   userId: number
@@ -19,8 +20,12 @@ interface AuthContextType {
     password: string,
     extras?: { anonymousAlias?: string; bio?: string; avatarEmoji?: string; website?: string }
   ) => Promise<void>
-  logout: () => void
+  logout: (showGoodbye?: boolean) => void
   isAuthenticated: boolean
+  welcomeOpen: boolean
+  goodbyeOpen: boolean
+  dismissWelcome: () => void
+  dismissGoodbye: () => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -39,16 +44,35 @@ function readStoredUser(token: string | null): User | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
   const [user, setUser] = useState<User | null>(() => readStoredUser(localStorage.getItem('token')))
+  const [welcomeOpen, setWelcomeOpen] = useState(false)
+  const [goodbyeOpen, setGoodbyeOpen] = useState(false)
 
-  const logout = useCallback(() => {
+  const clearSession = useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setToken(null)
     setUser(null)
   }, [])
 
+  const dismissWelcome = useCallback(() => {
+    setWelcomeOpen(false)
+    if (user?.userId) markWelcomeSeen(user.userId)
+  }, [user?.userId])
+
+  const dismissGoodbye = useCallback(() => {
+    setGoodbyeOpen(false)
+  }, [])
+
+  const logout = useCallback(
+    (showGoodbye = true) => {
+      if (showGoodbye) setGoodbyeOpen(true)
+      clearSession()
+    },
+    [clearSession]
+  )
+
   useEffect(() => {
-    const onSessionExpired = () => logout()
+    const onSessionExpired = () => logout(false)
     window.addEventListener('auth:session-expired', onSessionExpired)
     return () => window.removeEventListener('auth:session-expired', onSessionExpired)
   }, [logout])
@@ -84,10 +108,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...rest,
     })
     saveAuth(data)
+    setWelcomeOpen(true)
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        register,
+        logout,
+        isAuthenticated: !!token,
+        welcomeOpen,
+        goodbyeOpen,
+        dismissWelcome,
+        dismissGoodbye,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

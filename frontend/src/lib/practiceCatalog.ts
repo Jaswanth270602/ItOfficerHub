@@ -11,10 +11,12 @@ export const SECTION_ICONS: Record<string, string> = {
   'cloud-digital': 'Cloud',
 }
 
+export const PRACTICE_TARGET_PER_SUBTOPIC = 20
+
 export interface PracticeSubtopic {
   slug: string
   title: string
-  hasQuestion: boolean
+  questionCount: number
 }
 
 export interface PracticeSection {
@@ -32,6 +34,12 @@ export interface PracticeCatalog {
   sections: PracticeSection[]
   totalSubtopics: number
   availableQuestions: number
+  filledSubtopics: number
+}
+
+export interface PracticeQuestionSummary {
+  questionNumber: number
+  id: number
 }
 
 export interface PracticeQuestion {
@@ -41,6 +49,8 @@ export interface PracticeQuestion {
   subtopicSlug: string
   subtopicTitle: string
   topic: string
+  questionNumber: number
+  totalInSubtopic: number
   questionText: string
   optionA: string
   optionB: string
@@ -54,4 +64,10 @@ export interface PracticeReveal {
   correctOption: string
   explanation: string
   solutionImageUrl: string | null
+}
+
+export interface DailyActivity {
+  date: string
+  attemptCount: number
+  bestNetScore: number
 }

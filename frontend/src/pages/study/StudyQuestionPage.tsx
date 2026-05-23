@@ -6,12 +6,17 @@ import { useStudyCatalog } from '@/components/study/StudyHubShell'
 import { SolutionExplanation } from '@/components/exam/SolutionExplanation'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { CheckCircle2, ChevronRight, XCircle } from 'lucide-react'
+import { CheckCircle2, ChevronLeft, ChevronRight, XCircle } from 'lucide-react'
 
 type Choice = 'A' | 'B' | 'C' | 'D'
 
 export function StudyQuestionPage() {
-  const { sectionId, subtopicSlug } = useParams<{ sectionId: string; subtopicSlug: string }>()
+  const { sectionId, subtopicSlug, questionNum } = useParams<{
+    sectionId: string
+    subtopicSlug: string
+    questionNum: string
+  }>()
+  const qNum = Math.max(1, parseInt(questionNum ?? '1', 10) || 1)
   const { sectionById } = useStudyCatalog()
   const [question, setQuestion] = useState<PracticeQuestion | null>(null)
   const [reveal, setReveal] = useState<PracticeReveal | null>(null)
@@ -29,16 +34,16 @@ export function StudyQuestionPage() {
     setReveal(null)
     setSelected(null)
     api
-      .get(`/public/practice/sections/${sectionId}/topics/${subtopicSlug}`)
+      .get(`/public/practice/sections/${sectionId}/topics/${subtopicSlug}/questions/${qNum}`)
       .then((r) => setQuestion(r.data))
       .catch((e) => setError(apiErrorMessage(e, 'Question not available yet')))
       .finally(() => setLoading(false))
-  }, [sectionId, subtopicSlug])
+  }, [sectionId, subtopicSlug, qNum])
 
   const checkAnswer = () => {
     if (!selected || !sectionId || !subtopicSlug) return
     api
-      .get(`/public/practice/sections/${sectionId}/topics/${subtopicSlug}/reveal`)
+      .get(`/public/practice/sections/${sectionId}/topics/${subtopicSlug}/questions/${qNum}/reveal`)
       .then((r) => setReveal(r.data))
       .catch((e) => setError(apiErrorMessage(e, 'Could not load solution')))
   }
@@ -54,6 +59,7 @@ export function StudyQuestionPage() {
 
   const answered = reveal != null
   const correct = reveal?.correctOption as Choice | undefined
+  const total = question?.totalInSubtopic ?? 0
 
   return (
     <div className="max-w-3xl">
@@ -66,7 +72,11 @@ export function StudyQuestionPage() {
           {section?.title}
         </Link>
         <ChevronRight className="h-3 w-3" />
-        <span className="text-slate-300 truncate">{subtopic?.title ?? question?.subtopicTitle}</span>
+        <Link to={`/study/${sectionId}/${subtopicSlug}`} className="hover:text-neon-cyan truncate max-w-[120px]">
+          {subtopic?.title ?? question?.subtopicTitle}
+        </Link>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-slate-300">Q{qNum}</span>
       </nav>
 
       {loading && <p className="text-slate-500 py-12 text-center">Loading question...</p>}
@@ -74,9 +84,9 @@ export function StudyQuestionPage() {
       {error && !loading && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-6 text-center">
           <p className="text-amber-200 mb-4">{error}</p>
-          <Link to={`/study/${sectionId}`}>
+          <Link to={`/study/${sectionId}/${subtopicSlug}`}>
             <Button variant="outline" className="cursor-pointer">
-              Back to {section?.title}
+              Back to questions
             </Button>
           </Link>
         </div>
@@ -84,12 +94,12 @@ export function StudyQuestionPage() {
 
       {question && !loading && (
         <>
-          <div className="mb-2 flex flex-wrap gap-2">
+          <div className="mb-2 flex flex-wrap gap-2 items-center">
             <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded bg-cyber-800 text-neon-cyan border border-cyber-600">
               {question.topic.replace(/_/g, ' ')}
             </span>
             <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded bg-cyber-800 text-slate-400">
-              1 MCQ · Practice mode
+              Q {qNum}{total > 0 ? ` / ${total}` : ''} · Practice
             </span>
           </div>
 
@@ -156,7 +166,7 @@ export function StudyQuestionPage() {
                   </span>
                 )}
               </p>
-              <SolutionExplanation text={reveal.explanation} />
+              <SolutionExplanation text={reveal.explanation} correctOption={correct ?? undefined} />
               {reveal.solutionImageUrl && (
                 <img
                   src={reveal.solutionImageUrl}
@@ -168,9 +178,23 @@ export function StudyQuestionPage() {
           )}
 
           <div className="flex flex-wrap gap-2 pt-4 border-t border-cyber-800">
-            <Link to={`/study/${sectionId}`}>
+            {qNum > 1 && (
+              <Link to={`/study/${sectionId}/${subtopicSlug}/q/${qNum - 1}`}>
+                <Button variant="outline" size="sm" className="cursor-pointer gap-1">
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </Button>
+              </Link>
+            )}
+            {total > 0 && qNum < total && (
+              <Link to={`/study/${sectionId}/${subtopicSlug}/q/${qNum + 1}`}>
+                <Button variant="outline" size="sm" className="cursor-pointer gap-1">
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+            <Link to={`/study/${sectionId}/${subtopicSlug}`}>
               <Button variant="outline" size="sm" className="cursor-pointer">
-                More in {section?.title}
+                All questions
               </Button>
             </Link>
             <Link to="/mocks">

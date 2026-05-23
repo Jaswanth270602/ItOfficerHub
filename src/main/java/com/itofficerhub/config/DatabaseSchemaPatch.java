@@ -118,6 +118,15 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 					)
 					""");
 		}
+		if (!columnExists("practice_questions", "question_number")) {
+			jdbc.execute("ALTER TABLE practice_questions ADD COLUMN IF NOT EXISTS question_number INT NOT NULL DEFAULT 1");
+			jdbc.execute("ALTER TABLE practice_questions DROP CONSTRAINT IF EXISTS uq_practice_section_subtopic");
+			jdbc.execute("""
+					ALTER TABLE practice_questions
+					ADD CONSTRAINT uq_practice_section_subtopic_qnum
+					UNIQUE (section_id, subtopic_slug, question_number)
+					""");
+		}
 		if (!columnExists("users", "phone")) {
 			jdbc.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)");
 			jdbc.execute("""
@@ -133,6 +142,10 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 					CREATE UNIQUE INDEX IF NOT EXISTS uq_mock_tests_mock_code
 					    ON mock_tests (mock_code) WHERE mock_code IS NOT NULL
 					""");
+		}
+		if (!columnExists("questions", "topic_tag")) {
+			log.warn("questions.topic_tag missing — applying schema patch");
+			jdbc.execute("ALTER TABLE questions ADD COLUMN IF NOT EXISTS topic_tag VARCHAR(128)");
 		}
 	}
 

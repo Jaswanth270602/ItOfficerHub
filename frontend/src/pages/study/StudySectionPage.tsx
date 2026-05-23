@@ -63,14 +63,16 @@ export function StudySectionPage() {
       <ul className="rounded-xl border border-cyber-700/80 divide-y divide-cyber-800/80 overflow-hidden bg-cyber-900/20">
         {topics.map((st) => (
           <li key={st.slug}>
-            {st.hasQuestion ? (
+            {st.questionCount > 0 ? (
               <Link
                 to={`/study/${sectionId}/${st.slug}`}
                 className="flex items-center gap-3 px-4 py-3.5 hover:bg-cyber-800/40 transition-colors group"
               >
                 <FolderOpen className="h-4 w-4 text-amber-400 shrink-0" />
                 <span className="flex-1 text-sm text-slate-200 group-hover:text-white">{st.title}</span>
-                <span className="text-[10px] uppercase text-emerald-400/90 font-medium">Practice</span>
+                <span className="text-[10px] uppercase text-emerald-400/90 font-medium tabular-nums">
+                  {st.questionCount} Q{st.questionCount !== 1 ? 's' : ''}
+                </span>
                 <ChevronRight className="h-4 w-4 text-slate-600 shrink-0" />
               </Link>
             ) : (

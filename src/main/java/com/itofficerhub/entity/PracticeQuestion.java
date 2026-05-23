@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "practice_questions", uniqueConstraints = @UniqueConstraint(columnNames = { "section_id", "subtopic_slug" }))
+@Table(name = "practice_questions", uniqueConstraints = @UniqueConstraint(columnNames = { "section_id", "subtopic_slug", "question_number" }))
 public class PracticeQuestion {
 
 	@Id
@@ -16,6 +16,9 @@ public class PracticeQuestion {
 
 	@Column(name = "subtopic_slug", nullable = false, length = 128)
 	private String subtopicSlug;
+
+	@Column(name = "question_number", nullable = false)
+	private int questionNumber = 1;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 64)
@@ -66,6 +69,8 @@ public class PracticeQuestion {
 	public void setSectionId(String sectionId) { this.sectionId = sectionId; }
 	public String getSubtopicSlug() { return subtopicSlug; }
 	public void setSubtopicSlug(String subtopicSlug) { this.subtopicSlug = subtopicSlug; }
+	public int getQuestionNumber() { return questionNumber; }
+	public void setQuestionNumber(int questionNumber) { this.questionNumber = questionNumber; }
 	public Topic getTopic() { return topic; }
 	public void setTopic(Topic topic) { this.topic = topic; }
 	public String getQuestionText() { return questionText; }
