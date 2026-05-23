@@ -85,6 +85,15 @@ public class AdminService {
 	}
 
 	@Transactional
+	public MockTestAdminDto toggleShowExamDate(Long id) {
+		MockTest m = findMock(id);
+		m.setShowExamDate(!m.isShowExamDate());
+		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
+		appCacheService.evictPublicCatalog();
+		return dto;
+	}
+
+	@Transactional
 	public MockTestAdminDto togglePublish(Long id) {
 		MockTest m = findMock(id);
 		long qCount = questionRepository.countByMockTestId(id);
@@ -253,6 +262,7 @@ public class AdminService {
 		if (r.timeLimitMinutes() != null) m.setTimeLimitMinutes(r.timeLimitMinutes());
 		if (r.published() != null) m.setPublished(r.published());
 		if (r.allowRetake() != null) m.setAllowRetake(r.allowRetake());
+		if (r.showExamDate() != null) m.setShowExamDate(r.showExamDate());
 	}
 
 	private void applyQuestionRequest(Question q, QuestionRequest r) {
@@ -272,6 +282,7 @@ public class AdminService {
 	private MockTestAdminDto toAdminDto(MockTest m) {
 		return new MockTestAdminDto(m.getId(), m.getTitle(), m.getDescription(), m.getDifficulty().name(),
 				m.getQuestionCount(), m.getTimeLimitMinutes(), m.isPublished(), m.isAllowRetake(),
+				m.isShowExamDate(),
 				attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()), m.getPublishedAt(),
 				m.getMockCode(), m.getExamTarget().name(), m.getMockCategory().name());
 	}

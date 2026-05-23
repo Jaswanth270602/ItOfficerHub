@@ -68,6 +68,7 @@ public class UserAttemptCacheService {
 							m.getTimeLimitMinutes(),
 							publicService.cachedAttemptCount(m.getId()),
 							m.isAllowRetake(),
+							m.isShowExamDate(),
 							m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt(),
 							featuredId != null && featuredId.equals(m.getId()),
 							attempted,

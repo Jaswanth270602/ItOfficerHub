@@ -7,6 +7,7 @@ export interface MockExam {
   timeLimitMinutes: number
   attemptsCount: number
   allowRetake: boolean
+  showExamDate?: boolean
   publishedAt?: string
   featuredToday?: boolean
   attempted: boolean
@@ -37,5 +38,6 @@ export function normalizeMock(m: MockExam & { attempted?: boolean }): MockExam {
     examTarget: m.examTarget,
     seriesDay: m.seriesDay ?? null,
     mockCode: m.mockCode ?? null,
+    showExamDate: m.showExamDate ?? false,
   }
 }

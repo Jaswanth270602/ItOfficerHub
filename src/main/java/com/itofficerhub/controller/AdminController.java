@@ -51,6 +51,11 @@ public class AdminController {
 		return adminService.togglePublish(id);
 	}
 
+	@PatchMapping("/mocks/{id}/show-date")
+	public MockTestAdminDto toggleShowExamDate(@PathVariable Long id) {
+		return adminService.toggleShowExamDate(id);
+	}
+
 	@GetMapping("/mocks/{mockId}/questions")
 	public List<QuestionAdminDto> listQuestions(@PathVariable Long mockId) {
 		return adminService.listQuestions(mockId);

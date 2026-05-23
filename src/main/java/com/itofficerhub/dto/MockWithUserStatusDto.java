@@ -11,6 +11,7 @@ public record MockWithUserStatusDto(
 		int timeLimitMinutes,
 		long attemptsCount,
 		boolean allowRetake,
+		boolean showExamDate,
 		Instant publishedAt,
 		boolean featuredToday,
 		boolean attempted,

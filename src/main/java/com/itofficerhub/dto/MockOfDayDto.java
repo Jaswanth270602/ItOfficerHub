@@ -13,6 +13,7 @@ public record MockOfDayDto(
 		boolean allowRetake,
 		double cutoffMarks,
 		Instant publishedAt,
+		boolean showExamDate,
 		double marksPerCorrect,
 		double marksPerWrong
 ) {}

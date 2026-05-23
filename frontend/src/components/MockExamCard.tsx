@@ -81,7 +81,7 @@ export function MockExamCard({ mock, onStart, compact }: Props) {
             </MetaChip>
           )}
           {mock.cumulative && <MetaChip tone="amber">Mixed syllabus</MetaChip>}
-          {mock.publishedAt && (
+          {mock.showExamDate && mock.publishedAt && (
             <MetaChip tone="muted">
               <Calendar className="h-3 w-3 inline mr-0.5 -mt-px" />
               {formatReleaseDate(mock.publishedAt)}

@@ -11,6 +11,7 @@ public record MockTestSummaryDto(
 		int timeLimitMinutes,
 		long attemptsCount,
 		boolean allowRetake,
+		boolean showExamDate,
 		Instant publishedAt,
 		java.util.List<String> topics,
 		boolean cumulative,

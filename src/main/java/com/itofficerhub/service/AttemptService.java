@@ -25,12 +25,14 @@ public class AttemptService {
 	private final TopicAnalyticsService topicAnalyticsService;
 	private final RevisionService revisionService;
 	private final PrepPointsService prepPointsService;
+	private final DailySpotlightService dailySpotlightService;
 
 	public AttemptService(TestAttemptRepository attemptRepository, AttemptAnswerRepository answerRepository,
 			MockTestRepository mockTestRepository, QuestionRepository questionRepository,
 			UniqueRankingService uniqueRankingService, UserAttemptCacheService userAttemptCache,
 			AppCacheService appCacheService, TopicAnalyticsService topicAnalyticsService,
-			RevisionService revisionService, PrepPointsService prepPointsService) {
+			RevisionService revisionService, PrepPointsService prepPointsService,
+			DailySpotlightService dailySpotlightService) {
 		this.attemptRepository = attemptRepository;
 		this.answerRepository = answerRepository;
 		this.mockTestRepository = mockTestRepository;
@@ -41,6 +43,7 @@ public class AttemptService {
 		this.topicAnalyticsService = topicAnalyticsService;
 		this.revisionService = revisionService;
 		this.prepPointsService = prepPointsService;
+		this.dailySpotlightService = dailySpotlightService;
 	}
 
 	@Transactional
@@ -146,6 +149,7 @@ public class AttemptService {
 		int pointsEarned = firstAttemptOnMock
 				? prepPointsService.awardFirstAttempt(attempt.getUser().getId(), pctMarks, cleared)
 				: 0;
+		dailySpotlightService.refreshAfterSubmit(attempt.getMockTest().getId());
 		return buildResult(attempt, firstAttemptOnMock, pointsEarned);
 	}
 

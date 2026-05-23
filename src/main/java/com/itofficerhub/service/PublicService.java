@@ -71,6 +71,7 @@ public class PublicService {
 				m.getTimeLimitMinutes(),
 				self.cachedAttemptCount(m.getId()),
 				m.isAllowRetake(),
+				m.isShowExamDate(),
 				m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt(),
 				topics,
 				mockTopicService.isCumulative(topics),

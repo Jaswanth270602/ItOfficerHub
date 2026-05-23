@@ -60,6 +60,7 @@ interface ProfileOfDay {
   featuredMockTitle: string
   mocksAttempted: number
   aggregateScore: number
+  spotlightExpiresAt?: string
 }
 
 interface MockOfDay {
@@ -243,10 +244,10 @@ export function DashboardPage() {
                   <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30">
                     <Flame className="h-3 w-3" /> Today&apos;s mock
                   </span>
-                  {featured?.publishedAt && (
+                  {featured?.showExamDate && featured?.publishedAt && (
                     <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-cyber-800 text-slate-300 border border-cyber-600">
                       <Calendar className="h-3 w-3" />
-                      Live since {formatReleaseDate(featured.publishedAt)}
+                      Exam date · {formatReleaseDate(featured.publishedAt)}
                     </span>
                   )}
                 </div>
@@ -354,13 +355,23 @@ export function DashboardPage() {
                       </div>
                     </div>
                     <p className="text-xs text-slate-500 line-clamp-2">
-                      Top on {overview.profileOfTheDay.featuredMockTitle} ·{' '}
-                      {overview.profileOfTheDay.mocksAttempted} mocks completed
+                      {overview.profileOfTheDay.featuredMockTitle} · submitted today
                     </p>
+                    {overview.profileOfTheDay.spotlightExpiresAt && (
+                      <p className="text-[11px] text-amber-400/80">
+                        Featured for 24h · until{' '}
+                        {new Date(overview.profileOfTheDay.spotlightExpiresAt).toLocaleString(undefined, {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <p className="text-sm text-slate-500 text-center py-8">
-                    Attempt today&apos;s mock — lead the board to become aspirant of the day.
+                    Attempt today&apos;s mock today — top scorer among today&apos;s submissions becomes aspirant of the day for 24 hours.
                   </p>
                 )}
               </CardContent>
@@ -377,7 +388,7 @@ export function DashboardPage() {
                   <Trophy className="h-5 w-5 text-amber-400" />
                   Today&apos;s mock · Top 10
                 </CardTitle>
-                <CardDescription>All-India rank by best net score on today&apos;s mock (retakes don&apos;t count)</CardDescription>
+                <CardDescription>Rank among students who submitted today&apos;s mock today (IST)</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {overview?.todaysMockLeaderboard && overview.todaysMockLeaderboard.length > 0 ? (

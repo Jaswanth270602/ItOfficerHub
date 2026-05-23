@@ -11,6 +11,7 @@ public record MockTestAdminDto(
 		int timeLimitMinutes,
 		boolean published,
 		boolean allowRetake,
+		boolean showExamDate,
 		long attemptsCount,
 		Instant publishedAt,
 		String mockCode,

@@ -67,4 +67,31 @@ public interface TestAttemptRepository extends JpaRepository<TestAttempt, Long> 
 			WHERE a.user.id = :userId AND a.mockTest.id = :mockId AND a.submitted = true
 			""")
 	long countSubmittedByUserAndMock(@Param("userId") Long userId, @Param("mockId") Long mockId);
+
+	@Query("""
+			SELECT a FROM TestAttempt a
+			JOIN FETCH a.mockTest
+			WHERE a.user.id = :userId AND a.submitted = true
+			AND a.submittedAt >= :start AND a.submittedAt < :end
+			ORDER BY a.submittedAt DESC
+			""")
+	List<TestAttempt> findSubmittedByUserBetween(@Param("userId") Long userId,
+			@Param("start") java.time.Instant start, @Param("end") java.time.Instant end);
+
+	@Query("""
+			SELECT COUNT(a) FROM TestAttempt a
+			WHERE a.user.id = :userId AND a.mockTest.id = :mockId AND a.submitted = true
+			AND a.submittedAt >= :start AND a.submittedAt < :end
+			""")
+	long countSubmittedByUserAndMockBetween(@Param("userId") Long userId, @Param("mockId") Long mockId,
+			@Param("start") java.time.Instant start, @Param("end") java.time.Instant end);
+
+	@Query("""
+			SELECT a FROM TestAttempt a
+			JOIN FETCH a.user u
+			WHERE a.mockTest.id = :mockId AND a.submitted = true
+			AND a.submittedAt >= :start AND a.submittedAt < :end
+			""")
+	List<TestAttempt> findSubmittedByMockBetween(@Param("mockId") Long mockId,
+			@Param("start") java.time.Instant start, @Param("end") java.time.Instant end);
 }

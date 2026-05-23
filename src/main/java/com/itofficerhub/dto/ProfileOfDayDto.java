@@ -1,5 +1,7 @@
 package com.itofficerhub.dto;
 
+import java.time.Instant;
+
 public record ProfileOfDayDto(
 		Long userId,
 		String displayName,
@@ -10,5 +12,6 @@ public record ProfileOfDayDto(
 		long featuredMockId,
 		String featuredMockTitle,
 		int mocksAttempted,
-		double aggregateScore
+		double aggregateScore,
+		Instant spotlightExpiresAt
 ) {}

@@ -36,6 +36,10 @@ public class MockTest {
 	@Column(nullable = false)
 	private boolean allowRetake = true;
 
+	/** When true, UI shows published/exam date on cards and dashboard */
+	@Column(nullable = false)
+	private boolean showExamDate = false;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private MockCategory mockCategory = MockCategory.FULL;
@@ -81,6 +85,8 @@ public class MockTest {
 	public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }
 	public boolean isAllowRetake() { return allowRetake; }
 	public void setAllowRetake(boolean allowRetake) { this.allowRetake = allowRetake; }
+	public boolean isShowExamDate() { return showExamDate; }
+	public void setShowExamDate(boolean showExamDate) { this.showExamDate = showExamDate; }
 	public MockCategory getMockCategory() { return mockCategory; }
 	public void setMockCategory(MockCategory mockCategory) { this.mockCategory = mockCategory; }
 	public ExamTarget getExamTarget() { return examTarget; }

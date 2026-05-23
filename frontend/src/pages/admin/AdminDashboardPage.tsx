@@ -26,6 +26,7 @@ interface MockAdmin {
   allowRetake: boolean
   attemptsCount: number
   publishedAt: string | null
+  showExamDate: boolean
 }
 
 export function AdminDashboardPage() {
@@ -42,6 +43,11 @@ export function AdminDashboardPage() {
 
   const togglePublish = async (id: number) => {
     await api.patch(`/admin/mocks/${id}/publish`)
+    load()
+  }
+
+  const toggleShowDate = async (id: number) => {
+    await api.patch(`/admin/mocks/${id}/show-date`)
     load()
   }
 
@@ -96,8 +102,16 @@ export function AdminDashboardPage() {
                     : 'Draft — publish when ready for mock of the day'}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-end">
                 <Link to={`/admin/mocks/${m.id}`}><Button size="sm" variant="outline">Manage</Button></Link>
+                <Button
+                  size="sm"
+                  variant={m.showExamDate ? 'default' : 'outline'}
+                  onClick={() => toggleShowDate(m.id)}
+                  title="Show exam date on student-facing cards"
+                >
+                  {m.showExamDate ? 'Show date: ON' : 'Show date: OFF'}
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => togglePublish(m.id)}>
                   {m.published ? 'Unpublish' : 'Publish (mock of the day)'}
                 </Button>

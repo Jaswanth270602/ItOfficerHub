@@ -4,6 +4,7 @@ import com.itofficerhub.config.CacheNames;
 import com.itofficerhub.dto.LeaderboardEntryDto;
 import com.itofficerhub.entity.TestAttempt;
 import com.itofficerhub.repository.TestAttemptRepository;
+import com.itofficerhub.util.AppTime;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,19 @@ public class MockRankingCacheService {
 		this.self = self;
 	}
 
+	/** Best score per user among attempts submitted today (IST) on this mock. */
+	public List<TestAttempt> bestAttemptsPerUserToday(long mockId) {
+		List<TestAttempt> all = attemptRepository.findSubmittedByMockBetween(
+				mockId, AppTime.startOfToday(), AppTime.startOfTomorrow());
+		return rankBestPerUser(all);
+	}
+
 	/** Not cached — storing JPA entities in Caffeine causes lazy-load errors outside a session. */
 	public List<TestAttempt> bestAttemptsPerUser(long mockId) {
-		List<TestAttempt> all = attemptRepository.findSubmittedByMockWithUser(mockId);
+		return rankBestPerUser(attemptRepository.findSubmittedByMockWithUser(mockId));
+	}
+
+	private List<TestAttempt> rankBestPerUser(List<TestAttempt> all) {
 		Map<Long, TestAttempt> best = new HashMap<>();
 		for (TestAttempt a : all) {
 			ensureNetScore(a);
@@ -43,9 +54,18 @@ public class MockRankingCacheService {
 				.toList();
 	}
 
+	@Cacheable(cacheNames = CacheNames.MOCK_LEADERBOARD, key = "'today:' + #mockId + ':' + #viewerUserId + ':' + #limit")
+	public List<LeaderboardEntryDto> topLeaderboardToday(long mockId, long viewerUserId, int limit) {
+		List<TestAttempt> ranked = bestAttemptsPerUserToday(mockId);
+		return toLeaderboardEntries(ranked, viewerUserId, limit);
+	}
+
 	@Cacheable(cacheNames = CacheNames.MOCK_LEADERBOARD, key = "#mockId + ':' + #viewerUserId + ':' + #limit")
 	public List<LeaderboardEntryDto> topLeaderboard(long mockId, long viewerUserId, int limit) {
-		List<TestAttempt> ranked = self.bestAttemptsPerUser(mockId);
+		return toLeaderboardEntries(self.bestAttemptsPerUser(mockId), viewerUserId, limit);
+	}
+
+	private List<LeaderboardEntryDto> toLeaderboardEntries(List<TestAttempt> ranked, long viewerUserId, int limit) {
 		List<LeaderboardEntryDto> entries = new ArrayList<>();
 		int prevRank = 1;
 		for (int i = 0; i < ranked.size() && i < limit; i++) {

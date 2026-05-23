@@ -10,6 +10,7 @@ public record MockTestRequest(
 		Integer timeLimitMinutes,
 		Boolean published,
 		Boolean allowRetake,
+		Boolean showExamDate,
 		String examTarget,
 		String mockCategory
 ) {}

@@ -6,7 +6,6 @@ import com.itofficerhub.entity.TestAttempt;
 import com.itofficerhub.entity.User;
 import com.itofficerhub.repository.MockTestRepository;
 import com.itofficerhub.repository.TestAttemptRepository;
-import com.itofficerhub.repository.UserRepository;
 import com.itofficerhub.security.UserPrincipal;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,20 +19,20 @@ public class DashboardService {
 
 	private final MockTestRepository mockTestRepository;
 	private final TestAttemptRepository attemptRepository;
-	private final UserRepository userRepository;
 	private final PublicService publicService;
 	private final MockRankingCacheService rankingCache;
 	private final UserDisplayService userDisplayService;
+	private final DailySpotlightService dailySpotlightService;
 
 	public DashboardService(MockTestRepository mockTestRepository, TestAttemptRepository attemptRepository,
-			UserRepository userRepository, PublicService publicService, MockRankingCacheService rankingCache,
-			UserDisplayService userDisplayService) {
+			PublicService publicService, MockRankingCacheService rankingCache,
+			UserDisplayService userDisplayService, DailySpotlightService dailySpotlightService) {
 		this.mockTestRepository = mockTestRepository;
 		this.attemptRepository = attemptRepository;
-		this.userRepository = userRepository;
 		this.publicService = publicService;
 		this.rankingCache = rankingCache;
 		this.userDisplayService = userDisplayService;
+		this.dailySpotlightService = dailySpotlightService;
 	}
 
 	@Transactional(readOnly = true)
@@ -42,9 +41,9 @@ public class DashboardService {
 		List<HallOfFameEntryDto> hall = buildHallOfFame(10);
 		long viewerId = viewerUserId();
 		List<LeaderboardEntryDto> todayBoard = mockOfDay != null
-				? rankingCache.topLeaderboard(mockOfDay.id(), viewerId, 10)
+				? rankingCache.topLeaderboardToday(mockOfDay.id(), viewerId, 10)
 				: List.of();
-		ProfileOfDayDto profile = buildProfileOfDay(mockOfDay, todayBoard, hall);
+		ProfileOfDayDto profile = dailySpotlightService.currentProfile().orElse(null);
 		PublicStatsDto stats = publicService.getStats();
 		return new DashboardOverviewDto(
 				mockOfDay,
@@ -77,6 +76,7 @@ public class DashboardService {
 						m.isAllowRetake(),
 						m.getCutoffMarks(),
 						m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt(),
+						m.isShowExamDate(),
 						ExamScoring.MARKS_PER_CORRECT,
 						ExamScoring.NEGATIVE_PER_WRONG))
 				.orElse(null);
@@ -125,55 +125,6 @@ public class DashboardService {
 					a.totalTime()));
 		}
 		return out;
-	}
-
-	private ProfileOfDayDto buildProfileOfDay(MockOfDayDto mockOfDay, List<LeaderboardEntryDto> todayBoard,
-			List<HallOfFameEntryDto> hall) {
-		if (!todayBoard.isEmpty()) {
-			LeaderboardEntryDto top = todayBoard.get(0);
-			Long userId = top.userId();
-			if (userId != null) {
-				User u = userRepository.findById(userId).orElse(null);
-				if (u != null) {
-					int attempts = attemptRepository.findByUserIdAndSubmittedTrueOrderBySubmittedAtDesc(userId).size();
-					double agg = hall.stream()
-							.filter(h -> h.userId().equals(userId))
-							.mapToDouble(HallOfFameEntryDto::aggregateScore)
-							.findFirst()
-							.orElse(top.netScore());
-					return new ProfileOfDayDto(
-							userId,
-							top.displayName(),
-							u.getAvatarEmoji() != null ? u.getAvatarEmoji() : "🏆",
-							"Top scorer · today's daily mock",
-							top.netScore(),
-							top.rank(),
-							mockOfDay != null ? mockOfDay.id() : 0L,
-							mockOfDay != null ? mockOfDay.title() : "Featured mock",
-							attempts,
-							agg);
-				}
-			}
-		}
-		if (!hall.isEmpty()) {
-			HallOfFameEntryDto top = hall.get(0);
-			User u = userRepository.findById(top.userId()).orElse(null);
-			if (u != null) {
-				int attempts = attemptRepository.findByUserIdAndSubmittedTrueOrderBySubmittedAtDesc(top.userId()).size();
-				return new ProfileOfDayDto(
-						top.userId(),
-						top.displayName(),
-						top.avatarEmoji(),
-						"All-India hall of fame leader",
-						top.aggregateScore(),
-						top.rank(),
-						mockOfDay != null ? mockOfDay.id() : 0L,
-						mockOfDay != null ? mockOfDay.title() : "All mocks",
-						attempts,
-						top.aggregateScore());
-			}
-		}
-		return null;
 	}
 
 	private static final class Aggregate {
