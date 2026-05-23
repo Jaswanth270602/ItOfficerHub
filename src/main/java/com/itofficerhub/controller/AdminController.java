@@ -11,9 +11,11 @@ import java.util.List;
 public class AdminController {
 
 	private final AdminService adminService;
+	private final PracticeService practiceService;
 
-	public AdminController(AdminService adminService) {
+	public AdminController(AdminService adminService, PracticeService practiceService) {
 		this.adminService = adminService;
+		this.practiceService = practiceService;
 	}
 
 	@GetMapping("/dashboard")
@@ -56,6 +58,16 @@ public class AdminController {
 		return adminService.toggleShowExamDate(id);
 	}
 
+	@PatchMapping("/mocks/{id}/schedule")
+	public MockTestAdminDto scheduleMock(@PathVariable Long id, @Valid @RequestBody ScheduleMockRequest request) {
+		return adminService.scheduleMock(id, request);
+	}
+
+	@DeleteMapping("/mocks/{id}/schedule")
+	public MockTestAdminDto cancelSchedule(@PathVariable Long id) {
+		return adminService.cancelSchedule(id);
+	}
+
 	@GetMapping("/mocks/{mockId}/questions")
 	public List<QuestionAdminDto> listQuestions(@PathVariable Long mockId) {
 		return adminService.listQuestions(mockId);
@@ -84,5 +96,16 @@ public class AdminController {
 	@PostMapping("/mocks/import")
 	public MockTestAdminDto importMock(@Valid @RequestBody ImportMockRequest request) {
 		return adminService.importMock(request);
+	}
+
+	@PostMapping("/practice/import")
+	public java.util.Map<String, Object> importPractice(@Valid @RequestBody ImportPracticeRequest request) {
+		int count = practiceService.importQuestions(request);
+		return java.util.Map.of("imported", count);
+	}
+
+	@GetMapping("/practice/catalog")
+	public com.itofficerhub.dto.PracticeCatalogDto practiceCatalog() {
+		return practiceService.catalog();
 	}
 }

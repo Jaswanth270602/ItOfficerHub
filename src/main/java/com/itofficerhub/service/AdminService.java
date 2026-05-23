@@ -7,6 +7,11 @@ import com.itofficerhub.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.itofficerhub.util.AppTime;
+import com.itofficerhub.util.MockVisibility;
+
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -96,20 +101,69 @@ public class AdminService {
 	@Transactional
 	public MockTestAdminDto togglePublish(Long id) {
 		MockTest m = findMock(id);
-		long qCount = questionRepository.countByMockTestId(id);
-		if (!m.isPublished() && qCount < m.getQuestionCount()) {
-			throw new ApiException(HttpStatus.BAD_REQUEST,
-					"Need at least " + m.getQuestionCount() + " questions before publishing");
-		}
-		if (m.isPublished()) {
+		ensureReadyForRelease(m, id);
+		if (m.isPublished() && MockVisibility.isVisible(m, Instant.now())) {
 			m.setPublished(false);
+			m.setPublishedAt(null);
+			m.setGoLiveAt(null);
 		} else {
+			Instant now = Instant.now();
 			m.setPublished(true);
-			m.setPublishedAt(java.time.Instant.now());
+			m.setGoLiveAt(now);
+			m.setPublishedAt(now);
 		}
 		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
-		appCacheService.evictPublicCatalog();
+		evictCatalogCaches();
 		return dto;
+	}
+
+	@Transactional
+	public MockTestAdminDto scheduleMock(Long id, ScheduleMockRequest request) {
+		MockTest m = findMock(id);
+		ensureReadyForRelease(m, id);
+		LocalDate date = LocalDate.parse(request.liveOn().trim());
+		if (date.isBefore(AppTime.today())) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "Schedule date cannot be in the past (IST)");
+		}
+		Instant goLive = date.atStartOfDay(AppTime.ZONE).toInstant();
+		m.setPublished(true);
+		m.setGoLiveAt(goLive);
+		Instant now = Instant.now();
+		if (MockVisibility.isVisible(m, now)) {
+			m.setPublishedAt(now);
+		} else {
+			m.setPublishedAt(null);
+		}
+		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
+		evictCatalogCaches();
+		return dto;
+	}
+
+	@Transactional
+	public MockTestAdminDto cancelSchedule(Long id) {
+		MockTest m = findMock(id);
+		if (!MockVisibility.isScheduledFuture(m, Instant.now())) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "Mock is not scheduled for a future date");
+		}
+		m.setPublished(false);
+		m.setGoLiveAt(null);
+		m.setPublishedAt(null);
+		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
+		evictCatalogCaches();
+		return dto;
+	}
+
+	private void evictCatalogCaches() {
+		appCacheService.evictPublicCatalog();
+		appCacheService.evictDashboardOverview();
+	}
+
+	private void ensureReadyForRelease(MockTest m, long id) {
+		long qCount = questionRepository.countByMockTestId(id);
+		if (qCount < m.getQuestionCount()) {
+			throw new ApiException(HttpStatus.BAD_REQUEST,
+					"Need at least " + m.getQuestionCount() + " questions before going live");
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -280,10 +334,12 @@ public class AdminService {
 	}
 
 	private MockTestAdminDto toAdminDto(MockTest m) {
+		Instant now = Instant.now();
 		return new MockTestAdminDto(m.getId(), m.getTitle(), m.getDescription(), m.getDifficulty().name(),
 				m.getQuestionCount(), m.getTimeLimitMinutes(), m.isPublished(), m.isAllowRetake(),
 				m.isShowExamDate(),
 				attemptRepository.countByMockTestIdAndSubmittedTrue(m.getId()), m.getPublishedAt(),
+				m.getGoLiveAt(), MockVisibility.liveStatus(m, now),
 				m.getMockCode(), m.getExamTarget().name(), m.getMockCategory().name());
 	}
 

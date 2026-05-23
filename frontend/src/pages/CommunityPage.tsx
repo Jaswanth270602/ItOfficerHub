@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { AddGroupMembersPanel, MemberPickerList, type StudentPick } from '@/components/AddGroupMembersPanel'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Ban, Mail, MessageCircle, Plus, RefreshCw, Send, Shield, Trophy, UserPlus, UserRoundPlus, Users } from 'lucide-react'
+import { ArrowLeft, Ban, Mail, MessageCircle, Plus, RefreshCw, Send, Shield, Trophy, UserPlus, UserRoundPlus, Users } from 'lucide-react'
 
 interface Profile {
   userId: number
+  email?: string | null
+  phone?: string | null
   displayName: string
   anonymousAlias?: string
   useAnonymousDisplay: boolean
@@ -291,15 +293,15 @@ export function CommunityPage() {
   const memberIds = activeConv?.members.map((m) => m.userId) ?? []
 
   return (
-    <div className="max-w-[90rem] mx-auto px-4 md:px-6 py-6 md:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div className="max-w-[90rem] mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+      <div className="flex flex-col gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-            <Mail className="h-8 w-8 text-neon-cyan" /> Prep Mail
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
+            <Mail className="h-7 w-7 sm:h-8 sm:w-8 text-neon-cyan shrink-0" /> Prep Mail
           </h1>
-          <p className="text-slate-400 text-sm md:text-base">Direct messages, prep groups, and score cards</p>
+          <p className="text-slate-400 text-sm md:text-base mt-1">Direct messages, prep groups, and score cards</p>
         </div>
-        <div className="flex gap-2 flex-wrap items-center">
+        <div className="flex gap-2 flex-wrap items-center overflow-x-auto pb-1 -mx-1 px-1">
           {tab === 'inbox' && (
             <Button
               size="sm"
@@ -336,6 +338,12 @@ export function CommunityPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-4xl">{profile.avatarEmoji}</div>
+            {(profile.email || profile.phone) && (
+              <div className="text-sm text-slate-500 space-y-1 rounded-lg border border-cyber-700 bg-cyber-900/50 p-3">
+                {profile.email && <p>Email: <span className="text-slate-300">{profile.email}</span></p>}
+                {profile.phone && <p>Mobile: <span className="text-slate-300">{profile.phone}</span></p>}
+              </div>
+            )}
             <div>
               <Label>Avatar emoji</Label>
               <Input
@@ -488,8 +496,8 @@ export function CommunityPage() {
       )}
 
       {tab === 'inbox' && (
-        <div className="grid lg:grid-cols-[minmax(280px,340px)_1fr] gap-4 min-h-[560px] lg:h-[calc(100vh-180px)]">
-          <Card className="flex flex-col overflow-hidden">
+        <div className="grid lg:grid-cols-[minmax(280px,340px)_1fr] gap-4 min-h-0 lg:min-h-[560px] lg:h-[calc(100dvh-12rem)]">
+          <Card className={cn('flex flex-col overflow-hidden', activeId && 'hidden lg:flex')}>
             <CardHeader className="py-3 border-b border-cyber-700 flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">Conversations</CardTitle>
               <Button
@@ -545,16 +553,28 @@ export function CommunityPage() {
             </div>
           </Card>
 
-          <Card className="flex flex-col overflow-hidden min-h-[480px] lg:min-h-0">
+          <Card className={cn('flex flex-col overflow-hidden min-h-[min(70dvh,560px)] lg:min-h-0', !activeId && 'hidden lg:flex')}>
             {activeConv ? (
               <>
-                <CardHeader className="py-3 border-b border-cyber-700 space-y-2">
+                <CardHeader className="py-3 border-b border-cyber-700 space-y-2 shrink-0">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <CardTitle className="text-base">{activeConv.name}</CardTitle>
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="lg:hidden shrink-0 h-9 w-9 p-0 cursor-pointer -ml-1"
+                        onClick={() => setActiveId(null)}
+                        aria-label="Back to conversations"
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </Button>
+                      <div className="min-w-0">
+                      <CardTitle className="text-base break-words">{activeConv.name}</CardTitle>
                       {activeConv.description && (
-                        <p className="text-xs text-slate-500">{activeConv.description}</p>
+                        <p className="text-xs text-slate-500 line-clamp-2">{activeConv.description}</p>
                       )}
+                      </div>
                     </div>
                     {isGroup && (
                       <Button
@@ -625,15 +645,15 @@ export function CommunityPage() {
                   ))}
                   <div ref={messagesEnd} />
                 </CardContent>
-                <div className="p-4 border-t border-cyber-700 flex gap-3">
+                <div className="p-3 sm:p-4 border-t border-cyber-700 flex gap-2 sm:gap-3 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                   <Input
-                    className="text-base py-6"
+                    className="text-base min-h-[44px] flex-1"
                     placeholder="Type a message..."
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && send()}
                   />
-                  <Button className="cursor-pointer shrink-0" onClick={send}>
+                  <Button className="cursor-pointer shrink-0 min-h-[44px] min-w-[44px] px-3" onClick={send} aria-label="Send">
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -652,7 +672,7 @@ export function CommunityPage() {
       )}
 
       <Dialog open={showCreateGroup} onOpenChange={setShowCreateGroup}>
-        <DialogContent className="border-cyber-600 bg-cyber-950 max-w-md">
+        <DialogContent className="mobile-dialog-sheet border-cyber-600 bg-cyber-950 sm:max-w-md overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-neon-cyan" /> New prep group

@@ -33,6 +33,9 @@ public class MockTest {
 	/** Set when admin publishes — used for “mock of the day” and release date badge */
 	private Instant publishedAt;
 
+	/** Visible from 12:00 AM IST on this instant's calendar day (scheduled release) */
+	private Instant goLiveAt;
+
 	@Column(nullable = false)
 	private boolean allowRetake = true;
 
@@ -83,6 +86,8 @@ public class MockTest {
 	public void setPublished(boolean published) { this.published = published; }
 	public Instant getPublishedAt() { return publishedAt; }
 	public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }
+	public Instant getGoLiveAt() { return goLiveAt; }
+	public void setGoLiveAt(Instant goLiveAt) { this.goLiveAt = goLiveAt; }
 	public boolean isAllowRetake() { return allowRetake; }
 	public void setAllowRetake(boolean allowRetake) { this.allowRetake = allowRetake; }
 	public boolean isShowExamDate() { return showExamDate; }

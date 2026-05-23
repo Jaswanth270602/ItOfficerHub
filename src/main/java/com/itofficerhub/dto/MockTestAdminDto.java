@@ -14,6 +14,8 @@ public record MockTestAdminDto(
 		boolean showExamDate,
 		long attemptsCount,
 		Instant publishedAt,
+		Instant goLiveAt,
+		String liveStatus,
 		String mockCode,
 		String examTarget,
 		String mockCategory

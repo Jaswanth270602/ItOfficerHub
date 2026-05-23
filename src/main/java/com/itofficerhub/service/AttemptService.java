@@ -17,7 +17,6 @@ public class AttemptService {
 
 	private final TestAttemptRepository attemptRepository;
 	private final AttemptAnswerRepository answerRepository;
-	private final MockTestRepository mockTestRepository;
 	private final QuestionRepository questionRepository;
 	private final UniqueRankingService uniqueRankingService;
 	private final UserAttemptCacheService userAttemptCache;
@@ -26,16 +25,16 @@ public class AttemptService {
 	private final RevisionService revisionService;
 	private final PrepPointsService prepPointsService;
 	private final DailySpotlightService dailySpotlightService;
+	private final MockCatalogService mockCatalogService;
 
 	public AttemptService(TestAttemptRepository attemptRepository, AttemptAnswerRepository answerRepository,
-			MockTestRepository mockTestRepository, QuestionRepository questionRepository,
+			QuestionRepository questionRepository,
 			UniqueRankingService uniqueRankingService, UserAttemptCacheService userAttemptCache,
 			AppCacheService appCacheService, TopicAnalyticsService topicAnalyticsService,
 			RevisionService revisionService, PrepPointsService prepPointsService,
-			DailySpotlightService dailySpotlightService) {
+			DailySpotlightService dailySpotlightService, MockCatalogService mockCatalogService) {
 		this.attemptRepository = attemptRepository;
 		this.answerRepository = answerRepository;
-		this.mockTestRepository = mockTestRepository;
 		this.questionRepository = questionRepository;
 		this.uniqueRankingService = uniqueRankingService;
 		this.userAttemptCache = userAttemptCache;
@@ -44,14 +43,14 @@ public class AttemptService {
 		this.revisionService = revisionService;
 		this.prepPointsService = prepPointsService;
 		this.dailySpotlightService = dailySpotlightService;
+		this.mockCatalogService = mockCatalogService;
 	}
 
 	@Transactional
 	public StartAttemptResponse startAttempt(StartAttemptRequest request) {
 		UserPrincipal user = getCurrentUser();
-		MockTest mock = mockTestRepository.findById(request.mockTestId())
-				.filter(MockTest::isPublished)
-				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Mock test not found"));
+		MockTest mock = mockCatalogService.findByIdIfVisible(request.mockTestId(), java.time.Instant.now())
+				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Mock test not found or not live yet"));
 		List<Question> questions = questionRepository.findByMockTestIdOrderByOrderIndexAsc(mock.getId());
 		if (questions.size() < mock.getQuestionCount()) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "Mock test is not ready yet");

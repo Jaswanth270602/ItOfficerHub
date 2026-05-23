@@ -4,41 +4,47 @@ import com.itofficerhub.dto.*;
 import com.itofficerhub.entity.MockTest;
 import com.itofficerhub.entity.TestAttempt;
 import com.itofficerhub.entity.User;
-import com.itofficerhub.repository.MockTestRepository;
-import com.itofficerhub.repository.TestAttemptRepository;
+import com.itofficerhub.config.CacheNames;
 import com.itofficerhub.security.UserPrincipal;
+import com.itofficerhub.util.MockVisibility;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
 public class DashboardService {
 
-	private final MockTestRepository mockTestRepository;
-	private final TestAttemptRepository attemptRepository;
+	private static final DateTimeFormatter GO_LIVE_LABEL =
+			DateTimeFormatter.ofPattern("EEE, d MMM yyyy").withZone(com.itofficerhub.util.AppTime.ZONE);
+
+	private final MockCatalogService mockCatalogService;
 	private final PublicService publicService;
 	private final MockRankingCacheService rankingCache;
 	private final UserDisplayService userDisplayService;
 	private final DailySpotlightService dailySpotlightService;
 
-	public DashboardService(MockTestRepository mockTestRepository, TestAttemptRepository attemptRepository,
+	public DashboardService(MockCatalogService mockCatalogService,
 			PublicService publicService, MockRankingCacheService rankingCache,
 			UserDisplayService userDisplayService, DailySpotlightService dailySpotlightService) {
-		this.mockTestRepository = mockTestRepository;
-		this.attemptRepository = attemptRepository;
+		this.mockCatalogService = mockCatalogService;
 		this.publicService = publicService;
 		this.rankingCache = rankingCache;
 		this.userDisplayService = userDisplayService;
 		this.dailySpotlightService = dailySpotlightService;
 	}
 
+	@Cacheable(cacheNames = CacheNames.DASHBOARD_OVERVIEW)
 	@Transactional(readOnly = true)
 	public DashboardOverviewDto getOverview() {
-		MockOfDayDto mockOfDay = buildMockOfDay();
-		List<HallOfFameEntryDto> hall = buildHallOfFame(10);
+		Instant now = Instant.now();
+		MockOfDayDto mockOfDay = buildMockOfDay(now);
+		UpcomingMockDto upcoming = buildUpcoming(now);
+		List<HallOfFameEntryDto> hall = buildHallOfFame(10, now);
 		long viewerId = viewerUserId();
 		List<LeaderboardEntryDto> todayBoard = mockOfDay != null
 				? rankingCache.topLeaderboardToday(mockOfDay.id(), viewerId, 10)
@@ -47,6 +53,7 @@ public class DashboardService {
 		PublicStatsDto stats = publicService.getStats();
 		return new DashboardOverviewDto(
 				mockOfDay,
+				upcoming,
 				profile,
 				hall,
 				todayBoard,
@@ -63,8 +70,8 @@ public class DashboardService {
 		return 0L;
 	}
 
-	private MockOfDayDto buildMockOfDay() {
-		return mockTestRepository.findFeaturedMock()
+	private MockOfDayDto buildMockOfDay(Instant now) {
+		return mockCatalogService.featuredMock(now)
 				.map(m -> new MockOfDayDto(
 						m.getId(),
 						m.getTitle(),
@@ -75,19 +82,35 @@ public class DashboardService {
 						publicService.cachedAttemptCount(m.getId()),
 						m.isAllowRetake(),
 						m.getCutoffMarks(),
-						m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt(),
+						MockVisibility.effectiveGoLiveAt(m),
 						m.isShowExamDate(),
 						ExamScoring.MARKS_PER_CORRECT,
 						ExamScoring.NEGATIVE_PER_WRONG))
 				.orElse(null);
 	}
 
-	private List<HallOfFameEntryDto> buildHallOfFame(int limit) {
-		List<MockTest> published = mockTestRepository.findPublishedOrderByReleaseDesc();
-		if (published.isEmpty()) return List.of();
+	private UpcomingMockDto buildUpcoming(Instant now) {
+		if (mockCatalogService.featuredMock(now).isPresent()) {
+			return null;
+		}
+		return mockCatalogService.nextScheduled(now)
+				.map(m -> new UpcomingMockDto(
+						m.getId(),
+						m.getTitle(),
+						m.getMockCode(),
+						MockVisibility.effectiveGoLiveAt(m),
+						GO_LIVE_LABEL.format(MockVisibility.effectiveGoLiveAt(m))))
+				.orElse(null);
+	}
+
+	private List<HallOfFameEntryDto> buildHallOfFame(int limit, Instant now) {
+		List<MockTest> visible = mockCatalogService.visibleMocks(now);
+		if (visible.isEmpty()) {
+			return List.of();
+		}
 
 		Map<Long, Aggregate> totals = new HashMap<>();
-		for (MockTest mock : published) {
+		for (MockTest mock : visible) {
 			for (TestAttempt a : rankingCache.bestAttemptsPerUser(mock.getId())) {
 				User u = a.getUser();
 				totals.compute(u.getId(), (id, agg) -> {

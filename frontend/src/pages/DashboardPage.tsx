@@ -4,6 +4,7 @@ import api, { apiErrorMessage } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { MockExamCard } from '@/components/MockExamCard'
 import { PrepStatsCard } from '@/components/PrepStatsCard'
+import { UpcomingMockBanner } from '@/components/UpcomingMockBanner'
 import { Seo } from '@/components/Seo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -74,12 +75,22 @@ interface MockOfDay {
   allowRetake: boolean
   cutoffMarks: number
   publishedAt: string
+  showExamDate: boolean
   marksPerCorrect: number
   marksPerWrong: number
 }
 
+interface UpcomingMock {
+  id: number
+  title: string
+  mockCode?: string | null
+  goLiveAt: string
+  goLiveDateLabel: string
+}
+
 interface Overview {
   mockOfTheDay: MockOfDay | null
+  upcomingMock: UpcomingMock | null
   profileOfTheDay: ProfileOfDay | null
   hallOfFameTop10: HallEntry[]
   todaysMockLeaderboard: LeaderRow[]
@@ -163,9 +174,9 @@ export function DashboardPage() {
         title="Dashboard — Daily IBPS SO IT Mock & All-India Rank"
         description="ItOfficerHub dashboard — today's IBPS SO IT Officer mock, All-India leaderboard, hall of fame, prep stats, and recent mocks. Free IT Officer Hub."
       />
-      <div className="page-container py-8 pb-16">
+      <div className="page-container py-6 sm:py-8 pb-12 sm:pb-16">
       {/* Hero */}
-      <section className="relative mb-10 overflow-hidden rounded-2xl border border-cyber-600/80 bg-gradient-to-br from-cyber-900 via-cyber-950 to-cyber-900 p-6 md:p-10">
+      <section className="relative mb-8 sm:mb-10 overflow-hidden rounded-xl sm:rounded-2xl border border-cyber-600/80 bg-gradient-to-br from-cyber-900 via-cyber-950 to-cyber-900 p-4 sm:p-6 md:p-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.15),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(139,92,246,0.12),transparent_45%)]" />
         <div className="relative flex flex-wrap items-start justify-between gap-6">
@@ -173,7 +184,7 @@ export function DashboardPage() {
             <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-neon-cyan mb-3">
               <Sparkles className="h-3.5 w-3.5" /> IBPS SO IT Officer · Free mock tests
             </p>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
               Your daily mock test arena
             </h1>
             <p className="text-slate-400 text-sm md:text-base leading-relaxed">
@@ -188,7 +199,7 @@ export function DashboardPage() {
             </div>
           </div>
           {overview?.platformStats && (
-            <div className="grid grid-cols-2 gap-3 min-w-[200px]">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 w-full sm:min-w-[200px] sm:w-auto">
               {[
                 { label: 'Active mocks', value: overview.platformStats.totalMocks, icon: Zap },
                 { label: 'Aspirants', value: overview.platformStats.totalUsers, icon: Users },
@@ -235,6 +246,10 @@ export function DashboardPage() {
 
       {!loading && (
         <>
+          {overview?.upcomingMock && !featured && (
+            <UpcomingMockBanner upcoming={overview.upcomingMock} />
+          )}
+
           <div className="grid lg:grid-cols-3 gap-6 mb-10">
             {/* Mock of the day */}
             <Card className="lg:col-span-2 border-neon-cyan/30 bg-gradient-to-br from-cyber-900/90 to-cyber-950 overflow-hidden relative">
@@ -253,14 +268,22 @@ export function DashboardPage() {
                 </div>
                 {featured ? (
                   <>
-                    <CardTitle className="text-2xl pr-4">{featured.title}</CardTitle>
+                    <CardTitle className="text-xl sm:text-2xl pr-0 sm:pr-4 break-words leading-snug">{featured.title}</CardTitle>
                     <CardDescription className="text-slate-400">{featured.description}</CardDescription>
+                  </>
+                ) : overview?.upcomingMock ? (
+                  <>
+                    <CardTitle className="text-xl text-slate-300">Today&apos;s mock unlocks soon</CardTitle>
+                    <CardDescription>
+                      {overview.upcomingMock.title} — live from 12:00 AM IST on {overview.upcomingMock.goLiveDateLabel}.
+                      Refresh after midnight to attempt.
+                    </CardDescription>
                   </>
                 ) : (
                   <>
                     <CardTitle className="text-xl text-slate-300">Today&apos;s mock coming soon</CardTitle>
                     <CardDescription>
-                      A new IBPS SO IT practice set will be available here shortly. Check back later today.
+                      Admin will schedule the next daily mock. Check back — new tests drop at midnight IST.
                     </CardDescription>
                   </>
                 )}
@@ -292,16 +315,16 @@ export function DashboardPage() {
                       )}
                     </p>
                   )}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-2">
                     {featuredMockState?.attempted && featuredMockState.latestAttemptId && (
-                      <Link to={`/result/${featuredMockState.latestAttemptId}`}>
-                        <Button variant="outline" className="cursor-pointer">
+                      <Link to={`/result/${featuredMockState.latestAttemptId}`} className="w-full sm:w-auto">
+                        <Button variant="outline" className="cursor-pointer w-full sm:w-auto min-h-[44px]">
                           View report
                         </Button>
                       </Link>
                     )}
                     {(!featuredMockState?.attempted || featured.allowRetake) && (
-                      <Button className="cursor-pointer gap-2" onClick={() => startMock(featured.id)}>
+                      <Button className="cursor-pointer gap-2 w-full sm:w-auto min-h-[44px]" onClick={() => startMock(featured.id)}>
                         {featuredMockState?.attempted ? (
                           <>
                             <RotateCcw className="h-4 w-4" /> Retake today&apos;s mock
@@ -386,9 +409,11 @@ export function DashboardPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Trophy className="h-5 w-5 text-amber-400" />
-                  Today&apos;s mock · Top 10
+                  Daily champions · Top 10
                 </CardTitle>
-                <CardDescription>Rank among students who submitted today&apos;s mock today (IST)</CardDescription>
+                <CardDescription>
+                  Today&apos;s mock only — best score among attempts submitted today (IST). Retakes don&apos;t replace rank.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {overview?.todaysMockLeaderboard && overview.todaysMockLeaderboard.length > 0 ? (
@@ -432,9 +457,11 @@ export function DashboardPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Award className="h-5 w-5 text-neon-purple" />
-                  All-India hall of fame
+                  All-time aggregate leaderboard
                 </CardTitle>
-                <CardDescription>Top aspirants by combined best net scores across all live mocks</CardDescription>
+                <CardDescription>
+                  Sum of your best net score on each live mock (not today-only). Higher total = stronger overall prep.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {overview?.hallOfFameTop10 && overview.hallOfFameTop10.length > 0 ? (

@@ -225,7 +225,7 @@ export function ResultPage() {
   const ringPct = result.maxMarks > 0 ? (result.netScore / result.maxMarks) * 100 : 0
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
+    <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-[calc(11rem+env(safe-area-inset-bottom))] lg:pb-32">
       {violationNote && (
         <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-200 flex gap-2 items-start">
           <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400" />
@@ -234,11 +234,11 @@ export function ResultPage() {
       )}
 
       {/* Hero */}
-      <section className="relative mb-8 overflow-hidden rounded-2xl border border-cyber-600/80 bg-gradient-to-br from-cyber-900 via-cyber-950 to-cyber-900 p-6 md:p-10">
+      <section className="relative mb-6 sm:mb-8 overflow-hidden rounded-xl sm:rounded-2xl border border-cyber-600/80 bg-gradient-to-br from-cyber-900 via-cyber-950 to-cyber-900 p-4 sm:p-6 md:p-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(34,211,238,0.12),transparent_50%)]" />
         <div className="relative text-center">
           <p className="text-xs uppercase tracking-widest text-neon-cyan mb-2">Performance report</p>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">{result.mockTitle}</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 break-words px-2">{result.mockTitle}</h1>
           <p className="text-slate-500 text-sm mb-8">Time taken · {formatTime(result.timeTakenSeconds)}</p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
@@ -301,9 +301,9 @@ export function ResultPage() {
       </section>
 
       {(result.pointsEarned != null && result.pointsEarned > 0) || (result.totalPrepPoints != null && result.totalPrepPoints > 0) ? (
-        <div className="mb-6 rounded-xl border border-neon-purple/30 bg-gradient-to-r from-violet-950/40 to-cyber-900/60 p-5 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-8 w-8 text-neon-purple" />
+        <div className="mb-6 rounded-xl border border-neon-purple/30 bg-gradient-to-r from-violet-950/40 to-cyber-900/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Sparkles className="h-8 w-8 text-neon-purple shrink-0" />
             <div>
               <p className="text-sm text-slate-400">Prep Points (first attempt only)</p>
               {result.firstAttemptOnMock && (result.pointsEarned ?? 0) > 0 ? (
@@ -421,8 +421,8 @@ export function ResultPage() {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
-        <div className="max-w-5xl mx-auto px-4 pointer-events-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none pb-[env(safe-area-inset-bottom)] lg:pb-0">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 pointer-events-auto mb-[calc(4rem+env(safe-area-inset-bottom))] lg:mb-0">
           <button
             type="button"
             onClick={() => setShowCompetitive(!showCompetitive)}
@@ -472,7 +472,7 @@ export function ResultPage() {
                     <li
                       key={`${e.rank}-${e.displayName}`}
                       className={cn(
-                        'grid grid-cols-[3rem_1fr_auto_auto] items-center gap-2 px-4 py-3 text-sm',
+                        'grid grid-cols-[2.5rem_1fr_auto] sm:grid-cols-[3rem_1fr_auto_auto] items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-3 text-sm',
                         e.currentUser && 'bg-neon-blue/10'
                       )}
                     >
@@ -484,7 +484,7 @@ export function ResultPage() {
                         )}
                       </span>
                       <span className="font-semibold text-neon-cyan tabular-nums">{e.netScore.toFixed(2)}</span>
-                      <span className="text-xs text-slate-500 tabular-nums w-14 text-right">
+                      <span className="hidden sm:block text-xs text-slate-500 tabular-nums w-14 text-right">
                         {formatTime(e.timeTakenSeconds)}
                       </span>
                     </li>
@@ -496,30 +496,30 @@ export function ResultPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 justify-center mb-8">
-        <Link to={`/community?shareAttempt=${result.attemptId}`}>
-          <Button variant="outline" className="cursor-pointer">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 justify-center mb-8">
+        <Link to={`/community?shareAttempt=${result.attemptId}`} className="col-span-2 sm:col-span-1">
+          <Button variant="outline" className="cursor-pointer w-full sm:w-auto min-h-[44px]">
             <Mail className="h-4 w-4" /> Share in Prep Mail
           </Button>
         </Link>
-        <Button variant="outline" className="cursor-pointer" onClick={nativeShare}>
-          <Share2 className="h-4 w-4" /> Share score
+        <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm" onClick={nativeShare}>
+          <Share2 className="h-4 w-4 shrink-0" /> Share
         </Button>
-        <Button variant="outline" className="cursor-pointer" onClick={copyShare}>
-          <Copy className="h-4 w-4" /> {copied ? 'Copied!' : 'Copy text'}
+        <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm" onClick={copyShare}>
+          <Copy className="h-4 w-4 shrink-0" /> {copied ? 'Copied' : 'Copy'}
         </Button>
-        <Link to="/revision">
-          <Button variant="outline" className="cursor-pointer">
-            <BookMarked className="h-4 w-4" /> Revision bucket
+        <Link to="/revision" className="col-span-1">
+          <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm">
+            <BookMarked className="h-4 w-4 shrink-0" /> Revision
           </Button>
         </Link>
         {result.allowRetake && (
-          <Link to={`/mock/${result.mockTestId}`}>
-            <Button variant="outline" className="cursor-pointer">Retake</Button>
+          <Link to={`/mock/${result.mockTestId}`} className="col-span-1">
+            <Button variant="outline" className="cursor-pointer w-full min-h-[44px]">Retake</Button>
           </Link>
         )}
-        <Link to="/dashboard">
-          <Button className="cursor-pointer">More mocks</Button>
+        <Link to="/dashboard" className="col-span-2 sm:col-span-1">
+          <Button className="cursor-pointer w-full min-h-[44px]">More mocks</Button>
         </Link>
       </div>
 

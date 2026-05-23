@@ -113,18 +113,18 @@ export function ExamInstructionsPanel({
   const t = TEXT[lang]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#070b14] p-4 md:p-6 overflow-y-auto">
-      <div className="max-w-2xl w-full rounded-2xl border border-cyber-600 bg-gradient-to-b from-cyber-900 to-cyber-950 shadow-2xl my-4">
-        <div className="p-6 md:p-8 border-b border-cyber-700 text-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#070b14] p-0 sm:p-4 md:p-6 overflow-y-auto">
+      <div className="max-w-2xl w-full rounded-t-2xl sm:rounded-2xl border border-cyber-600 bg-gradient-to-b from-cyber-900 to-cyber-950 shadow-2xl max-h-[100dvh] sm:max-h-none flex flex-col">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-cyber-700 text-center shrink-0">
           <ShieldAlert className="h-12 w-12 text-neon-cyan mx-auto mb-3" />
           <p className="text-xs uppercase tracking-widest text-neon-cyan">{t.secure}</p>
-          <h1 className="text-xl md:text-2xl font-bold text-white mt-2">{t.heading}</h1>
-          <p className="text-slate-400 text-sm mt-2">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white mt-2">{t.heading}</h1>
+          <p className="text-slate-400 text-xs sm:text-sm mt-2 break-words px-1">
             {title} · {questionCount} Q · {timeLimitMinutes} min · P +{marksCorrect} / N −{marksWrong}
           </p>
         </div>
 
-        <div className="px-6 md:px-8 py-4 border-b border-cyber-800">
+        <div className="px-4 sm:px-6 md:px-8 py-4 border-b border-cyber-800 shrink-0">
           <p className="text-xs font-medium text-slate-400 mb-2">{t.lang}</p>
           <div className="flex gap-2">
             {(['en', 'hi'] as const).map((code) => (
@@ -133,7 +133,7 @@ export function ExamInstructionsPanel({
                 type="button"
                 onClick={() => onLangChange(code)}
                 className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium cursor-pointer border transition-colors',
+                  'flex-1 sm:flex-none px-4 py-3 sm:py-2 rounded-lg text-sm font-medium cursor-pointer border transition-colors min-h-[44px]',
                   lang === code
                     ? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan'
                     : 'border-cyber-600 text-slate-400 hover:border-slate-500'
@@ -145,7 +145,7 @@ export function ExamInstructionsPanel({
           </div>
         </div>
 
-        <div className="px-6 md:px-8 py-5 space-y-5 max-h-[50vh] overflow-y-auto text-sm text-slate-300">
+        <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 space-y-4 sm:space-y-5 flex-1 min-h-0 overflow-y-auto text-sm text-slate-300 overscroll-contain">
           {t.sections.map((sec) => (
             <section key={sec.title}>
               <h2 className="font-semibold text-white mb-2 flex items-center gap-2">
@@ -169,7 +169,7 @@ export function ExamInstructionsPanel({
           ))}
         </div>
 
-        <div className="px-6 md:px-8 py-5 border-t border-cyber-700 space-y-4">
+        <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 border-t border-cyber-700 space-y-4 shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <label className="flex items-start gap-3 text-sm cursor-pointer text-slate-300">
             <input
               type="checkbox"

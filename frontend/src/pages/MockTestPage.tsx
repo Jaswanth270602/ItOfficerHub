@@ -267,8 +267,8 @@ export function MockTestPage() {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#070b14] text-white overflow-hidden">
       <ExamDisclaimerStrip lang={examLang} marksCorrect={marksCorrect} marksWrong={marksWrong} />
-      <header className="shrink-0 border-b border-white/10 bg-cyber-950/95 backdrop-blur-md px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
+      <header className="shrink-0 border-b border-white/10 bg-cyber-950/95 backdrop-blur-md px-2 sm:px-4 py-2 sm:py-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-neon-cyan/80 uppercase tracking-wider font-medium">Secure exam</p>
             <h1 className="font-semibold truncate text-sm md:text-base">{title}</h1>
@@ -278,8 +278,8 @@ export function MockTestPage() {
             {Math.floor(secondsLeft / 60)}:{(secondsLeft % 60).toString().padStart(2, '0')}
           </div>
           <Button
-            size="lg"
-            className="cursor-pointer shrink-0 bg-gradient-to-r from-emerald-600 to-neon-blue hover:opacity-90 gap-2 shadow-lg shadow-emerald-900/30"
+            size="sm"
+            className="cursor-pointer shrink-0 min-h-[44px] sm:min-h-10 sm:h-11 bg-gradient-to-r from-emerald-600 to-neon-blue hover:opacity-90 gap-2 shadow-lg shadow-emerald-900/30 px-3 sm:px-4"
             onClick={() => setSubmitOpen(true)}
           >
             <Send className="h-4 w-4" />
@@ -296,19 +296,19 @@ export function MockTestPage() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Main question area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-wrap items-center gap-2 mb-4 text-xs">
-              <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300">
-                Q <strong className="text-white">{current + 1}</strong> / {questions.length}
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8 overscroll-contain">
+          <div className="max-w-4xl mx-auto pb-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 text-[10px] sm:text-xs">
+              <span className="px-2 py-1 rounded-full bg-slate-800 text-slate-300">
+                Q <strong className="text-white">{current + 1}</strong>/{questions.length}
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300">{attempted} answered</span>
-              <span className="px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300">{markedCount} marked</span>
-              <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300">{unattempted} left</span>
+              <span className="px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300">{attempted} done</span>
+              <span className="hidden min-[400px]:inline px-2 py-1 rounded-full bg-violet-500/15 text-violet-300">{markedCount} mark</span>
+              <span className="px-2 py-1 rounded-full bg-amber-500/15 text-amber-300">{unattempted} left</span>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-cyber-900/80 to-cyber-950 p-6 md:p-8 shadow-xl mb-6">
-              <p className="text-lg md:text-xl leading-relaxed text-slate-100 mb-8">{q.questionText}</p>
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-gradient-to-br from-cyber-900/80 to-cyber-950 p-4 sm:p-6 md:p-8 shadow-xl mb-4 sm:mb-6">
+              <p className="text-base sm:text-lg md:text-xl leading-relaxed text-slate-100 mb-6 sm:mb-8">{q.questionText}</p>
               <div className="space-y-3">
                 {(['A', 'B', 'C', 'D'] as const).map((label) => {
                   const text =
@@ -320,7 +320,7 @@ export function MockTestPage() {
                       type="button"
                       onClick={() => selectAnswer(label)}
                       className={cn(
-                        'w-full text-left p-4 md:p-5 rounded-xl border-2 transition-all cursor-pointer flex gap-4 items-start',
+                        'w-full text-left p-3 sm:p-4 md:p-5 rounded-xl border-2 transition-all cursor-pointer flex gap-3 sm:gap-4 items-start min-h-[52px]',
                         selected
                           ? 'border-neon-cyan bg-neon-cyan/10 shadow-md shadow-neon-cyan/10'
                           : 'border-slate-700/80 bg-slate-900/40 hover:border-slate-500 hover:bg-slate-800/50'
@@ -341,12 +341,12 @@ export function MockTestPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mb-4">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className={cn('cursor-pointer border-slate-600', isMarked && 'border-violet-500 bg-violet-950/50')}
+                className={cn('cursor-pointer border-slate-600 col-span-2 sm:col-span-1 text-xs sm:text-sm min-h-[44px]', isMarked && 'border-violet-500 bg-violet-950/50')}
                 onClick={() => toggleMark(!isMarked)}
                 title="Mark for review — revisit before submit; answer stays editable"
               >
@@ -369,22 +369,22 @@ export function MockTestPage() {
               )}
             </div>
 
-            <div className="flex justify-between items-center gap-3">
+            <div className="flex justify-between items-stretch gap-2 sm:gap-3 pb-[env(safe-area-inset-bottom)]">
               <Button
                 variant="outline"
-                className="cursor-pointer border-slate-600"
+                className="cursor-pointer border-slate-600 flex-1 sm:flex-none min-h-[44px] text-sm"
                 disabled={current === 0}
                 onClick={() => setCurrent((c) => c - 1)}
               >
-                <ChevronLeft className="h-4 w-4" /> Previous
+                <ChevronLeft className="h-4 w-4 shrink-0" /> <span className="sr-only sm:not-sr-only sm:inline">Previous</span>
               </Button>
               {current < questions.length - 1 ? (
-                <Button className="cursor-pointer" onClick={() => setCurrent((c) => c + 1)}>
-                  Next <ChevronRight className="h-4 w-4" />
+                <Button className="cursor-pointer flex-1 sm:flex-none min-h-[44px] text-sm" onClick={() => setCurrent((c) => c + 1)}>
+                  <span className="sr-only sm:not-sr-only sm:inline">Next</span> <ChevronRight className="h-4 w-4 shrink-0" />
                 </Button>
               ) : (
-                <Button className="cursor-pointer gap-2" onClick={() => setSubmitOpen(true)}>
-                  <Send className="h-4 w-4" /> Review &amp; submit
+                <Button className="cursor-pointer gap-2 flex-1 sm:flex-none min-h-[44px] text-sm" onClick={() => setSubmitOpen(true)}>
+                  <Send className="h-4 w-4 shrink-0" /> Submit
                 </Button>
               )}
             </div>
@@ -424,14 +424,14 @@ export function MockTestPage() {
       </div>
 
       {/* Mobile palette strip */}
-      <div className="lg:hidden shrink-0 border-t border-white/10 bg-cyber-950 p-2 overflow-x-auto">
+      <div className="lg:hidden shrink-0 border-t border-white/10 bg-cyber-950 p-2 overflow-x-auto pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex gap-1.5 min-w-max px-1">
           {questions.map((ques, i) => (
             <button
               key={ques.id}
               type="button"
               onClick={() => setCurrent(i)}
-              className={cn('h-8 w-8 rounded text-xs font-semibold cursor-pointer', paletteClass(ques, i))}
+              className={cn('h-9 w-9 sm:h-8 sm:w-8 rounded text-xs font-semibold cursor-pointer touch-target', paletteClass(ques, i))}
             >
               {i + 1}
             </button>
@@ -440,7 +440,7 @@ export function MockTestPage() {
       </div>
 
       <Dialog open={submitOpen} onOpenChange={setSubmitOpen}>
-        <DialogContent className="border-cyber-600 bg-cyber-950">
+        <DialogContent className="mobile-dialog-sheet border-cyber-600 bg-cyber-950 overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-400" /> Submit mock test?
@@ -452,11 +452,11 @@ export function MockTestPage() {
             <li>Unattempted: {unattempted}</li>
           </ul>
           {submitError && <p className="text-sm text-red-400">{submitError}</p>}
-          <div className="flex gap-3 justify-end">
-            <Button variant="outline" className="cursor-pointer" onClick={() => setSubmitOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+            <Button variant="outline" className="cursor-pointer w-full sm:w-auto min-h-[44px]" onClick={() => setSubmitOpen(false)}>
               Continue
             </Button>
-            <Button className="cursor-pointer" onClick={() => submitTest()}>
+            <Button className="cursor-pointer w-full sm:w-auto min-h-[44px]" onClick={() => submitTest()}>
               Submit now
             </Button>
           </div>

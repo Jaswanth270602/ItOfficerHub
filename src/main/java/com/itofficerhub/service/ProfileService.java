@@ -59,6 +59,7 @@ public class ProfileService {
 		return new ProfileDto(
 				user.getId(),
 				user.getEmail(),
+				user.getPhone(),
 				user.getName(),
 				userDisplayService.displayName(user),
 				user.getAnonymousAlias(),

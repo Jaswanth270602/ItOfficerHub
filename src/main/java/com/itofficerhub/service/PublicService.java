@@ -14,16 +14,16 @@ import java.util.List;
 @Service
 public class PublicService {
 
-	private final MockTestRepository mockTestRepository;
+	private final MockCatalogService mockCatalogService;
 	private final UserRepository userRepository;
 	private final TestAttemptRepository attemptRepository;
 	private final MockTopicService mockTopicService;
 	private final PublicService self;
 
-	public PublicService(MockTestRepository mockTestRepository, UserRepository userRepository,
+	public PublicService(MockCatalogService mockCatalogService, UserRepository userRepository,
 			TestAttemptRepository attemptRepository, MockTopicService mockTopicService,
 			@Lazy PublicService self) {
-		this.mockTestRepository = mockTestRepository;
+		this.mockCatalogService = mockCatalogService;
 		this.userRepository = userRepository;
 		this.attemptRepository = attemptRepository;
 		this.mockTopicService = mockTopicService;
@@ -32,7 +32,7 @@ public class PublicService {
 
 	@Cacheable(cacheNames = CacheNames.PUBLIC_STATS)
 	public PublicStatsDto getStats() {
-		long mocks = mockTestRepository.countByPublishedTrue();
+		long mocks = mockCatalogService.countVisible(java.time.Instant.now());
 		long users = userRepository.countByRole(Role.USER);
 		long totalAttempts = attemptRepository.countBySubmittedTrue();
 		Double avg = attemptRepository.averageNetScorePercent();
@@ -42,7 +42,7 @@ public class PublicService {
 
 	@Cacheable(cacheNames = CacheNames.PUBLISHED_MOCKS)
 	public List<MockTestSummaryDto> listPublishedMocks() {
-		var mocks = mockTestRepository.findPublishedOrderByReleaseDesc();
+		var mocks = mockCatalogService.visibleMocks(java.time.Instant.now());
 		var topicMap = mockTopicService.topicsByMockId(mocks.stream().map(m -> m.getId()).toList());
 		return mocks.stream()
 				.map(m -> {
@@ -72,7 +72,7 @@ public class PublicService {
 				self.cachedAttemptCount(m.getId()),
 				m.isAllowRetake(),
 				m.isShowExamDate(),
-				m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt(),
+				com.itofficerhub.util.MockVisibility.effectiveGoLiveAt(m),
 				topics,
 				mockTopicService.isCumulative(topics),
 				m.getMockCategory().name(),

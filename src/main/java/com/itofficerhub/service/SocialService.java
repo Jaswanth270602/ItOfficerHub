@@ -300,7 +300,7 @@ public class SocialService {
 	}
 
 	private ProfileDto toStudentProfile(User u) {
-		return new ProfileDto(u.getId(), null, u.getName(), userDisplayService.displayName(u),
+		return new ProfileDto(u.getId(), null, null, u.getName(), userDisplayService.displayName(u),
 				u.getAnonymousAlias(), u.isUseAnonymousDisplay(), u.getBio(),
 				u.getAvatarEmoji() != null ? u.getAvatarEmoji() : "🎯", 0,
 				u.isAllowDirectMessages(), u.isShowInDirectory());

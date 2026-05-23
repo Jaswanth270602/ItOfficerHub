@@ -16,14 +16,14 @@ import java.util.*;
 public class UserAttemptCacheService {
 
 	private final TestAttemptRepository attemptRepository;
-	private final MockTestRepository mockTestRepository;
+	private final MockCatalogService mockCatalogService;
 	private final PublicService publicService;
 	private final MockTopicService mockTopicService;
 
-	public UserAttemptCacheService(TestAttemptRepository attemptRepository, MockTestRepository mockTestRepository,
+	public UserAttemptCacheService(TestAttemptRepository attemptRepository, MockCatalogService mockCatalogService,
 			@Lazy PublicService publicService, MockTopicService mockTopicService) {
 		this.attemptRepository = attemptRepository;
-		this.mockTestRepository = mockTestRepository;
+		this.mockCatalogService = mockCatalogService;
 		this.publicService = publicService;
 		this.mockTopicService = mockTopicService;
 	}
@@ -46,10 +46,11 @@ public class UserAttemptCacheService {
 		for (TestAttempt a : attemptRepository.findSubmittedByUserWithMock(userId)) {
 			byMock.computeIfAbsent(a.getMockTest().getId(), k -> new ArrayList<>()).add(a);
 		}
-		Long featuredId = mockTestRepository.findFeaturedMock()
+		java.time.Instant now = java.time.Instant.now();
+		Long featuredId = mockCatalogService.featuredMock(now)
 				.map(m -> m.getId())
 				.orElse(null);
-		var mocks = mockTestRepository.findPublishedOrderByReleaseDesc();
+		var mocks = mockCatalogService.visibleMocks(now);
 		var topicMap = mockTopicService.topicsByMockId(mocks.stream().map(m -> m.getId()).toList());
 		return mocks.stream()
 				.map(m -> {
@@ -69,7 +70,7 @@ public class UserAttemptCacheService {
 							publicService.cachedAttemptCount(m.getId()),
 							m.isAllowRetake(),
 							m.isShowExamDate(),
-							m.getPublishedAt() != null ? m.getPublishedAt() : m.getCreatedAt(),
+							com.itofficerhub.util.MockVisibility.effectiveGoLiveAt(m),
 							featuredId != null && featuredId.equals(m.getId()),
 							attempted,
 							mine.size(),

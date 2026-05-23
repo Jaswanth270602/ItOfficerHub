@@ -13,6 +13,10 @@ import { CommunityPage } from '@/pages/CommunityPage'
 import { RevisionPage } from '@/pages/RevisionPage'
 import { TcsNqtPage } from '@/pages/TcsNqtPage'
 import { SyllabusPage } from '@/pages/SyllabusPage'
+import { StudyHubShell } from '@/components/study/StudyHubShell'
+import { StudyHubHomePage } from '@/pages/study/StudyHubHomePage'
+import { StudySectionPage } from '@/pages/study/StudySectionPage'
+import { StudyQuestionPage } from '@/pages/study/StudyQuestionPage'
 import { AdminLoginPage } from '@/pages/admin/AdminLoginPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { AdminMockPage } from '@/pages/admin/AdminMockPage'
@@ -43,6 +47,11 @@ export default function App() {
             <Route path="/mocks" element={<MocksPage />} />
             <Route path="/tcs-nqt" element={<TcsNqtPage />} />
             <Route path="/syllabus" element={<SyllabusPage />} />
+            <Route path="/study" element={<StudyHubShell />}>
+              <Route index element={<StudyHubHomePage />} />
+              <Route path=":sectionId" element={<StudySectionPage />} />
+              <Route path=":sectionId/:subtopicSlug" element={<StudyQuestionPage />} />
+            </Route>
             <Route path="/result/:attemptId" element={<PrivateRoute><ResultPage /></PrivateRoute>} />
             <Route path="/revision" element={<PrivateRoute><RevisionPage /></PrivateRoute>} />
             <Route path="/history" element={<PrivateRoute><HistoryPage /></PrivateRoute>} />

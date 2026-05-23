@@ -58,6 +58,15 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 					""");
 			log.info("revision_bookmarks created");
 		}
+		if (!columnExists("mock_tests", "go_live_at")) {
+			jdbc.execute("""
+					ALTER TABLE mock_tests ADD COLUMN IF NOT EXISTS go_live_at TIMESTAMPTZ
+					""");
+			jdbc.execute("""
+					UPDATE mock_tests SET go_live_at = COALESCE(published_at, created_at)
+					WHERE published = true AND go_live_at IS NULL
+					""");
+		}
 		if (!columnExists("mock_tests", "show_exam_date")) {
 			jdbc.execute("""
 					ALTER TABLE mock_tests ADD COLUMN IF NOT EXISTS show_exam_date BOOLEAN NOT NULL DEFAULT false
@@ -84,6 +93,35 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 			log.warn("users.prep_points missing — adding column");
 			jdbc.execute("""
 					ALTER TABLE users ADD COLUMN IF NOT EXISTS prep_points INTEGER NOT NULL DEFAULT 0
+					""");
+		}
+		if (!tableExists("practice_questions")) {
+			log.warn("practice_questions missing — creating table");
+			jdbc.execute("""
+					CREATE TABLE IF NOT EXISTS practice_questions (
+					    id BIGSERIAL PRIMARY KEY,
+					    section_id VARCHAR(64) NOT NULL,
+					    subtopic_slug VARCHAR(128) NOT NULL,
+					    topic VARCHAR(64) NOT NULL,
+					    question_text VARCHAR(4000) NOT NULL,
+					    option_a VARCHAR(1000) NOT NULL,
+					    option_b VARCHAR(1000) NOT NULL,
+					    option_c VARCHAR(1000) NOT NULL,
+					    option_d VARCHAR(1000) NOT NULL,
+					    correct_option VARCHAR(1) NOT NULL,
+					    explanation VARCHAR(8000),
+					    solution_image_url VARCHAR(2000),
+					    published BOOLEAN NOT NULL DEFAULT true,
+					    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+					    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+					    CONSTRAINT uq_practice_section_subtopic UNIQUE (section_id, subtopic_slug)
+					)
+					""");
+		}
+		if (!columnExists("users", "phone")) {
+			jdbc.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)");
+			jdbc.execute("""
+					CREATE UNIQUE INDEX IF NOT EXISTS uq_users_phone ON users (phone) WHERE phone IS NOT NULL
 					""");
 		}
 		if (!columnExists("mock_tests", "mock_code")) {

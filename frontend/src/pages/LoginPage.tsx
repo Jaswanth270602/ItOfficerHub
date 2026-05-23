@@ -24,8 +24,12 @@ export function LoginPage() {
       await login(email, password)
       navigate(redirect)
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-      setError(msg || 'Login failed')
+      const res = (err as { response?: { status?: number; data?: { error?: string } } })?.response
+      if (res?.status === 429) {
+        setError('Too many attempts. Please wait a minute and try again.')
+      } else {
+        setError(res?.data?.error || 'Login failed')
+      }
     } finally {
       setLoading(false)
     }

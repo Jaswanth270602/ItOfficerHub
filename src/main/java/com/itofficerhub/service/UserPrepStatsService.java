@@ -6,7 +6,6 @@ import com.itofficerhub.entity.MockCategory;
 import com.itofficerhub.entity.MockTest;
 import com.itofficerhub.entity.TestAttempt;
 import com.itofficerhub.exception.ApiException;
-import com.itofficerhub.repository.MockTestRepository;
 import com.itofficerhub.repository.RevisionBookmarkRepository;
 import com.itofficerhub.repository.TestAttemptRepository;
 import com.itofficerhub.security.UserPrincipal;
@@ -24,16 +23,16 @@ import java.util.*;
 public class UserPrepStatsService {
 
 	private final TestAttemptRepository attemptRepository;
-	private final MockTestRepository mockTestRepository;
+	private final MockCatalogService mockCatalogService;
 	private final RevisionBookmarkRepository bookmarkRepository;
 	private final TopicAnalyticsService topicAnalyticsService;
 	private final PrepPointsService prepPointsService;
 
-	public UserPrepStatsService(TestAttemptRepository attemptRepository, MockTestRepository mockTestRepository,
+	public UserPrepStatsService(TestAttemptRepository attemptRepository, MockCatalogService mockCatalogService,
 			RevisionBookmarkRepository bookmarkRepository, TopicAnalyticsService topicAnalyticsService,
 			PrepPointsService prepPointsService) {
 		this.attemptRepository = attemptRepository;
-		this.mockTestRepository = mockTestRepository;
+		this.mockCatalogService = mockCatalogService;
 		this.bookmarkRepository = bookmarkRepository;
 		this.topicAnalyticsService = topicAnalyticsService;
 		this.prepPointsService = prepPointsService;
@@ -93,7 +92,7 @@ public class UserPrepStatsService {
 	}
 
 	private List<ChallengeDayDto> buildChallengePlan(long userId) {
-		List<MockTest> challengeMocks = mockTestRepository.findPublishedOrderByReleaseDesc().stream()
+		List<MockTest> challengeMocks = mockCatalogService.visibleMocks(java.time.Instant.now()).stream()
 				.filter(m -> m.getMockCategory() == MockCategory.CHALLENGE && m.getSeriesDay() != null)
 				.sorted(Comparator.comparingInt(MockTest::getSeriesDay))
 				.toList();

@@ -6,7 +6,6 @@ import com.itofficerhub.entity.MockTest;
 import com.itofficerhub.entity.TestAttempt;
 import com.itofficerhub.entity.User;
 import com.itofficerhub.repository.DailySpotlightRepository;
-import com.itofficerhub.repository.MockTestRepository;
 import com.itofficerhub.repository.TestAttemptRepository;
 import com.itofficerhub.util.AppTime;
 import org.springframework.stereotype.Service;
@@ -26,16 +25,16 @@ public class DailySpotlightService {
 
 	private static final Duration SPOTLIGHT_TTL = Duration.ofHours(24);
 
-	private final MockTestRepository mockTestRepository;
+	private final MockCatalogService mockCatalogService;
 	private final DailySpotlightRepository spotlightRepository;
 	private final TestAttemptRepository attemptRepository;
 	private final UserDisplayService userDisplayService;
 	private final MockRankingCacheService rankingCache;
 
-	public DailySpotlightService(MockTestRepository mockTestRepository, DailySpotlightRepository spotlightRepository,
+	public DailySpotlightService(MockCatalogService mockCatalogService, DailySpotlightRepository spotlightRepository,
 			TestAttemptRepository attemptRepository, UserDisplayService userDisplayService,
 			MockRankingCacheService rankingCache) {
-		this.mockTestRepository = mockTestRepository;
+		this.mockCatalogService = mockCatalogService;
 		this.spotlightRepository = spotlightRepository;
 		this.attemptRepository = attemptRepository;
 		this.userDisplayService = userDisplayService;
@@ -44,7 +43,7 @@ public class DailySpotlightService {
 
 	@Transactional
 	public void refreshAfterSubmit(long mockTestId) {
-		mockTestRepository.findById(mockTestId).filter(MockTest::isPublished).ifPresent(m -> {
+		mockCatalogService.findByIdIfVisible(mockTestId, Instant.now()).ifPresent(m -> {
 			cleanup(m.getId());
 			if (spotlightRepository.findActiveForMock(m.getId(), Instant.now()).isPresent()) {
 				return;
@@ -55,7 +54,7 @@ public class DailySpotlightService {
 
 	@Transactional
 	public Optional<ProfileOfDayDto> currentProfile() {
-		return mockTestRepository.findFeaturedMock().flatMap(mock -> {
+		return mockCatalogService.featuredMock(Instant.now()).flatMap(mock -> {
 			cleanup(mock.getId());
 			Instant now = Instant.now();
 			Optional<DailySpotlight> active = spotlightRepository.findActiveForMock(mock.getId(), now);

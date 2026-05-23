@@ -7,6 +7,7 @@ import com.itofficerhub.exception.ApiException;
 import com.itofficerhub.repository.UserRepository;
 import com.itofficerhub.security.JwtService;
 import com.itofficerhub.security.UserPrincipal;
+import com.itofficerhub.util.PhoneUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,11 +31,23 @@ public class AuthService {
 	}
 
 	public AuthResponse register(RegisterRequest request) {
-		if (userRepository.existsByEmail(request.email())) {
+		if (request.website() != null && !request.website().isBlank()) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "Registration failed");
+		}
+		String phone = PhoneUtils.normalizeIndian(request.phone());
+		if (!PhoneUtils.isValidIndian(phone)) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "Enter a valid 10-digit Indian mobile number");
+		}
+		String email = request.email().toLowerCase().trim();
+		if (userRepository.existsByEmail(email)) {
 			throw new ApiException(HttpStatus.CONFLICT, "Email already registered");
 		}
+		if (userRepository.existsByPhone(phone)) {
+			throw new ApiException(HttpStatus.CONFLICT, "Mobile number already registered");
+		}
 		User user = new User();
-		user.setEmail(request.email().toLowerCase().trim());
+		user.setEmail(email);
+		user.setPhone(phone);
 		user.setPassword(passwordEncoder.encode(request.password()));
 		user.setName(request.name().trim());
 		user.setRole(Role.USER);

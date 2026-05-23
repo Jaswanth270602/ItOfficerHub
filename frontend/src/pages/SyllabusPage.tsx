@@ -88,9 +88,26 @@ export function SyllabusPage() {
         </CardContent>
       </Card>
 
+      <Card className="mb-10 border-neon-cyan/40 bg-neon-cyan/5">
+        <CardContent className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="font-semibold text-white">Topic-wise practice (new)</p>
+            <p className="text-sm text-slate-400 mt-1">
+              Browse subjects in the sidebar — one MCQ per topic, like IndiaBIX. Full mocks when you are ready.
+            </p>
+          </div>
+          <Link to="/study">
+            <Button className="cursor-pointer shrink-0">Open Study Q&A</Button>
+          </Link>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-wrap gap-3">
+        <Link to="/study">
+          <Button className="cursor-pointer">Topic-wise Q&A</Button>
+        </Link>
         <Link to="/mocks">
-          <Button className="cursor-pointer">Practice by subject</Button>
+          <Button variant="outline" className="cursor-pointer">Full timed mocks</Button>
         </Link>
         <Link to="/dashboard">
           <Button variant="outline" className="cursor-pointer">Dashboard</Button>

@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByEmail(String email);
 	boolean existsByEmail(String email);
+	boolean existsByPhone(String phone);
 	long countByRole(com.itofficerhub.entity.Role role);
 
 	@Query("SELECT u FROM User u WHERE u.role = com.itofficerhub.entity.Role.USER AND (LOWER(u.name) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.anonymousAlias) LIKE LOWER(CONCAT('%', :q, '%')))")

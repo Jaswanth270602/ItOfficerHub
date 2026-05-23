@@ -82,7 +82,8 @@ Use **either** `DATABASE_URL` **or** the three `SPRING_DATASOURCE_*` vars — no
 After deploy shows **Live**:
 
 - App + UI: `https://itofficerhub.onrender.com` (your URL may differ)
-- Health check: `https://YOUR-URL.onrender.com/api/public/stats`
+- Health / keep-alive (no DB): `https://YOUR-URL.onrender.com/health` → returns `UP`
+- UptimeRobot (optional): ping `GET /health` every 5 minutes on free tier to reduce cold starts
 - Admin: `https://YOUR-URL.onrender.com/admin`
 
 Login: `admin@itofficerhub.com` / password = whatever you set as `ADMIN_PASSWORD`.
@@ -105,6 +106,26 @@ Login: `admin@itofficerhub.com` / password = whatever you set as `ADMIN_PASSWORD
 On each deploy, Spring runs SQL in `src/main/resources/db/migration/` before the app serves traffic.
 
 If you see **`column exam_target does not exist`**, either redeploy (Flyway V2 + startup patch apply automatically) or run `docs/scripts/fix-neon-schema.sql` in Neon SQL Editor immediately.
+
+---
+
+## Security & rate limits
+
+The API applies **per-IP rate limits** (in-memory, per instance) to reduce brute-force login and basic DoS:
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `RATE_LIMIT_ENABLED` | `true` | Master switch |
+| `RATE_LIMIT_AUTH` | `12` | `/api/auth/*` per minute |
+| `RATE_LIMIT_WRITE` | `45` | POST/PUT/PATCH/DELETE on `/api/` |
+| `RATE_LIMIT_READ` | `100` | GET `/api/public/*` |
+| `RATE_LIMIT_GLOBAL` | `180` | All other routes |
+
+`/health` is unlimited (for UptimeRobot). Clients receive **429** when limited.
+
+Also enabled: security headers (HSTS, `X-Content-Type-Options`, deny framing), request size caps, registration honeypot field, unique email + Indian mobile on signup.
+
+For stronger protection at scale, add Cloudflare in front of Render (not required for launch).
 
 ---
 

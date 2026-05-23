@@ -33,14 +33,64 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.page-container {
-  @apply max-w-6xl mx-auto px-4;
+/* Mobile-friendly dialogs (schedule, menu, exam submit) */
+.mobile-dialog-sheet {
+  @apply fixed left-3 right-3 top-[max(0.75rem,env(safe-area-inset-top))] bottom-[max(0.75rem,env(safe-area-inset-bottom))] w-auto max-w-none translate-x-0 translate-y-0 overflow-hidden;
+}
+
+@media (min-width: 640px) {
+  .mobile-dialog-sheet {
+    @apply left-1/2 right-auto top-1/2 bottom-auto w-full max-w-lg -translate-x-1/2 -translate-y-1/2;
+  }
+}
+
+/* Main content clears fixed bottom nav on phones */
+.main-with-mobile-nav {
+  @apply pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0;
+}
+
+.touch-target {
+  @apply min-h-[44px] min-w-[44px];
 }
 
 .page-title {
-  @apply text-3xl font-bold tracking-tight text-white;
+  @apply text-2xl sm:text-3xl font-bold tracking-tight text-white;
+}
+
+.page-container {
+  @apply max-w-6xl mx-auto px-3 sm:px-4 md:px-6;
 }
 
 .page-subtitle {
   @apply text-slate-400 mt-1;
+}
+
+/* Landing: five full-viewport sections with optional snap scroll */
+.landing-scroll {
+  scroll-snap-type: y proximity;
+}
+
+@media (min-width: 768px) {
+  .landing-scroll {
+    scroll-snap-type: y mandatory;
+  }
+}
+
+.landing-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}
+
+/* Study hub — IndiaBIX-style sidebar + clean topic list */
+.study-main-panel {
+  @apply bg-cyber-950;
+}
+
+.study-panel-inner {
+  @apply p-4 sm:p-6 md:p-8 max-w-5xl mx-auto;
+}
+
+.study-topic-list a:focus-visible,
+.study-sidebar a:focus-visible {
+  @apply outline-2 outline-offset-2 outline-neon-cyan;
 }

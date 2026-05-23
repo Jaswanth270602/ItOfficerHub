@@ -29,7 +29,7 @@ public class SpaWebConfig implements WebMvcConfigurer {
 		@Override
 		protected Resource resolveResourceInternal(HttpServletRequest request, String requestPath,
 				List<? extends Resource> locations, ResourceResolverChain chain) {
-			if (requestPath.startsWith("api/")) {
+			if (requestPath.startsWith("api/") || "health".equals(requestPath)) {
 				return null;
 			}
 			Resource resolved = super.resolveResourceInternal(request, requestPath, locations, chain);
