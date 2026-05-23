@@ -7,6 +7,7 @@ import { faqJsonLd, LANDING_FAQ } from '@/lib/seo-faq'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UpcomingMockBanner } from '@/components/UpcomingMockBanner'
+import { LandingPlatformShowcase } from '@/components/landing/LandingPlatformShowcase'
 import { LandingSection } from '@/components/landing/LandingSection'
 import { MottoCarousel, type MottoSlide } from '@/components/landing/MottoCarousel'
 import {
@@ -63,9 +64,13 @@ interface Mock {
 
 const EXAM_BADGES = [
   { label: 'IBPS SO IT', href: '/mocks', className: 'border-neon-cyan/45 bg-neon-cyan/10 text-neon-cyan' },
-  { label: 'TCS NQT', href: '/tcs-nqt', className: 'border-neon-purple/45 bg-neon-purple/10 text-neon-purple' },
+  { label: 'SBI IT', href: '/mocks', className: 'border-blue-400/40 bg-blue-500/10 text-blue-300' },
+  { label: 'BOB IT', href: '/mocks', className: 'border-orange-500/40 bg-orange-500/10 text-orange-300' },
+  { label: 'UCO Bank IT', href: '/mocks', className: 'border-teal-500/40 bg-teal-500/10 text-teal-300' },
   { label: 'PSU IT', href: '/mocks', className: 'border-neon-blue/45 bg-neon-blue/10 text-neon-blue' },
   { label: 'NIACL / LIC', href: '/syllabus', className: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
+  { label: 'GIC / RBI IT', href: '/mocks', className: 'border-violet-500/40 bg-violet-500/10 text-violet-300' },
+  { label: 'TCS NQT', href: '/tcs-nqt', className: 'border-neon-purple/45 bg-neon-purple/10 text-neon-purple' },
 ] as const
 
 const MOTTO_SLIDES: MottoSlide[] = [
@@ -80,7 +85,7 @@ const MOTTO_SLIDES: MottoSlide[] = [
     accent: 'purple',
   },
   {
-    quote: 'Study Q&A with zero signup — unlike Testbook or Oliveboard. Mocks need a free account for rank.',
+    quote: 'Study Q&A with zero signup — open prep instantly. Mocks need a free account for rank.',
     tag: 'No login for prep',
     accent: 'emerald',
   },
@@ -105,7 +110,7 @@ const FEATURES = [
   {
     icon: BookOpen,
     title: 'Topic-wise Study Q&A',
-    desc: 'IndiaBIX-style syllabus — browse CN, DBMS, OS & Security with solutions. No login required.',
+    desc: 'Topic-wise syllabus — browse CN, DBMS, OS & Security with solutions. No login required.',
   },
   {
     icon: Zap,
@@ -177,8 +182,8 @@ export function LandingPage() {
       <Seo
         path="/"
         title="Crack IBPS SO IT Officer — 100% Free, No Login for Prep"
-        description="Crack IBPS SO IT Officer with free topic-wise Study Q&A — no login needed. IBPS SO IT, PSU IT, NIACL/LIC & TCS NQT mocks with All-India rank. 100% free."
-        keywords="ItOfficerHub, IT Officer Hub, it officer hub, IBPS SO IT Officer mock test free, IBPS IT Officer, PSU IT Officer, TCS NQT mock test, TCS NQT aptitude, quantitative aptitude, logical reasoning, verbal ability, bank IT officer, free mock test"
+        description="Free IBPS SO IT, SBI IT, BOB IT, UCO Bank IT, PSU IT & TCS NQT prep — topic-wise Study Q&A with no login. All-India rank on mocks. 100% free."
+        keywords="ItOfficerHub, IBPS SO IT Officer, SBI IT Officer, BOB IT Officer, UCO Bank IT Officer, PSU IT Officer, NIACL IT, LIC IT, TCS NQT mock test, free IT officer mock test, bank IT officer preparation"
         jsonLd={[
           faqJsonLd(),
           {
@@ -200,7 +205,7 @@ export function LandingPage() {
           </Suspense>
 
           <div className="relative z-10 page-container flex flex-col items-center text-center px-3 sm:px-4 pt-6 sm:pt-8 pb-24">
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mb-5 sm:mb-6 w-full max-w-2xl">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mb-5 sm:mb-6 w-full max-w-3xl">
               {EXAM_BADGES.map(({ label, href, className }) => (
                 <Link
                   key={label}
@@ -235,16 +240,13 @@ export function LandingPage() {
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed">
-              Topic-wise Study Q&amp;A opens instantly — CN, DBMS, OS, Security &amp; more. No signup wall like
-              Testbook or Oliveboard.
-            </p>
-            <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-2">
-              20 Questions · 15 Minutes · P +1 · N −0.25 marking
+            <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-6 leading-relaxed">
+              Topic-wise Study Q&amp;A opens instantly — CN, DBMS, OS, Security &amp; more. Start prep without
+              creating an account.
             </p>
             <p className="text-slate-500 mb-8 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-              Daily mocks, All-India rank &amp; cutoff need a <strong className="text-slate-300">free account</strong> — prep
-              never does.
+              Full-length &amp; sectional mocks with All-India rank need a{' '}
+              <strong className="text-slate-300">free account</strong> — prep never does.
             </p>
 
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 w-full sm:w-auto max-w-md sm:max-w-none">
@@ -285,12 +287,17 @@ export function LandingPage() {
         {/* ——— Section 2: Stats + today's mock ——— */}
         <LandingSection id="platform" ariaLabelledby="platform-heading" center={false} className="py-16 sm:py-20">
           <div className="page-container w-full">
-            <div className="text-center mb-10 sm:mb-12">
+            <div className="text-center mb-8 sm:mb-10">
               <p className="text-xs uppercase tracking-widest text-neon-cyan mb-2">Live platform</p>
-              <h2 id="platform-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-                Join thousands of IT aspirants
+              <h2 id="platform-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">
+                Rank, analytics &amp; daily prep — built in
               </h2>
+              <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
+                See where you stand, which chapters need work, and how consistent your mock habit is.
+              </p>
             </div>
+
+            <LandingPlatformShowcase />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 sm:mb-12" aria-label="Platform statistics">
               {[
@@ -360,7 +367,7 @@ export function LandingPage() {
                 Everything you need to crack IT Officer exams
               </h2>
               <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
-                IBPS SO IT, PSU IT (NIACL, LIC, GIC, RBI), and TCS NQT — one hub, zero cost.
+                IBPS SO IT, SBI IT, BOB IT, UCO Bank IT, PSU IT (NIACL, LIC, GIC, RBI), and TCS NQT — one hub, zero cost.
               </p>
             </div>
 

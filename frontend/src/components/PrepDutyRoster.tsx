@@ -25,7 +25,7 @@ const LEVEL_CLASS: Record<number, string> = {
   3: 'bg-amber-400/70 border-amber-300/60 shadow-[0_0_12px_rgba(251,191,36,0.35)]',
 }
 
-/** "Officer Duty Roster" — vertical shift pills per week (unique vs flat GitHub squares). */
+/** Vertical shift pills per week — daily mock activity grid. */
 export function PrepDutyRoster({
   log,
   activeDaysLast365,

@@ -36,7 +36,7 @@ const TEXT = {
         ],
       },
       {
-        title: 'Question palette (like Testbook)',
+        title: 'Question palette',
         items: [
           'Green — answered',
           'Grey — not answered',

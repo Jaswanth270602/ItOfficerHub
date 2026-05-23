@@ -81,7 +81,7 @@ button:disabled {
   scroll-snap-stop: normal;
 }
 
-/* Study hub — IndiaBIX-style sidebar + clean topic list */
+/* Study hub — topic sidebar + clean topic list */
 .study-main-panel {
   @apply bg-cyber-950;
 }

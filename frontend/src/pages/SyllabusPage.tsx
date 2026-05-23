@@ -93,7 +93,7 @@ export function SyllabusPage() {
           <div>
             <p className="font-semibold text-white">Topic-wise practice (new)</p>
             <p className="text-sm text-slate-400 mt-1">
-              Browse subjects in the sidebar — one MCQ per topic, like IndiaBIX. Full mocks when you are ready.
+              Browse subjects in the sidebar — topic-wise MCQs with solutions. Full mocks when you are ready.
             </p>
           </div>
           <Link to="/study">
