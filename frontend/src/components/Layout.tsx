@@ -2,7 +2,8 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { MobileBottomNav, MobileHeaderMenu } from '@/components/MobileNav'
 import { Button } from './ui/button'
-import { BookMarked, BookOpen, Building2, ClipboardList, Cpu, GraduationCap, Layers, LogOut, Mail, ShieldCheck, Trophy, Users } from 'lucide-react'
+import { AppLogo } from '@/components/AppLogo'
+import { BookMarked, BookOpen, Building2, ClipboardList, GraduationCap, Layers, LogOut, Mail, ShieldCheck, Trophy, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -18,14 +19,7 @@ export function Layout() {
     <div className="min-h-screen flex flex-col min-h-[100dvh]">
       <header className="border-b border-cyber-700/50 bg-cyber-900/70 backdrop-blur-lg sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
-          <Link to="/" className="flex items-center gap-2 font-bold text-base sm:text-lg shrink-0 min-w-0">
-            <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-neon-blue/15 border border-neon-blue/30 shrink-0">
-              <Cpu className="h-4 w-4 sm:h-5 sm:w-5 text-neon-cyan" />
-            </span>
-            <span className="bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent truncate">
-              ItOfficerHub
-            </span>
-          </Link>
+          <AppLogo textClassName="text-base sm:text-lg" />
 
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2 min-w-0 overflow-x-auto">
             <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>

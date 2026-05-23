@@ -101,23 +101,33 @@ public class AttemptService {
 		}
 		Question question = questionRepository.findById(request.questionId())
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
+		upsertAnswer(attempt, question, request.selectedOption(), request.markedForReview());
+	}
 
-		List<AttemptAnswer> existing = answerRepository.findByAttemptIdOrderByQuestionOrderIndexAsc(attemptId);
-		AttemptAnswer answer = existing.stream()
-				.filter(a -> a.getQuestion().getId().equals(question.getId()))
-				.findFirst()
-				.orElse(new AttemptAnswer());
-		answer.setAttempt(attempt);
-		answer.setQuestion(question);
-		if (request.selectedOption() != null) {
-			OptionLabel selected = parseOption(request.selectedOption());
-			answer.setSelectedOption(selected);
-			answer.setCorrect(selected != null && selected == question.getCorrectOption());
+	/** Batch persist for optional recovery (debounced / tab-close), not per-click. */
+	@Transactional
+	public void saveCheckpoint(Long attemptId, AttemptCheckpointRequest request) {
+		TestAttempt attempt = loadOwnedAttempt(attemptId);
+		if (attempt.isSubmitted()) {
+			return;
 		}
-		if (request.markedForReview() != null) {
-			answer.setMarkedForReview(request.markedForReview());
+		if (request.answers() == null || request.answers().isEmpty()) {
+			return;
 		}
-		answerRepository.save(answer);
+		Map<Long, AttemptAnswer> existing = loadAnswerMap(attemptId);
+		for (var item : request.answers()) {
+			Question question = questionRepository.findById(item.questionId())
+					.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
+			AttemptAnswer answer = existing.get(question.getId());
+			if (answer == null) {
+				answer = new AttemptAnswer();
+				answer.setAttempt(attempt);
+				answer.setQuestion(question);
+				existing.put(question.getId(), answer);
+			}
+			applyAnswerFields(answer, question, item.selectedOption(), item.markedForReview());
+			answerRepository.save(answer);
+		}
 	}
 
 	@Transactional
@@ -126,10 +136,8 @@ public class AttemptService {
 		if (attempt.isSubmitted()) {
 			return buildResult(attempt);
 		}
-		if (request.answers() != null) {
-			for (var sub : request.answers()) {
-				saveAnswer(attemptId, new SaveAnswerRequest(sub.questionId(), sub.selectedOption(), null));
-			}
+		if (request.answers() != null && !request.answers().isEmpty()) {
+			persistSubmittedAnswers(attempt, request.answers());
 		}
 		applyScoring(attempt);
 		attempt.setTimeTakenSeconds(request.timeTakenSeconds());
@@ -169,6 +177,56 @@ public class AttemptService {
 	@Transactional(readOnly = true)
 	public List<MockWithUserStatusDto> getMocksWithUserStatus() {
 		return userAttemptCache.mockStatusForUser(getCurrentUser().getId());
+	}
+
+	private void persistSubmittedAnswers(TestAttempt attempt, List<SubmitAttemptRequest.AnswerSubmission> submissions) {
+		Map<Long, AttemptAnswer> existing = loadAnswerMap(attempt.getId());
+		for (var sub : submissions) {
+			Question question = questionRepository.findById(sub.questionId())
+					.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
+			AttemptAnswer answer = existing.get(question.getId());
+			if (answer == null) {
+				answer = new AttemptAnswer();
+				answer.setAttempt(attempt);
+				answer.setQuestion(question);
+				existing.put(question.getId(), answer);
+			}
+			applyAnswerFields(answer, question, sub.selectedOption(), null);
+			answerRepository.save(answer);
+		}
+	}
+
+	private void upsertAnswer(TestAttempt attempt, Question question, String selectedOption, Boolean markedForReview) {
+		AttemptAnswer answer = answerRepository
+				.findByAttempt_IdAndQuestion_Id(attempt.getId(), question.getId())
+				.orElseGet(() -> {
+					AttemptAnswer created = new AttemptAnswer();
+					created.setAttempt(attempt);
+					created.setQuestion(question);
+					return created;
+				});
+		applyAnswerFields(answer, question, selectedOption, markedForReview);
+		answerRepository.save(answer);
+	}
+
+	private void applyAnswerFields(AttemptAnswer answer, Question question, String selectedOption,
+			Boolean markedForReview) {
+		if (selectedOption != null) {
+			OptionLabel selected = parseOption(selectedOption.isBlank() ? null : selectedOption);
+			answer.setSelectedOption(selected);
+			answer.setCorrect(selected != null && selected == question.getCorrectOption());
+		}
+		if (markedForReview != null) {
+			answer.setMarkedForReview(markedForReview);
+		}
+	}
+
+	private Map<Long, AttemptAnswer> loadAnswerMap(Long attemptId) {
+		Map<Long, AttemptAnswer> map = new HashMap<>();
+		for (AttemptAnswer a : answerRepository.findByAttemptIdOrderByQuestionOrderIndexAsc(attemptId)) {
+			map.put(a.getQuestion().getId(), a);
+		}
+		return map;
 	}
 
 	private void ensureScoring(TestAttempt attempt) {

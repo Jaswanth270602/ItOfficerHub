@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { canonicalUrl, DEFAULT_DESCRIPTION, DEFAULT_KEYWORDS, fullTitle, SITE_NAME, SITE_URL, type SeoProps } from '@/lib/seo'
 
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-cover.svg`
+const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`
 
 function upsertMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
   if (!content) return
@@ -97,7 +97,7 @@ export function Seo({
         '@type': 'Organization',
         name: SITE_NAME,
         url: SITE_URL,
-        logo: `${SITE_URL}/favicon.svg`,
+        logo: `${SITE_URL}/logo.png`,
         description: DEFAULT_DESCRIPTION,
       },
       {

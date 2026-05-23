@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
+import {
+  buildCheckpointPayload,
+  cancelExamCheckpointSchedule,
+  flushExamCheckpoint,
+  scheduleExamCheckpoint,
+} from '@/lib/examCheckpoint'
+import { clearExamDraft, loadExamDraft, saveExamDraft } from '@/lib/examDraft'
 import { ExamDisclaimerStrip } from '@/components/exam/ExamDisclaimerStrip'
 import { ExamInstructionsPanel } from '@/components/exam/ExamInstructionsPanel'
 import { ExamSandTimer } from '@/components/exam/ExamSandTimer'
@@ -59,6 +66,11 @@ export function MockTestPage() {
   const [rulesAcknowledged, setRulesAcknowledged] = useState(false)
   const submittingRef = useRef(false)
   const timerStartedRef = useRef(false)
+  const answersRef = useRef(answers)
+  const markedRef = useRef(marked)
+
+  answersRef.current = answers
+  markedRef.current = marked
 
   const submitTest = useCallback(
     async (reason?: ViolationReason) => {
@@ -67,9 +79,10 @@ export function MockTestPage() {
       setPhase('submitting')
       setSubmitError('')
       if (reason) setViolationNote(VIOLATION_MSG[reason])
+      cancelExamCheckpointSchedule()
 
       const timeTaken = Math.max(0, timeLimit * 60 - secondsLeft)
-      const answerList = Object.entries(answers).map(([questionId, selectedOption]) => ({
+      const answerList = Object.entries(answersRef.current).map(([questionId, selectedOption]) => ({
         questionId: Number(questionId),
         selectedOption,
       }))
@@ -78,6 +91,7 @@ export function MockTestPage() {
           timeTakenSeconds: timeTaken,
           answers: answerList,
         })
+        clearExamDraft(attemptId)
         if (document.fullscreenElement) {
           await document.exitFullscreen().catch(() => {})
         }
@@ -89,7 +103,7 @@ export function MockTestPage() {
         setSubmitOpen(false)
       }
     },
-    [attemptId, answers, timeLimit, secondsLeft, navigate]
+    [attemptId, timeLimit, secondsLeft, navigate]
   )
 
   const onViolation = useCallback(
@@ -102,8 +116,9 @@ export function MockTestPage() {
   const { enterFullscreen } = useExamProctor(phase === 'exam', onViolation)
 
   useEffect(() => {
+    const mockNum = Number(mockId)
     api
-      .post('/attempts/start', { mockTestId: Number(mockId) })
+      .post('/attempts/start', { mockTestId: mockNum })
       .then(async (r) => {
         const id = r.data.attemptId
         setAttemptId(id)
@@ -114,24 +129,72 @@ export function MockTestPage() {
         setMarksWrong(r.data.negativePerWrong ?? 0.25)
         const total = r.data.timeLimitMinutes * 60
         setTotalSeconds(total)
-        setSecondsLeft(total)
-        try {
-          const prog = await api.get(`/attempts/${id}/progress`)
-          const ans: Record<number, string> = {}
-          const mrk: Record<number, boolean> = {}
-          for (const a of prog.data.answers) {
-            if (a.selectedOption) ans[a.questionId] = a.selectedOption
-            if (a.markedForReview) mrk[a.questionId] = true
+
+        const local = loadExamDraft(id)
+        if (local && local.mockId === mockNum) {
+          setAnswers(local.answers)
+          setMarked(local.marked)
+          setSecondsLeft(Math.min(total, Math.max(0, local.secondsLeft)))
+          setCurrent(Math.min(r.data.questions.length - 1, Math.max(0, local.current)))
+        } else {
+          setSecondsLeft(total)
+          try {
+            const prog = await api.get(`/attempts/${id}/progress`)
+            const ans: Record<number, string> = {}
+            const mrk: Record<number, boolean> = {}
+            for (const a of prog.data.answers) {
+              if (a.selectedOption) ans[a.questionId] = a.selectedOption
+              if (a.markedForReview) mrk[a.questionId] = true
+            }
+            setAnswers(ans)
+            setMarked(mrk)
+          } catch {
+            /* fresh */
           }
-          setAnswers(ans)
-          setMarked(mrk)
-        } catch {
-          /* fresh */
         }
         setPhase('gate')
       })
       .catch(() => navigate('/login'))
   }, [mockId, navigate])
+
+  useEffect(() => {
+    if (!attemptId || !mockId) return
+    if (phase === 'submitting') return
+    saveExamDraft({
+      attemptId,
+      mockId: Number(mockId),
+      answers,
+      marked,
+      secondsLeft,
+      current,
+      savedAt: Date.now(),
+    })
+  }, [attemptId, mockId, answers, marked, secondsLeft, current, phase])
+
+  useEffect(() => {
+    if (phase !== 'exam' || !attemptId) return
+
+    const runCheckpoint = (keepalive: boolean) => {
+      const payload = buildCheckpointPayload(answersRef.current, markedRef.current)
+      if (payload.answers.length === 0) return
+      void flushExamCheckpoint(attemptId, payload, keepalive)
+    }
+
+    scheduleExamCheckpoint(attemptId, buildCheckpointPayload(answers, marked))
+
+    const onPageHide = () => runCheckpoint(true)
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') runCheckpoint(true)
+    }
+
+    window.addEventListener('pagehide', onPageHide)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      cancelExamCheckpointSchedule()
+      window.removeEventListener('pagehide', onPageHide)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [phase, attemptId, answers, marked])
 
   const startExam = async () => {
     if (!rulesAcknowledged) return
@@ -163,35 +226,23 @@ export function MockTestPage() {
     }
   }, [secondsLeft, phase, attemptId, submitTest])
 
-  const persist = async (questionId: number, patch: { selectedOption?: string; markedForReview?: boolean }) => {
-    if (!attemptId) return
-    try {
-      await api.post(`/attempts/${attemptId}/answers`, { questionId, ...patch })
-    } catch {
-      /* ignore */
-    }
-  }
-
-  const selectAnswer = async (option: string) => {
+  const selectAnswer = (option: string) => {
     const q = questions[current]
     setAnswers((prev) => ({ ...prev, [q.id]: option }))
-    await persist(q.id, { selectedOption: option })
   }
 
-  const clearAnswer = async () => {
+  const clearAnswer = () => {
     const q = questions[current]
     setAnswers((prev) => {
       const next = { ...prev }
       delete next[q.id]
       return next
     })
-    await persist(q.id, { selectedOption: '' })
   }
 
-  const toggleMark = async (value: boolean, goNext?: boolean) => {
+  const toggleMark = (value: boolean, goNext?: boolean) => {
     const q = questions[current]
     setMarked((prev) => ({ ...prev, [q.id]: value }))
-    await persist(q.id, { markedForReview: value })
     if (goNext && current < questions.length - 1) setCurrent((c) => c + 1)
   }
 
@@ -295,7 +346,6 @@ export function MockTestPage() {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Main question area */}
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8 overscroll-contain">
           <div className="max-w-4xl mx-auto pb-2">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 text-[10px] sm:text-xs">
@@ -391,7 +441,6 @@ export function MockTestPage() {
           </div>
         </main>
 
-        {/* Palette sidebar */}
         <aside className="hidden lg:flex w-56 xl:w-64 flex-col border-l border-white/10 bg-cyber-950/80 p-4 overflow-y-auto">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Palette</p>
           <div className="grid grid-cols-5 gap-1.5">
@@ -423,7 +472,6 @@ export function MockTestPage() {
         </aside>
       </div>
 
-      {/* Mobile palette strip */}
       <div className="lg:hidden shrink-0 border-t border-white/10 bg-cyber-950 p-2 overflow-x-auto pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex gap-1.5 min-w-max px-1">
           {questions.map((ques, i) => (

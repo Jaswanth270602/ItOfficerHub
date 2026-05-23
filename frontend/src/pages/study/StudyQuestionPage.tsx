@@ -56,7 +56,7 @@ export function StudyQuestionPage() {
   const correct = reveal?.correctOption as Choice | undefined
 
   return (
-    <div className="study-panel-inner max-w-3xl">
+    <div className="max-w-3xl">
       <nav className="text-xs text-slate-500 mb-4 flex flex-wrap items-center gap-1">
         <Link to="/study" className="hover:text-neon-cyan">
           Study

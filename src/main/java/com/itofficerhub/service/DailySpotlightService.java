@@ -9,6 +9,7 @@ import com.itofficerhub.repository.DailySpotlightRepository;
 import com.itofficerhub.repository.TestAttemptRepository;
 import com.itofficerhub.util.AppTime;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -41,7 +42,8 @@ public class DailySpotlightService {
 		this.rankingCache = rankingCache;
 	}
 
-	@Transactional
+	/** Own read-write transaction — must not join dashboard @Transactional(readOnly). */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void refreshAfterSubmit(long mockTestId) {
 		mockCatalogService.findByIdIfVisible(mockTestId, Instant.now()).ifPresent(m -> {
 			cleanup(m.getId());
@@ -52,7 +54,7 @@ public class DailySpotlightService {
 		});
 	}
 
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public Optional<ProfileOfDayDto> currentProfile() {
 		return mockCatalogService.featuredMock(Instant.now()).flatMap(mock -> {
 			cleanup(mock.getId());

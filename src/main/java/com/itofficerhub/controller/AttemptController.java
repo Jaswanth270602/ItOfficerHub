@@ -38,6 +38,11 @@ public class AttemptController {
 		attemptService.saveAnswer(id, request);
 	}
 
+	@PostMapping("/{id}/checkpoint")
+	public void checkpoint(@PathVariable Long id, @Valid @RequestBody AttemptCheckpointRequest request) {
+		attemptService.saveCheckpoint(id, request);
+	}
+
 	@PostMapping("/{id}/submit")
 	public AttemptResultDto submit(@PathVariable Long id, @Valid @RequestBody SubmitAttemptRequest request) {
 		return attemptService.submit(id, request);
