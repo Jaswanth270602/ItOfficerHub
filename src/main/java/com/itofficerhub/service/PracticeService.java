@@ -100,20 +100,21 @@ public class PracticeService {
 		int n = 0;
 		for (int i = 0; i < request.questions().size(); i++) {
 			ImportPracticeItem item = request.questions().get(i);
-			validateItem(item, i + 1);
+			final int qNum = i + 1;
+			validateItem(item, qNum);
 			var sec = PracticeCatalog.section(item.sectionId())
 					.orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST,
-							"Question " + (i + 1) + ": unknown sectionId " + item.sectionId()));
+							"Question " + qNum + ": unknown sectionId " + item.sectionId()));
 			PracticeCatalog.subtopic(item.sectionId(), item.subtopicSlug())
 					.orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST,
-							"Question " + (i + 1) + ": unknown subtopicSlug " + item.subtopicSlug()));
+							"Question " + qNum + ": unknown subtopicSlug " + item.subtopicSlug()));
 
 			Topic topic = sec.topic();
 			if (item.topic() != null && !item.topic().isBlank()) {
 				try {
 					topic = Topic.valueOf(item.topic().trim().toUpperCase());
 				} catch (IllegalArgumentException e) {
-					throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + (i + 1) + ": invalid topic");
+					throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + qNum + ": invalid topic");
 				}
 			}
 
@@ -121,7 +122,7 @@ public class PracticeService {
 			try {
 				correct = OptionLabel.valueOf(item.correctOption().trim().toUpperCase());
 			} catch (IllegalArgumentException e) {
-				throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + (i + 1) + ": correctOption must be A–D");
+				throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + qNum + ": correctOption must be A–D");
 			}
 
 			var existing = repository.findBySectionIdAndSubtopicSlug(item.sectionId(), item.subtopicSlug());

@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UpcomingMockBanner } from '@/components/UpcomingMockBanner'
 import { LandingSection } from '@/components/landing/LandingSection'
-import { LandingHeroFallback } from '@/components/landing/LandingHeroScene'
 import { MottoCarousel, type MottoSlide } from '@/components/landing/MottoCarousel'
 import {
   Award,
@@ -30,8 +29,19 @@ import {
 } from 'lucide-react'
 
 const LandingHeroScene = lazy(() =>
-  import('@/components/landing/LandingHeroScene').then((m) => ({ default: m.LandingHeroScene }))
+  import('@/components/landing/LandingHeroScene').then((m) => ({
+    default: m.LandingHeroScene,
+  }))
 )
+
+function HeroSceneFallback() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(59,130,246,0.25),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,rgba(139,92,246,0.2),transparent_50%)]" />
+    </div>
+  )
+}
 
 interface Stats {
   totalMocks: number
@@ -172,7 +182,7 @@ export function LandingPage() {
       <article className="landing-scroll -mt-0">
         {/* ——— Section 1: Hero + Three.js ——— */}
         <LandingSection id="hero" ariaLabelledby="hero-heading" className="overflow-hidden">
-          <Suspense fallback={<LandingHeroFallback />}>
+          <Suspense fallback={<HeroSceneFallback />}>
             <LandingHeroScene />
           </Suspense>
 
