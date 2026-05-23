@@ -343,7 +343,7 @@ public class AttemptService {
 	}
 
 	private List<LeaderboardEntryDto> buildLeaderboard(TestAttempt current, long mockId) {
-		return uniqueRankingService.topLeaderboard(mockId, current.getUser(), 10);
+		return uniqueRankingService.topLeaderboardForMock(current.getMockTest(), current.getUser(), 10);
 	}
 
 	private AttemptResultDto buildDto(TestAttempt attempt, List<AttemptResultDto.QuestionReviewDto> reviews,

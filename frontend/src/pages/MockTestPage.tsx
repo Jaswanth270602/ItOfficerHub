@@ -36,7 +36,7 @@ interface Question {
   optionD: string
 }
 
-type Phase = 'loading' | 'gate' | 'exam' | 'submitting'
+type Phase = 'loading' | 'gate' | 'exam' | 'submitting' | 'error'
 
 const VIOLATION_MSG: Record<ViolationReason, string> = {
   fullscreen: 'You exited fullscreen — the mock was submitted automatically.',
@@ -64,8 +64,11 @@ export function MockTestPage() {
   const [violationNote, setViolationNote] = useState<string | null>(null)
   const [examLang, setExamLang] = useState<ExamLanguage>(() => getExamLanguage())
   const [rulesAcknowledged, setRulesAcknowledged] = useState(false)
+  const [startError, setStartError] = useState('')
+  const [startKey, setStartKey] = useState(0)
   const submittingRef = useRef(false)
   const timerStartedRef = useRef(false)
+  const startRequestedRef = useRef(false)
   const answersRef = useRef(answers)
   const markedRef = useRef(marked)
 
@@ -117,6 +120,10 @@ export function MockTestPage() {
 
   useEffect(() => {
     const mockNum = Number(mockId)
+    if (!mockNum || startRequestedRef.current) return
+    startRequestedRef.current = true
+    setStartError('')
+
     api
       .post('/attempts/start', { mockTestId: mockNum })
       .then(async (r) => {
@@ -154,8 +161,18 @@ export function MockTestPage() {
         }
         setPhase('gate')
       })
-      .catch(() => navigate('/login'))
-  }, [mockId, navigate])
+      .catch((e) => {
+        startRequestedRef.current = false
+        const status = (e as { response?: { status?: number } })?.response?.status
+        if (status === 401 || status === 403) {
+          const target = `/mock/${mockId}`
+          navigate(`/login?redirect=${encodeURIComponent(target)}`, { replace: true })
+          return
+        }
+        setStartError(apiErrorMessage(e, 'Could not start this mock. It may not be live yet or is still loading.'))
+        setPhase('error')
+      })
+  }, [mockId, navigate, startKey])
 
   useEffect(() => {
     if (!attemptId || !mockId) return
@@ -284,9 +301,35 @@ export function MockTestPage() {
         onLangChange={changeLang}
         rulesAcknowledged={rulesAcknowledged}
         onRulesAckChange={setRulesAcknowledged}
-        submitError={submitError}
+        submitError={submitError || startError}
         onStart={startExam}
       />
+    )
+  }
+
+  if (phase === 'error') {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#070b14] gap-4 px-6 text-center">
+        <AlertTriangle className="h-10 w-10 text-amber-400" />
+        <p className="text-slate-200 font-medium max-w-md">{startError}</p>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => {
+              startRequestedRef.current = false
+              setStartError('')
+              setStartKey((k) => k + 1)
+              setPhase('loading')
+            }}
+          >
+            Try again
+          </Button>
+          <Button className="cursor-pointer" onClick={() => navigate('/mocks')}>
+            Back to mocks
+          </Button>
+        </div>
+      </div>
     )
   }
 

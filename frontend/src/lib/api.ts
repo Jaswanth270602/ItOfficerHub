@@ -10,6 +10,18 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status
+    const url = String(error?.config?.url ?? '')
+    if (status === 401 && !url.includes('/auth/login') && !url.includes('/auth/register')) {
+      window.dispatchEvent(new Event('auth:session-expired'))
+    }
+    return Promise.reject(error)
+  }
+)
+
 export function apiErrorMessage(err: unknown, fallback = 'Request failed'): string {
   const ax = err as { response?: { data?: { message?: string; error?: string } }; message?: string }
   return ax.response?.data?.message || ax.response?.data?.error || ax.message || fallback

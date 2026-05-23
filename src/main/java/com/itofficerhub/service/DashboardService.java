@@ -49,7 +49,9 @@ public class DashboardService {
 		List<LeaderboardEntryDto> todayBoard = mockOfDay != null
 				? rankingCache.topLeaderboardToday(mockOfDay.id(), viewerId, 10)
 				: List.of();
-		ProfileOfDayDto profile = dailySpotlightService.currentProfile().orElse(null);
+		ProfileOfDayDto profile = mockOfDay != null
+				? dailySpotlightService.currentProfile().orElse(null)
+				: null;
 		PublicStatsDto stats = publicService.getStats();
 		return new DashboardOverviewDto(
 				mockOfDay,

@@ -1,9 +1,12 @@
 package com.itofficerhub.service;
 
 import com.itofficerhub.dto.LeaderboardEntryDto;
+import com.itofficerhub.entity.MockTest;
 import com.itofficerhub.entity.TestAttempt;
 import com.itofficerhub.entity.User;
 import com.itofficerhub.repository.TestAttemptRepository;
+import com.itofficerhub.util.AppTime;
+import com.itofficerhub.util.MockVisibility;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -64,5 +67,13 @@ public class UniqueRankingService {
 
 	public List<LeaderboardEntryDto> topLeaderboard(long mockId, User currentUser, int limit) {
 		return rankingCache.topLeaderboard(mockId, currentUser.getId(), limit);
+	}
+
+	/** Daily board for today's scheduled mock; all-time best-per-user for older mocks. */
+	public List<LeaderboardEntryDto> topLeaderboardForMock(MockTest mock, User currentUser, int limit) {
+		if (MockVisibility.goLiveDate(mock).equals(AppTime.today())) {
+			return rankingCache.topLeaderboardToday(mock.getId(), currentUser.getId(), limit);
+		}
+		return topLeaderboard(mock.getId(), currentUser, limit);
 	}
 }

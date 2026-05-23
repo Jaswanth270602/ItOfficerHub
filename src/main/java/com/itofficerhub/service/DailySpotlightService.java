@@ -8,6 +8,7 @@ import com.itofficerhub.entity.User;
 import com.itofficerhub.repository.DailySpotlightRepository;
 import com.itofficerhub.repository.TestAttemptRepository;
 import com.itofficerhub.util.AppTime;
+import com.itofficerhub.util.MockVisibility;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +46,16 @@ public class DailySpotlightService {
 	/** Own read-write transaction — must not join dashboard @Transactional(readOnly). */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void refreshAfterSubmit(long mockTestId) {
-		mockCatalogService.findByIdIfVisible(mockTestId, Instant.now()).ifPresent(m -> {
+		Instant now = Instant.now();
+		mockCatalogService.featuredMock(now).ifPresent(m -> {
+			if (m.getId() != mockTestId) {
+				return;
+			}
+			if (!MockVisibility.goLiveDate(m).equals(AppTime.today())) {
+				return;
+			}
 			cleanup(m.getId());
-			if (spotlightRepository.findActiveForMock(m.getId(), Instant.now()).isPresent()) {
+			if (spotlightRepository.findActiveForMock(m.getId(), now).isPresent()) {
 				return;
 			}
 			tryAward(m);

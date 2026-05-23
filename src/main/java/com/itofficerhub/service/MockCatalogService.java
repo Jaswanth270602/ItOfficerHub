@@ -30,17 +30,13 @@ public class MockCatalogService {
 				.toList();
 	}
 
+	/** Today's scheduled daily mock only (IST go-live date = today). No fallback to older live mocks. */
 	@Transactional(readOnly = true)
 	public Optional<MockTest> featuredMock(Instant now) {
 		LocalDate today = AppTime.today();
-		List<MockTest> visible = visibleMocks(now);
-		Optional<MockTest> todaysSlot = visible.stream()
+		return visibleMocks(now).stream()
 				.filter(m -> MockVisibility.goLiveDate(m).equals(today))
 				.max(Comparator.comparing(MockVisibility::effectiveGoLiveAt));
-		if (todaysSlot.isPresent()) {
-			return todaysSlot;
-		}
-		return visible.stream().findFirst();
 	}
 
 	@Transactional(readOnly = true)

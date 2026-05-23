@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import api from './api'
 
 interface User {
@@ -25,14 +25,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+function readStoredUser(token: string | null): User | null {
+  if (!token) return null
+  try {
+    const stored = localStorage.getItem('user')
+    if (stored) return JSON.parse(stored) as User
+  } catch {
+    /* ignore corrupt storage */
+  }
+  return null
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
+  const [user, setUser] = useState<User | null>(() => readStoredUser(localStorage.getItem('token')))
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setToken(null)
+    setUser(null)
+  }, [])
 
   useEffect(() => {
-    const stored = localStorage.getItem('user')
-    if (stored && token) setUser(JSON.parse(stored))
-  }, [token])
+    const onSessionExpired = () => logout()
+    window.addEventListener('auth:session-expired', onSessionExpired)
+    return () => window.removeEventListener('auth:session-expired', onSessionExpired)
+  }, [logout])
 
   const saveAuth = (data: { token: string; userId: number; email: string; name: string; role: string }) => {
     localStorage.setItem('token', data.token)
@@ -65,13 +84,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...rest,
     })
     saveAuth(data)
-  }
-
-  const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    setToken(null)
-    setUser(null)
   }
 
   return (

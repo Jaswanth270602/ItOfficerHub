@@ -56,15 +56,15 @@ export default function App() {
             <Route path="/revision" element={<PrivateRoute><RevisionPage /></PrivateRoute>} />
             <Route path="/history" element={<PrivateRoute><HistoryPage /></PrivateRoute>} />
             <Route path="/community" element={<PrivateRoute><CommunityPage /></PrivateRoute>} />
+            <Route
+              path="/mock/:mockId"
+              element={
+                <PrivateRoute>
+                  <MockTestPage />
+                </PrivateRoute>
+              }
+            />
           </Route>
-          <Route
-            path="/mock/:mockId"
-            element={
-              <PrivateRoute>
-                <MockTestPage />
-              </PrivateRoute>
-            }
-          />
           <Route path="/admin" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
           <Route path="/admin/mocks/:id" element={<AdminRoute><AdminMockPage /></AdminRoute>} />

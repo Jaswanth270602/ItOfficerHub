@@ -392,9 +392,17 @@ export function DashboardPage() {
                       </p>
                     )}
                   </div>
+                ) : featured ? (
+                  <p className="text-sm text-slate-500 text-center py-8">
+                    Attempt today&apos;s mock — top scorer among today&apos;s submissions becomes aspirant of the day for 24 hours.
+                  </p>
+                ) : overview?.upcomingMock ? (
+                  <p className="text-sm text-slate-500 text-center py-8">
+                    Aspirant of the day unlocks when today&apos;s mock is live ({overview.upcomingMock.goLiveDateLabel}).
+                  </p>
                 ) : (
                   <p className="text-sm text-slate-500 text-center py-8">
-                    Attempt today&apos;s mock today — top scorer among today&apos;s submissions becomes aspirant of the day for 24 hours.
+                    No daily mock for today yet. Check back after the next schedule.
                   </p>
                 )}
               </CardContent>
@@ -445,9 +453,18 @@ export function DashboardPage() {
                       </li>
                     ))}
                   </ul>
-                ) : (
+                ) : featured ? (
                   <p className="text-sm text-slate-500 px-4 py-10 text-center">
                     No scores yet — be the first to attempt today&apos;s mock.
+                  </p>
+                ) : overview?.upcomingMock ? (
+                  <p className="text-sm text-slate-500 px-4 py-10 text-center">
+                    Daily champions unlock when today&apos;s mock goes live (
+                    {overview.upcomingMock.goLiveDateLabel}). All-time aggregate ranks stay below.
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-500 px-4 py-10 text-center">
+                    No daily mock scheduled for today yet. All-time aggregate ranks are on the right.
                   </p>
                 )}
               </CardContent>
