@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ServerWarmupGate } from '@/components/ServerWarmupGate'
+import { ToastProvider } from '@/components/ui/toast'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { Layout } from '@/components/Layout'
 import { LandingPage } from '@/pages/LandingPage'
@@ -39,9 +40,10 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ServerWarmupGate>
-        <BrowserRouter>
+    <ToastProvider>
+      <AuthProvider>
+        <ServerWarmupGate>
+          <BrowserRouter>
           <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<LandingPage />} />
@@ -78,5 +80,6 @@ export default function App() {
         </BrowserRouter>
       </ServerWarmupGate>
     </AuthProvider>
+    </ToastProvider>
   )
 }

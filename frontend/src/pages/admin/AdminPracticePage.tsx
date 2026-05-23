@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '@/lib/api'
-import type { PracticeCatalog, PracticeSection } from '@/lib/practiceCatalog'
-import { PRACTICE_TARGET_PER_SUBTOPIC } from '@/lib/practiceCatalog'
+import {
+  PRACTICE_INITIAL_TARGET_PER_SUBTOPIC,
+  practiceSubtopicDisplayTarget,
+  type PracticeCatalog,
+  type PracticeSection,
+} from '@/lib/practiceCatalog'
+import { PRACTICE_IMPORT_BATCH_SIZE } from '@/lib/buildPracticePrompt'
 import { ImportPracticeModal } from '@/pages/admin/ImportPracticeModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -55,7 +60,7 @@ export function AdminPracticePage() {
   }
 
   const totalMcqs = catalog?.availableQuestions ?? 0
-  const targetTotal = (catalog?.totalSubtopics ?? 0) * PRACTICE_TARGET_PER_SUBTOPIC
+  const targetTotal = (catalog?.totalSubtopics ?? 0) * PRACTICE_INITIAL_TARGET_PER_SUBTOPIC
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10 pb-12">
@@ -68,7 +73,7 @@ export function AdminPracticePage() {
             <BookOpen className="h-7 w-7 text-neon-cyan" /> Practice Q&amp;A
           </h1>
           <p className="text-sm text-slate-400 mt-2 max-w-xl leading-relaxed">
-            Browse syllabus → pick a subtopic → import 20 MCQs with detailed solutions via Claude. Upserts by question number.
+            Browse syllabus → pick a subtopic → import MCQs in batches of {PRACTICE_IMPORT_BATCH_SIZE} via Claude. Upserts by question number — add more anytime.
           </p>
         </div>
       </div>
@@ -86,7 +91,7 @@ export function AdminPracticePage() {
             </div>
             <div>
               <p className="text-2xl font-bold tabular-nums">{targetTotal > 0 ? Math.round((totalMcqs / targetTotal) * 100) : 0}%</p>
-              <p className="text-slate-500 text-xs">Toward {PRACTICE_TARGET_PER_SUBTOPIC}/subtopic goal</p>
+              <p className="text-slate-500 text-xs">Toward {PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}/subtopic goal</p>
             </div>
           </CardContent>
         </Card>
@@ -159,20 +164,24 @@ function SectionBlock({
         <CardContent className="pt-0 pb-3 px-2 sm:px-3">
           <ul className="divide-y divide-cyber-800/80 rounded-lg border border-cyber-800 overflow-hidden">
             {section.subtopics.map((st) => {
-              const pct = Math.min(100, Math.round((st.questionCount / PRACTICE_TARGET_PER_SUBTOPIC) * 100))
-              const full = st.questionCount >= PRACTICE_TARGET_PER_SUBTOPIC
+              const target = practiceSubtopicDisplayTarget(st.questionCount)
+              const pct =
+                st.questionCount === 0
+                  ? 0
+                  : Math.min(100, Math.round((st.questionCount / PRACTICE_INITIAL_TARGET_PER_SUBTOPIC) * 100))
+              const metGoal = st.questionCount >= PRACTICE_INITIAL_TARGET_PER_SUBTOPIC
               return (
                 <li key={st.slug} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-3 py-3 bg-cyber-950/40">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-200">{st.title}</p>
                     <div className="mt-1.5 h-1.5 rounded-full bg-cyber-800 overflow-hidden max-w-xs">
                       <div
-                        className={cn('h-full rounded-full transition-all', full ? 'bg-emerald-500' : 'bg-neon-cyan')}
+                        className={cn('h-full rounded-full transition-all', metGoal ? 'bg-emerald-500' : 'bg-neon-cyan')}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
                     <p className="text-[10px] text-slate-500 mt-1">
-                      {st.questionCount} / {PRACTICE_TARGET_PER_SUBTOPIC} questions
+                      {st.questionCount} / {target} questions
                     </p>
                   </div>
                   <Button
@@ -191,7 +200,7 @@ function SectionBlock({
                     }
                   >
                     <FileJson className="h-4 w-4" />
-                    {st.questionCount > 0 ? 'Import more' : 'Import 20'}
+                    {st.questionCount > 0 ? 'Import more' : `Import ${PRACTICE_IMPORT_BATCH_SIZE}`}
                   </Button>
                 </li>
               )

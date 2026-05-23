@@ -11,7 +11,16 @@ export const SECTION_ICONS: Record<string, string> = {
   'cloud-digital': 'Cloud',
 }
 
-export const PRACTICE_TARGET_PER_SUBTOPIC = 20
+export const PRACTICE_INITIAL_TARGET_PER_SUBTOPIC = 50
+
+/** Default goal per subtopic (legacy alias). */
+export const PRACTICE_TARGET_PER_SUBTOPIC = PRACTICE_INITIAL_TARGET_PER_SUBTOPIC
+
+/** Denominator for X/Y display — 50 when empty; otherwise tracks actual question count. */
+export function practiceSubtopicDisplayTarget(questionCount: number): number {
+  if (questionCount === 0) return PRACTICE_INITIAL_TARGET_PER_SUBTOPIC
+  return questionCount
+}
 
 export interface PracticeSubtopic {
   slug: string

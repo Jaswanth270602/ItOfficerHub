@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import api from '@/lib/api'
+import { toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,9 +49,10 @@ export function AdminMockPage() {
   }
 
   const deleteQ = async (qid: number) => {
-    if (!confirm('Delete question?')) return
+    if (!(await toast.confirm('Delete question?'))) return
     await api.delete(`/admin/questions/${qid}`)
     load()
+    toast.success('Question deleted')
   }
 
   return (

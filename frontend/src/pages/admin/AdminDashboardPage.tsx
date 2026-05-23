@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
+import { toast } from '@/components/ui/toast'
 import { ScheduleMockModal } from '@/components/admin/ScheduleMockModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -69,15 +70,17 @@ export function AdminDashboardPage() {
   }
 
   const cancelSchedule = async (id: number) => {
-    if (!confirm('Cancel schedule and return mock to draft?')) return
+    if (!(await toast.confirm('Cancel schedule and return mock to draft?'))) return
     await api.delete(`/admin/mocks/${id}/schedule`)
     load()
+    toast.info('Schedule cancelled — mock is draft again')
   }
 
   const deleteMock = async (id: number) => {
-    if (!confirm('Delete this mock and all questions?')) return
+    if (!(await toast.confirm('Delete this mock and all questions?'))) return
     await api.delete(`/admin/mocks/${id}`)
     load()
+    toast.success('Mock deleted')
   }
 
   return (

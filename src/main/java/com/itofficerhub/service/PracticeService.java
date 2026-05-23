@@ -19,7 +19,7 @@ import java.util.Map;
 @Service
 public class PracticeService {
 
-	public static final int TARGET_QUESTIONS_PER_SUBTOPIC = 20;
+	public static final int TARGET_QUESTIONS_PER_SUBTOPIC = 50;
 
 	private final PracticeQuestionRepository repository;
 

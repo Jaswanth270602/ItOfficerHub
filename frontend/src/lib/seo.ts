@@ -3,10 +3,10 @@ export const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined)?.r
   || 'https://itofficerhub.in'
 
 export const SITE_NAME = 'ItOfficerHub'
-export const SITE_TAGLINE = 'Free IBPS SO IT Officer, PSU IT & TCS NQT Mock Tests'
+export const SITE_TAGLINE = 'Crack IBPS SO IT Officer — 100% free, no login for prep'
 
 export const DEFAULT_DESCRIPTION =
-  'ItOfficerHub — free mock tests for IBPS SO IT Officer, PSU IT Officer, NIACL/LIC/GIC IT, and TCS NQT aptitude (quant, reasoning, verbal). All-India rank, cutoff, solutions. 100% free.'
+  'Crack IBPS SO IT Officer with free topic-wise Study Q&A — no login needed. IBPS SO IT, PSU IT, NIACL/LIC & TCS NQT mocks with All-India rank. 100% free.'
 
 export const DEFAULT_KEYWORDS = [
   'ItOfficerHub',

@@ -24,6 +24,7 @@ import {
   Sparkles,
   Target,
   Trophy,
+  Unlock,
   Users,
   Zap,
 } from 'lucide-react'
@@ -60,6 +61,13 @@ interface Mock {
   attemptsCount: number
 }
 
+const EXAM_BADGES = [
+  { label: 'IBPS SO IT', href: '/mocks', className: 'border-neon-cyan/45 bg-neon-cyan/10 text-neon-cyan' },
+  { label: 'TCS NQT', href: '/tcs-nqt', className: 'border-neon-purple/45 bg-neon-purple/10 text-neon-purple' },
+  { label: 'PSU IT', href: '/mocks', className: 'border-neon-blue/45 bg-neon-blue/10 text-neon-blue' },
+  { label: 'NIACL / LIC', href: '/syllabus', className: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
+] as const
+
 const MOTTO_SLIDES: MottoSlide[] = [
   {
     quote: 'Practice daily. Rank nationally. Win your IT Officer dream.',
@@ -70,6 +78,11 @@ const MOTTO_SLIDES: MottoSlide[] = [
     quote: 'Built by IT officers, for IT officers — not another generic test app.',
     tag: 'By aspirants, for aspirants',
     accent: 'purple',
+  },
+  {
+    quote: 'Study Q&A with zero signup — unlike Testbook or Oliveboard. Mocks need a free account for rank.',
+    tag: 'No login for prep',
+    accent: 'emerald',
   },
   {
     quote: '100% free forever. No ads. No paywalls. No API keys.',
@@ -92,7 +105,7 @@ const FEATURES = [
   {
     icon: BookOpen,
     title: 'Topic-wise Study Q&A',
-    desc: 'IndiaBIX-style syllabus — one MCQ per subtopic with solutions. CN, DBMS, OS, Security & more.',
+    desc: 'IndiaBIX-style syllabus — browse CN, DBMS, OS & Security with solutions. No login required.',
   },
   {
     icon: Zap,
@@ -163,8 +176,8 @@ export function LandingPage() {
     <>
       <Seo
         path="/"
-        title="Free IBPS SO IT Officer, PSU IT & TCS NQT Mock Tests"
-        description="ItOfficerHub — the IT Officer Hub for free IBPS SO IT Officer mock tests, PSU IT Officer preparation (NIACL, LIC, GIC, RBI), and TCS NQT aptitude practice. Quant, reasoning, verbal, CN, DBMS, OS. All-India rank & solutions."
+        title="Crack IBPS SO IT Officer — 100% Free, No Login for Prep"
+        description="Crack IBPS SO IT Officer with free topic-wise Study Q&A — no login needed. IBPS SO IT, PSU IT, NIACL/LIC & TCS NQT mocks with All-India rank. 100% free."
         keywords="ItOfficerHub, IT Officer Hub, it officer hub, IBPS SO IT Officer mock test free, IBPS IT Officer, PSU IT Officer, TCS NQT mock test, TCS NQT aptitude, quantitative aptitude, logical reasoning, verbal ability, bank IT officer, free mock test"
         jsonLd={[
           faqJsonLd(),
@@ -186,39 +199,58 @@ export function LandingPage() {
             <LandingHeroScene />
           </Suspense>
 
-          <div className="relative z-10 page-container flex flex-col items-center text-center px-3 sm:px-4 pt-8 pb-24">
-            <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-8">
-              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-neon-purple/30 bg-neon-purple/10 text-xs sm:text-sm text-neon-purple">
-                <Zap className="h-4 w-4 shrink-0" /> 100% Free · IBPS SO IT · TCS NQT
+          <div className="relative z-10 page-container flex flex-col items-center text-center px-3 sm:px-4 pt-6 sm:pt-8 pb-24">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mb-5 sm:mb-6 w-full max-w-2xl">
+              {EXAM_BADGES.map(({ label, href, className }) => (
+                <Link
+                  key={label}
+                  to={href}
+                  className={`inline-flex items-center px-3.5 sm:px-4 py-2 rounded-lg border text-xs sm:text-sm font-semibold tracking-wide hover:brightness-110 transition-all ${className}`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-7">
+              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-xs sm:text-sm text-emerald-300 font-medium">
+                <Unlock className="h-4 w-4 shrink-0" /> Study prep · no login needed
               </span>
-              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs sm:text-sm text-emerald-300">
-                <ShieldCheck className="h-4 w-4 shrink-0" /> Daily mock at midnight IST
+              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-neon-purple/30 bg-neon-purple/10 text-xs sm:text-sm text-neon-purple">
+                <Zap className="h-4 w-4 shrink-0" /> 100% free · no ads
+              </span>
+              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-cyber-600 bg-cyber-900/60 text-xs sm:text-sm text-slate-400">
+                <ShieldCheck className="h-4 w-4 shrink-0" /> Mocks · free account for rank
               </span>
             </div>
 
             <h1
               id="hero-heading"
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-5 sm:mb-6 leading-tight tracking-tight max-w-4xl"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold mb-4 sm:mb-5 leading-[1.12] tracking-tight max-w-4xl"
             >
-              ItOfficerHub — Free IBPS SO IT Officer
+              Crack IBPS SO IT Officer.
               <br />
               <span className="bg-gradient-to-r from-neon-blue via-neon-cyan to-neon-purple bg-clip-text text-transparent">
-                &amp; TCS NQT Mock Tests
+                100% free — no login for prep.
               </span>
             </h1>
 
+            <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed">
+              Topic-wise Study Q&amp;A opens instantly — CN, DBMS, OS, Security &amp; more. No signup wall like
+              Testbook or Oliveboard.
+            </p>
             <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-2">
               20 Questions · 15 Minutes · P +1 · N −0.25 marking
             </p>
             <p className="text-slate-500 mb-8 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-              India&apos;s free <strong className="text-slate-300">IT Officer Hub</strong> for bank IT Officer exams
-              and campus aptitude. Daily mocks, All-India rank, cutoff analysis, and full solutions.
+              Daily mocks, All-India rank &amp; cutoff need a <strong className="text-slate-300">free account</strong> — prep
+              never does.
             </p>
 
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 w-full sm:w-auto max-w-md sm:max-w-none">
               <Link to="/study" className="w-full sm:w-auto">
                 <Button size="lg" className="cursor-pointer w-full min-h-[48px] gap-2">
-                  <FolderOpen className="h-5 w-5 shrink-0" /> Topic-wise Study
+                  <FolderOpen className="h-5 w-5 shrink-0" /> Study Q&amp;A — no login
                 </Button>
               </Link>
               <Link to="/dashboard" className="w-full sm:w-auto">

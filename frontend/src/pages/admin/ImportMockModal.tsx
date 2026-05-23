@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import api from '@/lib/api'
+import api, { apiErrorMessage } from '@/lib/api'
+import { toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -84,6 +85,7 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
         return
       }
       await api.post('/admin/mocks/import', payload)
+      toast.success('Mock imported successfully')
       onSuccess()
       onOpenChange(false)
       setJsonText('')
@@ -93,8 +95,9 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
       if (err instanceof SyntaxError) {
         setError('Invalid JSON — remove markdown code fences and try again')
       } else {
-        const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-        setError(msg || 'Import failed')
+        const msg = apiErrorMessage(err, 'Import failed')
+        setError(msg)
+        toast.error(msg)
       }
     } finally {
       setLoading(false)

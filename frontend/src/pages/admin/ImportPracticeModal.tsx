@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import api, { apiErrorMessage } from '@/lib/api'
-import { buildPracticePrompt } from '@/lib/buildPracticePrompt'
-import { PRACTICE_TARGET_PER_SUBTOPIC } from '@/lib/practiceCatalog'
+import { buildPracticePrompt, PRACTICE_IMPORT_BATCH_SIZE } from '@/lib/buildPracticePrompt'
+import { PRACTICE_INITIAL_TARGET_PER_SUBTOPIC, practiceSubtopicDisplayTarget } from '@/lib/practiceCatalog'
+import { toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Copy, FileJson } from 'lucide-react'
@@ -42,12 +43,12 @@ export function ImportPracticeModal({
 }: Props) {
   const [jsonText, setJsonText] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const displayTarget = practiceSubtopicDisplayTarget(existingCount)
 
   const copyPrompt = async () => {
     if (!sectionId || !subtopicSlug) {
-      setError('Select a subtopic first')
+      toast.warning('Select a subtopic first')
       return
     }
     try {
@@ -59,15 +60,15 @@ export function ImportPracticeModal({
       )
       await navigator.clipboard.writeText(text)
       setCopied(true)
+      toast.success('Claude prompt copied to clipboard')
       setTimeout(() => setCopied(false), 2500)
     } catch {
-      setError('Could not copy prompt')
+      toast.error('Could not copy prompt')
     }
   }
 
   const submit = async () => {
     setLoading(true)
-    setError('')
     try {
       const body = JSON.parse(stripMarkdownFences(jsonText))
       const payload = Array.isArray(body) ? { questions: body } : body.questions ? body : { questions: [body] }
@@ -75,12 +76,12 @@ export function ImportPracticeModal({
       onSuccess()
       onOpenChange(false)
       setJsonText('')
-      alert(`Imported ${res.data.imported} practice question(s).`)
+      toast.success(`Imported ${res.data.imported} practice question(s).`)
     } catch (e: unknown) {
       if (e instanceof SyntaxError) {
-        setError('Invalid JSON — check commas and quotes')
+        toast.error('Invalid JSON — check commas and quotes')
       } else {
-        setError(apiErrorMessage(e, 'Import failed'))
+        toast.error(apiErrorMessage(e, 'Import failed'))
       }
     } finally {
       setLoading(false)
@@ -99,8 +100,9 @@ export function ImportPracticeModal({
           </DialogTitle>
         </DialogHeader>
         <p className="text-sm text-slate-400 leading-relaxed">
-          Import up to {PRACTICE_TARGET_PER_SUBTOPIC} MCQs per subtopic with detailed explanations. Current:{' '}
-          <strong className="text-white">{existingCount}</strong> / {PRACTICE_TARGET_PER_SUBTOPIC}. Upserts by{' '}
+          Import MCQs in batches of {PRACTICE_IMPORT_BATCH_SIZE} — no hard cap, add more anytime. Current:{' '}
+          <strong className="text-white">{existingCount}</strong> / {displayTarget}. Goal:{' '}
+          {PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}+ per subtopic. Upserts by{' '}
           <code className="text-neon-cyan text-xs">questionNumber</code>.
         </p>
         <Button
@@ -111,7 +113,7 @@ export function ImportPracticeModal({
           onClick={() => void copyPrompt()}
           disabled={!sectionId || !subtopicSlug}
         >
-          <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : `Copy Claude prompt (${PRACTICE_TARGET_PER_SUBTOPIC} Qs)`}
+          <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : `Copy Claude prompt (${PRACTICE_IMPORT_BATCH_SIZE} Qs)`}
         </Button>
         <textarea
           className="w-full h-64 rounded-lg border border-cyber-700 bg-cyber-900/80 p-3 text-xs font-mono text-slate-200"
@@ -119,7 +121,6 @@ export function ImportPracticeModal({
           value={jsonText}
           onChange={(e) => setJsonText(e.target.value)}
         />
-        {error && <p className="text-sm text-red-400">{error}</p>}
         <div className="flex gap-2 justify-end">
           <Button variant="outline" className="cursor-pointer" onClick={() => onOpenChange(false)}>
             Cancel
