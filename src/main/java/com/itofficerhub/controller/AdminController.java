@@ -4,6 +4,7 @@ import com.itofficerhub.dto.*;
 import com.itofficerhub.service.AdminService;
 import com.itofficerhub.service.PracticeService;
 import com.itofficerhub.service.VisitTrackingService;
+import com.itofficerhub.util.ImportPayloadCodec;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -15,12 +16,14 @@ public class AdminController {
 	private final AdminService adminService;
 	private final PracticeService practiceService;
 	private final VisitTrackingService visitTrackingService;
+	private final ImportPayloadCodec importPayloadCodec;
 
 	public AdminController(AdminService adminService, PracticeService practiceService,
-			VisitTrackingService visitTrackingService) {
+			VisitTrackingService visitTrackingService, ImportPayloadCodec importPayloadCodec) {
 		this.adminService = adminService;
 		this.practiceService = practiceService;
 		this.visitTrackingService = visitTrackingService;
+		this.importPayloadCodec = importPayloadCodec;
 	}
 
 	@GetMapping("/visitors")
@@ -125,9 +128,8 @@ public class AdminController {
 
 	/** Base64-wrapped JSON — use when Cloudflare/WAF blocks plain mock import bodies. */
 	@PostMapping("/mocks/import-safe")
-	public MockTestAdminDto importMockSafe(@Valid @RequestBody ImportEncodedRequest wrapped,
-			com.itofficerhub.util.ImportPayloadCodec codec) {
-		return adminService.importMock(codec.decodeMock(wrapped.payload()));
+	public MockTestAdminDto importMockSafe(@Valid @RequestBody ImportEncodedRequest wrapped) {
+		return adminService.importMock(importPayloadCodec.decodeMock(wrapped.payload()));
 	}
 
 	@PostMapping("/practice/import")
@@ -137,9 +139,8 @@ public class AdminController {
 	}
 
 	@PostMapping("/practice/import-safe")
-	public java.util.Map<String, Object> importPracticeSafe(@Valid @RequestBody ImportEncodedRequest wrapped,
-			com.itofficerhub.util.ImportPayloadCodec codec) {
-		int count = practiceService.importQuestions(codec.decodePractice(wrapped.payload()));
+	public java.util.Map<String, Object> importPracticeSafe(@Valid @RequestBody ImportEncodedRequest wrapped) {
+		int count = practiceService.importQuestions(importPayloadCodec.decodePractice(wrapped.payload()));
 		return java.util.Map.of("imported", count);
 	}
 
