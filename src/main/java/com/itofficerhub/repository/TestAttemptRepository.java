@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface TestAttemptRepository extends JpaRepository<TestAttempt, Long> {
 
+	void deleteByMockTestId(Long mockTestId);
+
 	@Query("""
 			SELECT a FROM TestAttempt a
 			JOIN FETCH a.mockTest

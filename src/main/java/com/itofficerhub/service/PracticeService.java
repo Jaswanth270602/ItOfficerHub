@@ -12,9 +12,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @Service
 public class PracticeService {
@@ -128,6 +130,25 @@ public class PracticeService {
 
 	@Transactional
 	public int importQuestions(ImportPracticeRequest request) {
+		Map<String, List<Integer>> batchIndices = new HashMap<>();
+		for (int i = 0; i < request.questions().size(); i++) {
+			ImportPracticeItem item = request.questions().get(i);
+			String slotKey = item.sectionId() + "/" + item.subtopicSlug();
+			batchIndices.computeIfAbsent(slotKey, k -> new ArrayList<>()).add(i);
+		}
+
+		Map<String, Integer> numberOffsets = new HashMap<>();
+		for (var entry : batchIndices.entrySet()) {
+			String slotKey = entry.getKey();
+			String[] parts = slotKey.split("/", 2);
+			String sectionId = parts[0];
+			String subtopicSlug = parts[1];
+			int maxExisting = repository.findMaxQuestionNumber(sectionId, subtopicSlug);
+			if (maxExisting > 0 && isContiguousFromOne(request.questions(), entry.getValue())) {
+				numberOffsets.put(slotKey, maxExisting);
+			}
+		}
+
 		int n = 0;
 		Map<String, Integer> autoNum = new HashMap<>();
 		for (int i = 0; i < request.questions().size(); i++) {
@@ -158,12 +179,26 @@ public class PracticeService {
 			}
 
 			String slotKey = item.sectionId() + "/" + item.subtopicSlug();
-			int questionNumber = item.questionNumber() != null && item.questionNumber() > 0
+			int baseNumber = item.questionNumber() != null && item.questionNumber() > 0
 					? item.questionNumber()
 					: autoNum.merge(slotKey, 1, Integer::sum);
+			int offset = numberOffsets.getOrDefault(slotKey, 0);
+			int questionNumber = baseNumber + offset;
 
+			long existingCount = repository.countBySectionIdAndSubtopicSlug(item.sectionId(), item.subtopicSlug());
 			var existing = repository.findBySectionIdAndSubtopicSlugAndQuestionNumber(
 					item.sectionId(), item.subtopicSlug(), questionNumber);
+			if (existing.isEmpty() && existingCount >= TARGET_QUESTIONS_PER_SUBTOPIC) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Subtopic " + item.subtopicSlug() + " already has "
+								+ TARGET_QUESTIONS_PER_SUBTOPIC + " questions");
+			}
+			if (questionNumber > TARGET_QUESTIONS_PER_SUBTOPIC) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"Question " + qNum + ": questionNumber " + questionNumber
+								+ " exceeds max " + TARGET_QUESTIONS_PER_SUBTOPIC + " per subtopic");
+			}
+
 			PracticeQuestion pq = existing.orElseGet(PracticeQuestion::new);
 			pq.setSectionId(item.sectionId());
 			pq.setSubtopicSlug(item.subtopicSlug());
@@ -182,6 +217,18 @@ public class PracticeService {
 			n++;
 		}
 		return n;
+	}
+
+	private boolean isContiguousFromOne(List<ImportPracticeItem> items, List<Integer> indices) {
+		List<Integer> numbers = new ArrayList<>();
+		for (int i = 0; i < indices.size(); i++) {
+			ImportPracticeItem item = items.get(indices.get(i));
+			numbers.add(item.questionNumber() != null && item.questionNumber() > 0
+					? item.questionNumber()
+					: i + 1);
+		}
+		numbers.sort(Integer::compareTo);
+		return IntStream.range(0, numbers.size()).allMatch(i -> numbers.get(i) == i + 1);
 	}
 
 	private void validateItem(ImportPracticeItem item, int index) {

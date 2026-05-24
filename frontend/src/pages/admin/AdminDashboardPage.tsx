@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import api from '@/lib/api'
 import { toast } from '@/components/ui/toast'
 import { ScheduleMockModal } from '@/components/admin/ScheduleMockModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImportMockModal } from './ImportMockModal'
-import { BarChart3, BookOpen, CalendarClock, FileJson, FileQuestion, Users, Zap } from 'lucide-react'
+import { BarChart3, BookOpen, CalendarClock, ChevronLeft, ChevronRight, FileJson, FileQuestion, Search, Users, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Dashboard {
@@ -42,12 +42,18 @@ const STATUS_STYLE: Record<LiveStatus, string> = {
   LIVE: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
 }
 
+const PAGE_SIZE = 10
+type StatusFilter = 'ALL' | LiveStatus
+
 export function AdminDashboardPage() {
   const [stats, setStats] = useState<Dashboard | null>(null)
   const [mocks, setMocks] = useState<MockAdmin[]>([])
   const [importOpen, setImportOpen] = useState(false)
   const [scheduleFor, setScheduleFor] = useState<MockAdmin | null>(null)
   const [practiceStats, setPracticeStats] = useState<{ available: number; total: number } | null>(null)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
+  const [page, setPage] = useState(1)
 
   const load = () => {
     api.get('/admin/dashboard').then((r) => setStats(r.data))
@@ -59,9 +65,44 @@ export function AdminDashboardPage() {
 
   useEffect(() => { load() }, [])
 
-  const togglePublish = async (id: number) => {
-    await api.patch(`/admin/mocks/${id}/publish`)
-    load()
+  const filteredMocks = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return mocks.filter((m) => {
+      if (statusFilter !== 'ALL' && m.liveStatus !== statusFilter) return false
+      if (!q) return true
+      return (
+        m.title.toLowerCase().includes(q)
+        || (m.mockCode?.toLowerCase().includes(q) ?? false)
+        || (m.examTarget?.toLowerCase().includes(q) ?? false)
+      )
+    })
+  }, [mocks, search, statusFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredMocks.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const pagedMocks = filteredMocks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, statusFilter])
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
+
+  const togglePublish = async (mock: MockAdmin) => {
+    const unpublishing = mock.liveStatus === 'LIVE'
+    const message = unpublishing
+      ? 'Unpublish this mock? It will be hidden from students immediately.'
+      : 'Publish this mock now? Students will see it immediately.'
+    if (!(await toast.confirm(message))) return
+    try {
+      await api.patch(`/admin/mocks/${mock.id}/publish`)
+      load()
+      toast.success(unpublishing ? 'Mock unpublished' : 'Mock published')
+    } catch {
+      toast.error(unpublishing ? 'Failed to unpublish mock' : 'Failed to publish mock')
+    }
   }
 
   const toggleShowDate = async (id: number) => {
@@ -76,11 +117,20 @@ export function AdminDashboardPage() {
     toast.info('Schedule cancelled — mock is draft again')
   }
 
-  const deleteMock = async (id: number) => {
-    if (!(await toast.confirm('Delete this mock and all questions?'))) return
-    await api.delete(`/admin/mocks/${id}`)
-    load()
-    toast.success('Mock deleted')
+  const deleteMock = async (mock: MockAdmin) => {
+    const attemptNote = mock.attemptsCount > 0
+      ? `, ${mock.attemptsCount} user attempt${mock.attemptsCount === 1 ? '' : 's'}`
+      : ''
+    if (!(await toast.confirm(
+      `Delete "${mock.title}" and all ${mock.questionCount} questions${attemptNote}? This cannot be undone.`
+    ))) return
+    try {
+      await api.delete(`/admin/mocks/${mock.id}`)
+      load()
+      toast.success('Mock deleted')
+    } catch {
+      toast.error('Failed to delete mock')
+    }
   }
 
   return (
@@ -126,9 +176,40 @@ export function AdminDashboardPage() {
         </div>
       )}
 
-      <h2 className="text-xl font-semibold mb-4">Mock Tests</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 className="text-xl font-semibold">Mock Tests</h2>
+        <p className="text-xs text-slate-500">Newest first</p>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <input
+            type="search"
+            placeholder="Search by title, code, or exam…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-md border border-slate-700 bg-cyber-900 pl-9 pr-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-neon-cyan/50"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+          className="rounded-md border border-slate-700 bg-cyber-900 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-neon-cyan/50 sm:w-40"
+        >
+          <option value="ALL">All statuses</option>
+          <option value="LIVE">Live</option>
+          <option value="SCHEDULED">Scheduled</option>
+          <option value="DRAFT">Draft</option>
+        </select>
+      </div>
+
+      {filteredMocks.length === 0 ? (
+        <p className="text-sm text-slate-400 py-8 text-center">
+          {mocks.length === 0 ? 'No mocks yet — import one to get started.' : 'No mocks match your filters.'}
+        </p>
+      ) : (
       <div className="space-y-3">
-        {mocks.map((m) => (
+        {pagedMocks.map((m) => (
           <Card key={m.id}>
             <CardHeader className="flex flex-col gap-4 py-4 sm:flex-row sm:justify-between sm:items-start">
               <div className="min-w-0 w-full">
@@ -181,10 +262,10 @@ export function AdminDashboardPage() {
                     Cancel
                   </Button>
                 )}
-                <Button size="sm" variant="outline" className="w-full cursor-pointer text-xs sm:text-sm" onClick={() => togglePublish(m.id)}>
+                <Button size="sm" variant="outline" className="w-full cursor-pointer text-xs sm:text-sm" onClick={() => togglePublish(m)}>
                   {m.liveStatus === 'LIVE' ? 'Unpublish' : 'Publish now'}
                 </Button>
-                <Button size="sm" variant="destructive" className="w-full cursor-pointer" onClick={() => deleteMock(m.id)}>
+                <Button size="sm" variant="destructive" className="w-full cursor-pointer" onClick={() => deleteMock(m)}>
                   Delete
                 </Button>
               </div>
@@ -192,6 +273,38 @@ export function AdminDashboardPage() {
           </Card>
         ))}
       </div>
+      )}
+
+      {filteredMocks.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between gap-4 mt-6">
+          <p className="text-sm text-slate-400">
+            Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredMocks.length)} of {filteredMocks.length}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="cursor-pointer"
+              disabled={safePage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-slate-400 min-w-[4rem] text-center">
+              {safePage} / {totalPages}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="cursor-pointer"
+              disabled={safePage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <ImportMockModal open={importOpen} onOpenChange={setImportOpen} onSuccess={load} />
       {scheduleFor && (

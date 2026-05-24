@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import api, { apiErrorMessage } from '@/lib/api'
-import { buildPracticePrompt, PRACTICE_IMPORT_BATCH_SIZE } from '@/lib/buildPracticePrompt'
-import { PRACTICE_INITIAL_TARGET_PER_SUBTOPIC, practiceSubtopicDisplayTarget } from '@/lib/practiceCatalog'
+import { buildPracticePrompt } from '@/lib/buildPracticePrompt'
+import {
+  PRACTICE_INITIAL_TARGET_PER_SUBTOPIC,
+  practiceImportBatchSize,
+  practiceSubtopicDisplayTarget,
+} from '@/lib/practiceCatalog'
 import { toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -45,10 +49,16 @@ export function ImportPracticeModal({
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const displayTarget = practiceSubtopicDisplayTarget(existingCount)
+  const batchSize = practiceImportBatchSize(existingCount)
+  const atCap = batchSize === 0
 
   const copyPrompt = async () => {
     if (!sectionId || !subtopicSlug) {
       toast.warning('Select a subtopic first')
+      return
+    }
+    if (atCap) {
+      toast.warning(`This subtopic already has ${PRACTICE_INITIAL_TARGET_PER_SUBTOPIC} questions`)
       return
     }
     try {
@@ -56,7 +66,8 @@ export function ImportPracticeModal({
         sectionId,
         subtopicSlug,
         sectionTitle ?? sectionId,
-        subtopicTitle ?? subtopicSlug
+        subtopicTitle ?? subtopicSlug,
+        existingCount
       )
       await navigator.clipboard.writeText(text)
       setCopied(true)
@@ -100,10 +111,15 @@ export function ImportPracticeModal({
           </DialogTitle>
         </DialogHeader>
         <p className="text-sm text-slate-400 leading-relaxed">
-          Import MCQs in batches of {PRACTICE_IMPORT_BATCH_SIZE} — no hard cap, add more anytime. Current:{' '}
-          <strong className="text-white">{existingCount}</strong> / {displayTarget}. Goal:{' '}
-          {PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}+ per subtopic. Upserts by{' '}
-          <code className="text-neon-cyan text-xs">questionNumber</code>.
+          {atCap ? (
+            <>This subtopic is full ({PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}/{PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}).</>
+          ) : (
+            <>
+              Next batch: up to <strong className="text-white">{batchSize}</strong> new MCQs (appended after existing). Current:{' '}
+              <strong className="text-white">{existingCount}</strong> / {displayTarget}. Goal:{' '}
+              {PRACTICE_INITIAL_TARGET_PER_SUBTOPIC} per subtopic.
+            </>
+          )}
         </p>
         <Button
           type="button"
@@ -111,9 +127,9 @@ export function ImportPracticeModal({
           size="sm"
           className="cursor-pointer gap-2 w-full sm:w-auto"
           onClick={() => void copyPrompt()}
-          disabled={!sectionId || !subtopicSlug}
+          disabled={!sectionId || !subtopicSlug || atCap}
         >
-          <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : `Copy Claude prompt (${PRACTICE_IMPORT_BATCH_SIZE} Qs)`}
+          <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : `Copy Claude prompt (${batchSize} Qs)`}
         </Button>
         <textarea
           className="w-full h-64 rounded-lg border border-cyber-700 bg-cyber-900/80 p-3 text-xs font-mono text-slate-200"
@@ -125,7 +141,7 @@ export function ImportPracticeModal({
           <Button variant="outline" className="cursor-pointer" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button className="cursor-pointer" disabled={loading || !jsonText.trim()} onClick={submit}>
+          <Button className="cursor-pointer" disabled={loading || !jsonText.trim() || atCap} onClick={submit}>
             {loading ? 'Importing...' : 'Import'}
           </Button>
         </div>

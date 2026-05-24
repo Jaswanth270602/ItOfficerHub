@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 import api from '@/lib/api'
 import {
   PRACTICE_INITIAL_TARGET_PER_SUBTOPIC,
+  practiceImportBatchSize,
   practiceSubtopicDisplayTarget,
   type PracticeCatalog,
   type PracticeSection,
 } from '@/lib/practiceCatalog'
-import { PRACTICE_IMPORT_BATCH_SIZE } from '@/lib/buildPracticePrompt'
 import { ImportPracticeModal } from '@/pages/admin/ImportPracticeModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -73,7 +73,7 @@ export function AdminPracticePage() {
             <BookOpen className="h-7 w-7 text-neon-cyan" /> Practice Q&amp;A
           </h1>
           <p className="text-sm text-slate-400 mt-2 max-w-xl leading-relaxed">
-            Browse syllabus → pick a subtopic → import MCQs in batches of {PRACTICE_IMPORT_BATCH_SIZE} via Claude. Upserts by question number — add more anytime.
+            Browse syllabus → pick a subtopic → import up to {PRACTICE_INITIAL_TARGET_PER_SUBTOPIC} MCQs via Claude. New batches append after existing questions.
           </p>
         </div>
       </div>
@@ -189,6 +189,7 @@ function SectionBlock({
                     size="sm"
                     variant={st.questionCount > 0 ? 'outline' : 'default'}
                     className="cursor-pointer gap-1.5 shrink-0 w-full sm:w-auto"
+                    disabled={st.questionCount >= PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}
                     onClick={() =>
                       onImport({
                         sectionId: section.id,
@@ -200,7 +201,11 @@ function SectionBlock({
                     }
                   >
                     <FileJson className="h-4 w-4" />
-                    {st.questionCount > 0 ? 'Import more' : `Import ${PRACTICE_IMPORT_BATCH_SIZE}`}
+                    {st.questionCount >= PRACTICE_INITIAL_TARGET_PER_SUBTOPIC
+                      ? 'Full'
+                      : st.questionCount > 0
+                        ? `Import more (${practiceImportBatchSize(st.questionCount)})`
+                        : `Import ${PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}`}
                   </Button>
                 </li>
               )

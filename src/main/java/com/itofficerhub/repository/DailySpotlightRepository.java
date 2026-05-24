@@ -27,4 +27,8 @@ public interface DailySpotlightRepository extends JpaRepository<DailySpotlight, 
 	@Modifying
 	@Query("DELETE FROM DailySpotlight s WHERE s.mockTest.id <> :mockId")
 	void deleteForOtherMocks(@Param("mockId") Long mockId);
+
+	@Modifying
+	@Query("DELETE FROM DailySpotlight s WHERE s.mockTest.id = :mockId")
+	void deleteByMockTestId(@Param("mockId") Long mockId);
 }

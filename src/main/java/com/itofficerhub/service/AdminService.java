@@ -21,16 +21,25 @@ public class AdminService {
 	private final QuestionRepository questionRepository;
 	private final UserRepository userRepository;
 	private final TestAttemptRepository attemptRepository;
+	private final AttemptAnswerRepository attemptAnswerRepository;
+	private final RevisionBookmarkRepository revisionBookmarkRepository;
+	private final DailySpotlightRepository dailySpotlightRepository;
 	private final AppCacheService appCacheService;
 	private final MockCodeService mockCodeService;
 
 	public AdminService(MockTestRepository mockTestRepository, QuestionRepository questionRepository,
-			UserRepository userRepository, TestAttemptRepository attemptRepository, AppCacheService appCacheService,
-			MockCodeService mockCodeService) {
+			UserRepository userRepository, TestAttemptRepository attemptRepository,
+			AttemptAnswerRepository attemptAnswerRepository,
+			RevisionBookmarkRepository revisionBookmarkRepository,
+			DailySpotlightRepository dailySpotlightRepository,
+			AppCacheService appCacheService, MockCodeService mockCodeService) {
 		this.mockTestRepository = mockTestRepository;
 		this.questionRepository = questionRepository;
 		this.userRepository = userRepository;
 		this.attemptRepository = attemptRepository;
+		this.attemptAnswerRepository = attemptAnswerRepository;
+		this.revisionBookmarkRepository = revisionBookmarkRepository;
+		this.dailySpotlightRepository = dailySpotlightRepository;
 		this.appCacheService = appCacheService;
 		this.mockCodeService = mockCodeService;
 	}
@@ -44,7 +53,7 @@ public class AdminService {
 	}
 
 	public List<MockTestAdminDto> listMocks() {
-		return mockTestRepository.findAll().stream().map(this::toAdminDto).toList();
+		return mockTestRepository.findAllByOrderByCreatedAtDesc().stream().map(this::toAdminDto).toList();
 	}
 
 	public MockCodePreviewDto previewNextCode(String examTargetRaw) {
@@ -85,8 +94,14 @@ public class AdminService {
 
 	@Transactional
 	public void deleteMock(Long id) {
+		findMock(id);
+		attemptAnswerRepository.deleteByMockTestId(id);
+		revisionBookmarkRepository.deleteByMockTestId(id);
+		attemptRepository.deleteByMockTestId(id);
+		dailySpotlightRepository.deleteByMockTestId(id);
 		questionRepository.deleteByMockTestId(id);
 		mockTestRepository.deleteById(id);
+		evictCatalogCaches();
 	}
 
 	@Transactional
@@ -101,13 +116,13 @@ public class AdminService {
 	@Transactional
 	public MockTestAdminDto togglePublish(Long id) {
 		MockTest m = findMock(id);
-		ensureReadyForRelease(m, id);
-		if (m.isPublished() && MockVisibility.isVisible(m, Instant.now())) {
+		Instant now = Instant.now();
+		if (m.isPublished() && MockVisibility.isVisible(m, now)) {
 			m.setPublished(false);
 			m.setPublishedAt(null);
 			m.setGoLiveAt(null);
 		} else {
-			Instant now = Instant.now();
+			ensureReadyForRelease(m, id);
 			m.setPublished(true);
 			m.setGoLiveAt(now);
 			m.setPublishedAt(now);

@@ -19,6 +19,14 @@ public interface PracticeQuestionRepository extends JpaRepository<PracticeQuesti
 
 	long countBySectionIdAndSubtopicSlugAndPublishedTrue(String sectionId, String subtopicSlug);
 
+	long countBySectionIdAndSubtopicSlug(String sectionId, String subtopicSlug);
+
+	@Query("""
+			SELECT COALESCE(MAX(p.questionNumber), 0) FROM PracticeQuestion p
+			WHERE p.sectionId = :sectionId AND p.subtopicSlug = :subtopicSlug
+			""")
+	int findMaxQuestionNumber(String sectionId, String subtopicSlug);
+
 	@Query("""
 			SELECT p.sectionId AS sectionId, p.subtopicSlug AS subtopicSlug, COUNT(p) AS cnt
 			FROM PracticeQuestion p WHERE p.published = true

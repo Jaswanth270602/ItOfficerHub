@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface MockTestRepository extends JpaRepository<MockTest, Long> {
+	List<MockTest> findAllByOrderByCreatedAtDesc();
+
 	List<MockTest> findByPublishedTrueOrderByCreatedAtDesc();
 
 	@Query("""

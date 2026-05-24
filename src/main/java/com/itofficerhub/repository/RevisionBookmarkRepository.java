@@ -2,12 +2,17 @@ package com.itofficerhub.repository;
 
 import com.itofficerhub.entity.RevisionBookmark;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
 public interface RevisionBookmarkRepository extends JpaRepository<RevisionBookmark, Long> {
+
+	@Modifying
+	@Query("DELETE FROM RevisionBookmark rb WHERE rb.question.mockTest.id = :mockId")
+	void deleteByMockTestId(@Param("mockId") Long mockId);
 
 	boolean existsByUserIdAndQuestionId(Long userId, Long questionId);
 

@@ -16,10 +16,14 @@ export const PRACTICE_INITIAL_TARGET_PER_SUBTOPIC = 50
 /** Default goal per subtopic (legacy alias). */
 export const PRACTICE_TARGET_PER_SUBTOPIC = PRACTICE_INITIAL_TARGET_PER_SUBTOPIC
 
-/** Denominator for X/Y display — 50 when empty; otherwise tracks actual question count. */
+/** Denominator for X/Y — goal is 50; grows with count once above 50. */
 export function practiceSubtopicDisplayTarget(questionCount: number): number {
-  if (questionCount === 0) return PRACTICE_INITIAL_TARGET_PER_SUBTOPIC
-  return questionCount
+  return Math.max(questionCount, PRACTICE_INITIAL_TARGET_PER_SUBTOPIC)
+}
+
+/** How many questions to generate/import in the next batch (0 when at cap). */
+export function practiceImportBatchSize(existingCount: number): number {
+  return Math.max(0, PRACTICE_INITIAL_TARGET_PER_SUBTOPIC - existingCount)
 }
 
 export interface PracticeSubtopic {
