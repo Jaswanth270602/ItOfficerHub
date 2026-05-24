@@ -21,7 +21,6 @@ public class AdminService {
 	private final QuestionRepository questionRepository;
 	private final UserRepository userRepository;
 	private final TestAttemptRepository attemptRepository;
-	private final AttemptAnswerRepository attemptAnswerRepository;
 	private final RevisionBookmarkRepository revisionBookmarkRepository;
 	private final DailySpotlightRepository dailySpotlightRepository;
 	private final AppCacheService appCacheService;
@@ -29,7 +28,6 @@ public class AdminService {
 
 	public AdminService(MockTestRepository mockTestRepository, QuestionRepository questionRepository,
 			UserRepository userRepository, TestAttemptRepository attemptRepository,
-			AttemptAnswerRepository attemptAnswerRepository,
 			RevisionBookmarkRepository revisionBookmarkRepository,
 			DailySpotlightRepository dailySpotlightRepository,
 			AppCacheService appCacheService, MockCodeService mockCodeService) {
@@ -37,7 +35,6 @@ public class AdminService {
 		this.questionRepository = questionRepository;
 		this.userRepository = userRepository;
 		this.attemptRepository = attemptRepository;
-		this.attemptAnswerRepository = attemptAnswerRepository;
 		this.revisionBookmarkRepository = revisionBookmarkRepository;
 		this.dailySpotlightRepository = dailySpotlightRepository;
 		this.appCacheService = appCacheService;
@@ -95,7 +92,6 @@ public class AdminService {
 	@Transactional
 	public void deleteMock(Long id) {
 		findMock(id);
-		attemptAnswerRepository.deleteByMockTestId(id);
 		revisionBookmarkRepository.deleteByMockTestId(id);
 		attemptRepository.deleteByMockTestId(id);
 		dailySpotlightRepository.deleteByMockTestId(id);

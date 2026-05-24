@@ -1,5 +1,9 @@
 package com.itofficerhub.entity;
 
+import com.itofficerhub.dto.AttemptAnswersData;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -48,6 +52,11 @@ public class TestAttempt {
 	private Double percentileAtSubmit;
 	private Long uniqueStudentsAtSubmit;
 
+	/** Compact JSON of user selections — one blob per attempt instead of per-answer rows. */
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "answers_json", columnDefinition = "jsonb")
+	private AttemptAnswersData answersJson;
+
 	public Long getId() { return id; }
 	public void setId(Long id) { this.id = id; }
 	public User getUser() { return user; }
@@ -84,4 +93,6 @@ public class TestAttempt {
 	public void setPercentileAtSubmit(Double percentileAtSubmit) { this.percentileAtSubmit = percentileAtSubmit; }
 	public Long getUniqueStudentsAtSubmit() { return uniqueStudentsAtSubmit; }
 	public void setUniqueStudentsAtSubmit(Long uniqueStudentsAtSubmit) { this.uniqueStudentsAtSubmit = uniqueStudentsAtSubmit; }
+	public AttemptAnswersData getAnswersJson() { return answersJson; }
+	public void setAnswersJson(AttemptAnswersData answersJson) { this.answersJson = answersJson; }
 }

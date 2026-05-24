@@ -208,5 +208,32 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 					UNIQUE (section_id, subtopic_slug, question_number)
 					""");
 		}
+		if (!columnExists("test_attempts", "answers_json")) {
+			log.warn("test_attempts.answers_json missing — applying schema patch");
+			jdbc.execute("ALTER TABLE test_attempts ADD COLUMN IF NOT EXISTS answers_json JSONB");
+		}
+		if (tableExists("attempt_answers")) {
+			log.warn("attempt_answers legacy table found — migrating to answers_json and dropping");
+			jdbc.execute("""
+					UPDATE test_attempts ta
+					SET answers_json = jsonb_build_object(
+						'answers',
+						COALESCE((
+							SELECT jsonb_object_agg(aa.question_id::text, aa.selected_option)
+							FROM attempt_answers aa
+							WHERE aa.attempt_id = ta.id AND aa.selected_option IS NOT NULL
+						), '{}'::jsonb),
+						'marked',
+						COALESCE((
+							SELECT jsonb_object_agg(aa.question_id::text, to_jsonb(true))
+							FROM attempt_answers aa
+							WHERE aa.attempt_id = ta.id AND aa.marked_for_review = true
+						), '{}'::jsonb)
+					)
+					WHERE EXISTS (SELECT 1 FROM attempt_answers aa WHERE aa.attempt_id = ta.id)
+					  AND ta.answers_json IS NULL
+					""");
+			jdbc.execute("DROP TABLE attempt_answers");
+		}
 	}
 }

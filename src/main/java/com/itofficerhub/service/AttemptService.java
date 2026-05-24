@@ -5,10 +5,12 @@ import com.itofficerhub.entity.*;
 import com.itofficerhub.exception.ApiException;
 import com.itofficerhub.repository.*;
 import com.itofficerhub.security.UserPrincipal;
+import com.itofficerhub.util.AttemptAnswersJson;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.util.*;
 
@@ -16,7 +18,6 @@ import java.util.*;
 public class AttemptService {
 
 	private final TestAttemptRepository attemptRepository;
-	private final AttemptAnswerRepository answerRepository;
 	private final QuestionRepository questionRepository;
 	private final UniqueRankingService uniqueRankingService;
 	private final UserAttemptCacheService userAttemptCache;
@@ -27,14 +28,12 @@ public class AttemptService {
 	private final DailySpotlightService dailySpotlightService;
 	private final MockCatalogService mockCatalogService;
 
-	public AttemptService(TestAttemptRepository attemptRepository, AttemptAnswerRepository answerRepository,
-			QuestionRepository questionRepository,
+	public AttemptService(TestAttemptRepository attemptRepository, QuestionRepository questionRepository,
 			UniqueRankingService uniqueRankingService, UserAttemptCacheService userAttemptCache,
 			AppCacheService appCacheService, TopicAnalyticsService topicAnalyticsService,
 			RevisionService revisionService, PrepPointsService prepPointsService,
 			DailySpotlightService dailySpotlightService, MockCatalogService mockCatalogService) {
 		this.attemptRepository = attemptRepository;
-		this.answerRepository = answerRepository;
 		this.questionRepository = questionRepository;
 		this.uniqueRankingService = uniqueRankingService;
 		this.userAttemptCache = userAttemptCache;
@@ -49,7 +48,7 @@ public class AttemptService {
 	@Transactional
 	public StartAttemptResponse startAttempt(StartAttemptRequest request) {
 		UserPrincipal user = getCurrentUser();
-		MockTest mock = mockCatalogService.findByIdIfVisible(request.mockTestId(), java.time.Instant.now())
+		MockTest mock = mockCatalogService.findByIdIfVisible(request.mockTestId(), Instant.now())
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Mock test not found or not live yet"));
 		List<Question> questions = questionRepository.findByMockTestIdOrderByOrderIndexAsc(mock.getId());
 		if (questions.size() < mock.getQuestionCount()) {
@@ -80,54 +79,44 @@ public class AttemptService {
 		if (attempt.isSubmitted()) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "Attempt already submitted");
 		}
-		List<AttemptAnswer> answers = answerRepository.findByAttemptIdOrderByQuestionOrderIndexAsc(attemptId);
-		List<AttemptProgressDto.AnswerProgressDto> dtos = answers.stream()
-				.map(a -> new AttemptProgressDto.AnswerProgressDto(
-						a.getQuestion().getId(),
-						a.getSelectedOption() != null ? a.getSelectedOption().name() : null,
-						a.isMarkedForReview()))
-				.toList();
+		AttemptAnswersData data = attempt.getAnswersJson();
+		if (data == null) {
+			return new AttemptProgressDto(List.of());
+		}
+		List<AttemptProgressDto.AnswerProgressDto> dtos = new ArrayList<>();
+		Set<String> keys = new LinkedHashSet<>();
+		if (data.getAnswers() != null) {
+			keys.addAll(data.getAnswers().keySet());
+		}
+		if (data.getMarked() != null) {
+			keys.addAll(data.getMarked().keySet());
+		}
+		for (String key : keys) {
+			long questionId;
+			try {
+				questionId = Long.parseLong(key);
+			} catch (NumberFormatException e) {
+				continue;
+			}
+			OptionLabel selected = AttemptAnswersJson.selectedOption(data, questionId);
+			dtos.add(new AttemptProgressDto.AnswerProgressDto(
+					questionId,
+					selected != null ? selected.name() : null,
+					AttemptAnswersJson.markedForReview(data, questionId)));
+		}
 		return new AttemptProgressDto(dtos);
 	}
 
+	/** Legacy single-answer endpoint — answers persist on submit only; no-op during exam. */
 	@Transactional
 	public void saveAnswer(Long attemptId, SaveAnswerRequest request) {
-		TestAttempt attempt = loadOwnedAttempt(attemptId);
-		if (attempt.isSubmitted()) {
-			throw new ApiException(HttpStatus.BAD_REQUEST, "Attempt already submitted");
-		}
-		if (request.selectedOption() == null && request.markedForReview() == null) {
-			throw new ApiException(HttpStatus.BAD_REQUEST, "Provide selectedOption and/or markedForReview");
-		}
-		Question question = questionRepository.findById(request.questionId())
-				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
-		upsertAnswer(attempt, question, request.selectedOption(), request.markedForReview());
+		loadOwnedAttempt(attemptId);
 	}
 
-	/** Batch persist for optional recovery (debounced / tab-close), not per-click. */
+	/** No DB writes during exam — client localStorage is primary; answers saved on submit. */
 	@Transactional
 	public void saveCheckpoint(Long attemptId, AttemptCheckpointRequest request) {
-		TestAttempt attempt = loadOwnedAttempt(attemptId);
-		if (attempt.isSubmitted()) {
-			return;
-		}
-		if (request.answers() == null || request.answers().isEmpty()) {
-			return;
-		}
-		Map<Long, AttemptAnswer> existing = loadAnswerMap(attemptId);
-		for (var item : request.answers()) {
-			Question question = questionRepository.findById(item.questionId())
-					.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
-			AttemptAnswer answer = existing.get(question.getId());
-			if (answer == null) {
-				answer = new AttemptAnswer();
-				answer.setAttempt(attempt);
-				answer.setQuestion(question);
-				existing.put(question.getId(), answer);
-			}
-			applyAnswerFields(answer, question, item.selectedOption(), item.markedForReview());
-			answerRepository.save(answer);
-		}
+		loadOwnedAttempt(attemptId);
 	}
 
 	@Transactional
@@ -137,7 +126,9 @@ public class AttemptService {
 			return buildResult(attempt);
 		}
 		if (request.answers() != null && !request.answers().isEmpty()) {
-			persistSubmittedAnswers(attempt, request.answers());
+			attempt.setAnswersJson(AttemptAnswersJson.fromSubmit(request.answers()));
+		} else if (attempt.getAnswersJson() == null) {
+			attempt.setAnswersJson(AttemptAnswersJson.empty());
 		}
 		applyScoring(attempt);
 		attempt.setTimeTakenSeconds(request.timeTakenSeconds());
@@ -179,56 +170,6 @@ public class AttemptService {
 		return userAttemptCache.mockStatusForUser(getCurrentUser().getId());
 	}
 
-	private void persistSubmittedAnswers(TestAttempt attempt, List<SubmitAttemptRequest.AnswerSubmission> submissions) {
-		Map<Long, AttemptAnswer> existing = loadAnswerMap(attempt.getId());
-		for (var sub : submissions) {
-			Question question = questionRepository.findById(sub.questionId())
-					.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
-			AttemptAnswer answer = existing.get(question.getId());
-			if (answer == null) {
-				answer = new AttemptAnswer();
-				answer.setAttempt(attempt);
-				answer.setQuestion(question);
-				existing.put(question.getId(), answer);
-			}
-			applyAnswerFields(answer, question, sub.selectedOption(), null);
-			answerRepository.save(answer);
-		}
-	}
-
-	private void upsertAnswer(TestAttempt attempt, Question question, String selectedOption, Boolean markedForReview) {
-		AttemptAnswer answer = answerRepository
-				.findByAttempt_IdAndQuestion_Id(attempt.getId(), question.getId())
-				.orElseGet(() -> {
-					AttemptAnswer created = new AttemptAnswer();
-					created.setAttempt(attempt);
-					created.setQuestion(question);
-					return created;
-				});
-		applyAnswerFields(answer, question, selectedOption, markedForReview);
-		answerRepository.save(answer);
-	}
-
-	private void applyAnswerFields(AttemptAnswer answer, Question question, String selectedOption,
-			Boolean markedForReview) {
-		if (selectedOption != null) {
-			OptionLabel selected = parseOption(selectedOption.isBlank() ? null : selectedOption);
-			answer.setSelectedOption(selected);
-			answer.setCorrect(selected != null && selected == question.getCorrectOption());
-		}
-		if (markedForReview != null) {
-			answer.setMarkedForReview(markedForReview);
-		}
-	}
-
-	private Map<Long, AttemptAnswer> loadAnswerMap(Long attemptId) {
-		Map<Long, AttemptAnswer> map = new HashMap<>();
-		for (AttemptAnswer a : answerRepository.findByAttemptIdOrderByQuestionOrderIndexAsc(attemptId)) {
-			map.put(a.getQuestion().getId(), a);
-		}
-		return map;
-	}
-
 	private void ensureScoring(TestAttempt attempt) {
 		if (attempt.isSubmitted()) {
 			applyScoring(attempt);
@@ -237,9 +178,7 @@ public class AttemptService {
 
 	private void applyScoring(TestAttempt attempt) {
 		List<Question> questions = questionRepository.findByMockTestIdOrderByOrderIndexAsc(attempt.getMockTest().getId());
-		List<AttemptAnswer> answers = answerRepository.findByAttemptIdOrderByQuestionOrderIndexAsc(attempt.getId());
-		Map<Long, AttemptAnswer> answerMap = new HashMap<>();
-		answers.forEach(a -> answerMap.put(a.getQuestion().getId(), a));
+		AttemptAnswersData data = attempt.getAnswersJson();
 
 		int correct = 0;
 		int wrong = 0;
@@ -247,9 +186,9 @@ public class AttemptService {
 		int idx = 0;
 		for (Question q : questions) {
 			if (idx >= limit) break;
-			AttemptAnswer aa = answerMap.get(q.getId());
-			if (aa != null && aa.getSelectedOption() != null) {
-				if (aa.isCorrect()) correct++;
+			OptionLabel selected = AttemptAnswersJson.selectedOption(data, q.getId());
+			if (selected != null) {
+				if (selected == q.getCorrectOption()) correct++;
 				else wrong++;
 			}
 			idx++;
@@ -294,17 +233,6 @@ public class AttemptService {
 
 	private record RankStats(long rank, double percentile, long uniqueStudents, long totalAttempts) {}
 
-	private AttemptResultDto buildResultSummary(TestAttempt attempt) {
-		ensureScoring(attempt);
-		ExamScoring.Breakdown b = ExamScoring.compute(
-				attempt.getTotalQuestions(),
-				attempt.getCorrectCount(),
-				attempt.getWrongCount());
-		RankStats stats = rankStatsFor(attempt);
-		double pctMarks = b.maxMarks() > 0 ? (attempt.getNetScore() / b.maxMarks()) * 100.0 : 0;
-		return buildDto(attempt, List.of(), stats, b, pctMarks, false, 0);
-	}
-
 	private AttemptResultDto buildResult(TestAttempt attempt) {
 		return buildResult(attempt, false, 0);
 	}
@@ -312,22 +240,20 @@ public class AttemptService {
 	private AttemptResultDto buildResult(TestAttempt attempt, boolean firstAttemptOnMock, int pointsEarned) {
 		ensureScoring(attempt);
 		List<Question> questions = questionRepository.findByMockTestIdOrderByOrderIndexAsc(attempt.getMockTest().getId());
-		List<AttemptAnswer> answers = answerRepository.findByAttemptIdOrderByQuestionOrderIndexAsc(attempt.getId());
-		Map<Long, AttemptAnswer> answerMap = new HashMap<>();
-		answers.forEach(a -> answerMap.put(a.getQuestion().getId(), a));
+		AttemptAnswersData data = attempt.getAnswersJson();
 
 		List<AttemptResultDto.QuestionReviewDto> reviews = new ArrayList<>();
 		int idx = 1;
 		for (Question q : questions) {
 			if (idx > attempt.getTotalQuestions()) break;
-			AttemptAnswer aa = answerMap.get(q.getId());
-			String selected = aa != null && aa.getSelectedOption() != null ? aa.getSelectedOption().name() : null;
+			OptionLabel selected = AttemptAnswersJson.selectedOption(data, q.getId());
+			String selectedName = selected != null ? selected.name() : null;
 			boolean attempted = selected != null;
 			reviews.add(new AttemptResultDto.QuestionReviewDto(
 					q.getId(), q.getOrderIndex(), q.getQuestionText(),
 					q.getOptionA(), q.getOptionB(), q.getOptionC(), q.getOptionD(),
-					selected, q.getCorrectOption().name(),
-					aa != null && aa.isCorrect(), attempted, q.getExplanation(),
+					selectedName, q.getCorrectOption().name(),
+					AttemptAnswersJson.isCorrect(data, q), attempted, q.getExplanation(),
 					q.getSolutionImageUrl(),
 					q.getTopic() != null ? q.getTopic().name() : null));
 			idx++;
@@ -354,7 +280,7 @@ public class AttemptService {
 		boolean cleared = net >= cutoff;
 		double toCutoff = cleared ? 0 : round2(cutoff - net);
 		List<LeaderboardEntryDto> leaderboard = buildLeaderboard(attempt, attempt.getMockTest().getId());
-		List<TopicBreakdownDto> topicBreakdown = topicAnalyticsService.breakdownForAttempt(attempt.getId());
+		List<TopicBreakdownDto> topicBreakdown = topicAnalyticsService.breakdownForAttempt(attempt);
 		Set<Long> bookmarked = bookmarkedIdsForUser(attempt.getUser().getId());
 
 		String share = String.format(
@@ -428,14 +354,5 @@ public class AttemptService {
 			return p;
 		}
 		throw new ApiException(HttpStatus.UNAUTHORIZED, "Login required to attempt mock tests");
-	}
-
-	private OptionLabel parseOption(String opt) {
-		if (opt == null || opt.isBlank()) return null;
-		try {
-			return OptionLabel.valueOf(opt.trim().toUpperCase());
-		} catch (IllegalArgumentException e) {
-			throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid option: " + opt);
-		}
 	}
 }

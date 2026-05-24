@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
-import {
-  buildCheckpointPayload,
-  cancelExamCheckpointSchedule,
-  flushExamCheckpoint,
-  scheduleExamCheckpoint,
-} from '@/lib/examCheckpoint'
 import { clearExamDraft, loadExamDraft, saveExamDraft } from '@/lib/examDraft'
 import { ShareMockButton } from '@/components/exam/ShareMockButton'
 import { ExamDisclaimerStrip } from '@/components/exam/ExamDisclaimerStrip'
@@ -83,7 +77,6 @@ export function MockTestPage() {
       setPhase('submitting')
       setSubmitError('')
       if (reason) setViolationNote(VIOLATION_MSG[reason])
-      cancelExamCheckpointSchedule()
 
       const timeTaken = Math.max(0, timeLimit * 60 - secondsLeft)
       const answerList = Object.entries(answersRef.current).map(([questionId, selectedOption]) => ({
@@ -188,31 +181,6 @@ export function MockTestPage() {
       savedAt: Date.now(),
     })
   }, [attemptId, mockId, answers, marked, secondsLeft, current, phase])
-
-  useEffect(() => {
-    if (phase !== 'exam' || !attemptId) return
-
-    const runCheckpoint = (keepalive: boolean) => {
-      const payload = buildCheckpointPayload(answersRef.current, markedRef.current)
-      if (payload.answers.length === 0) return
-      void flushExamCheckpoint(attemptId, payload, keepalive)
-    }
-
-    scheduleExamCheckpoint(attemptId, buildCheckpointPayload(answers, marked))
-
-    const onPageHide = () => runCheckpoint(true)
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') runCheckpoint(true)
-    }
-
-    window.addEventListener('pagehide', onPageHide)
-    document.addEventListener('visibilitychange', onVisibility)
-    return () => {
-      cancelExamCheckpointSchedule()
-      window.removeEventListener('pagehide', onPageHide)
-      document.removeEventListener('visibilitychange', onVisibility)
-    }
-  }, [phase, attemptId, answers, marked])
 
   const startExam = async () => {
     if (!rulesAcknowledged) return

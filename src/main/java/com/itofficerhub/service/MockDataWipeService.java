@@ -24,8 +24,7 @@ public class MockDataWipeService {
 
 	@Transactional
 	public void wipeAllMocks() {
-		log.warn("Wiping all mock tests, questions, attempts, and revision bookmarks");
-		jdbc.execute("DELETE FROM attempt_answers");
+		log.warn("Wiping all mock tests, questions, and attempts");
 		jdbc.execute("DELETE FROM revision_bookmarks");
 		jdbc.execute("DELETE FROM test_attempts");
 		jdbc.execute("DELETE FROM daily_spotlight");
