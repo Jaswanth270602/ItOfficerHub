@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { CommunityWelcomeCard } from '@/components/community/CommunityWelcomeCard'
-import { OfficialChannelsCard } from '@/components/OfficialChannelsCard'
 import { hasSeenWelcome } from '@/lib/communityModals'
 import { MockExamCard } from '@/components/MockExamCard'
 import { PrepStatsCard } from '@/components/PrepStatsCard'
@@ -229,8 +228,6 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <OfficialChannelsCard className="mb-8" />
-
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">Rankings refresh as more aspirants complete mocks</p>
         <div className="flex gap-2">
@@ -330,7 +327,7 @@ export function DashboardPage() {
                     {featuredMockState?.attempted && featuredMockState.latestAttemptId && (
                       <Link to={`/result/${featuredMockState.latestAttemptId}`} className="w-full sm:w-auto">
                         <Button variant="outline" className="cursor-pointer w-full sm:w-auto min-h-[44px]">
-                          View report
+                          View report (latest)
                         </Button>
                       </Link>
                     )}

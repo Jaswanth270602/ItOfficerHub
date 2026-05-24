@@ -252,10 +252,17 @@ export function ResultPage() {
       const outcome = await shareScoreScreenshot(shareCardRef.current, shareCardData)
       if (outcome === 'shared') toast.success('Score card shared')
       else if (outcome === 'saved') {
-        toast.success('Score card downloaded — attach the PNG in WhatsApp (no private report link)')
+        toast.success('Score card saved — attach the PNG in WhatsApp. Text copied too.')
+      } else if (outcome === 'text-only') {
+        toast.success('Score text copied — paste in WhatsApp (image could not be generated here)')
       }
     } catch {
-      toast.error('Could not create score card image')
+      try {
+        await copyScoreShareText(shareCardData)
+        toast.success('Score text copied to clipboard')
+      } catch {
+        toast.error('Could not share — try Copy score text')
+      }
     } finally {
       setSharing(false)
     }
@@ -302,7 +309,7 @@ export function ResultPage() {
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-[calc(11rem+env(safe-area-inset-bottom))] lg:pb-32">
       {shareCardData && (
-        <div className="fixed left-[-9999px] top-0 pointer-events-none" aria-hidden>
+        <div className="fixed left-0 top-0 -z-10 opacity-0 pointer-events-none" aria-hidden>
           <ScoreShareCard ref={shareCardRef} data={shareCardData} />
         </div>
       )}

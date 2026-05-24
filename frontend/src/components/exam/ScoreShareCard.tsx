@@ -35,7 +35,9 @@ export const ScoreShareCard = forwardRef<HTMLDivElement, { data: ScoreShareCardD
         style={{ fontFamily: 'system-ui, sans-serif' }}
       >
         <div className="flex items-center gap-3 mb-6">
-          <img src="/logo.png" alt="" className="h-12 w-12 rounded-full ring-2 ring-cyan-500/40" width={48} height={48} />
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500/30 to-violet-500/30 ring-2 ring-cyan-500/40 flex items-center justify-center text-2xl shrink-0">
+            🎯
+          </div>
           <div>
             <p className="text-lg font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
               ItOfficerHub

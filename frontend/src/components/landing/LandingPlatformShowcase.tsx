@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { ActivityHeatmap, buildDemoHeatmapWeeks } from '@/components/ActivityHeatmap'
 import { Activity, BarChart3, Trophy } from 'lucide-react'
 
 const LEADERBOARD = [
@@ -14,6 +15,8 @@ const WEAK_TOPICS = [
   { topic: 'Security', pct: 41, tone: 'weak' as const },
   { topic: 'Data Structures', pct: 35, tone: 'weak' as const },
 ]
+
+const DEMO_WEEKS = buildDemoHeatmapWeeks()
 
 /** Decorative previews — illustrates real dashboard features (leaderboard, analytics, activity). */
 export function LandingPlatformShowcase() {
@@ -97,60 +100,21 @@ export function LandingPlatformShowcase() {
       </div>
 
       <div className="rounded-xl border border-emerald-500/20 bg-gradient-to-br from-cyber-900/90 to-cyber-950 p-4 sm:p-5 shadow-lg shadow-black/20 md:col-span-2 lg:col-span-1">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-2">
           <Activity className="h-4 w-4 text-emerald-400" />
-          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">Prep streak</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">Mock activity</p>
         </div>
-        <p className="text-sm font-medium text-white mb-3">Daily mock activity</p>
-        <LandingActivityPreview />
-        <div className="flex flex-wrap gap-3 mt-3 text-[10px] text-slate-500">
-          <span className="inline-flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-cyber-700" /> Rest day
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-neon-cyan/50" /> 1 mock
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-amber-400/70" /> 2+ mocks
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function LandingActivityPreview() {
-  const pattern = [
-    [0, 1, 2, 1, 0, 3, 0],
-    [1, 0, 2, 0, 1, 0, 2],
-    [0, 2, 1, 3, 2, 1, 0],
-    [2, 1, 0, 1, 0, 2, 1],
-    [1, 0, 3, 2, 1, 0, 0],
-    [0, 1, 1, 0, 2, 3, 1],
-    [2, 0, 1, 2, 0, 1, 3],
-    [1, 2, 0, 1, 3, 0, 2],
-  ]
-  const levelClass: Record<number, string> = {
-    0: 'bg-cyber-800/90',
-    1: 'bg-neon-cyan/45',
-    2: 'bg-neon-cyan/65',
-    3: 'bg-amber-400/75 shadow-[0_0_6px_rgba(251,191,36,0.3)]',
-  }
-
-  return (
-    <div className="overflow-x-auto pb-1">
-      <div className="inline-flex gap-[3px] min-w-0">
-        {pattern.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-[3px]">
-            {week.map((lvl, di) => (
-              <div
-                key={`${wi}-${di}`}
-                className={cn('w-[10px] h-[18px] sm:w-[11px] sm:h-[20px] rounded-[3px]', levelClass[lvl])}
-                aria-hidden
-              />
-            ))}
-          </div>
-        ))}
+        <p className="text-sm font-medium text-white mb-4">Your daily prep heatmap</p>
+        <ActivityHeatmap
+          weeks={DEMO_WEEKS}
+          compact
+          stats={[
+            { label: '12-wk consistency', value: '68%', accentClass: 'text-neon-cyan' },
+            { label: 'Active days', value: 57, accentClass: 'text-white' },
+            { label: 'Best streak', value: 12, accentClass: 'text-amber-400' },
+            { label: 'Current streak', value: 5, accentClass: 'text-emerald-400' },
+          ]}
+        />
       </div>
     </div>
   )

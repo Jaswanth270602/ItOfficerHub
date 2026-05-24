@@ -82,6 +82,14 @@ public class DailySpotlightService {
 		spotlightRepository.deleteForOtherMocks(featuredMockId);
 	}
 
+	/** When admin publishes or schedules mocks, drop spotlight tied to old featured exams. */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void onCatalogChange() {
+		Instant now = Instant.now();
+		spotlightRepository.deleteExpired(now);
+		mockCatalogService.featuredMock(now).ifPresent(m -> cleanup(m.getId()));
+	}
+
 	private void tryAward(MockTest mock) {
 		List<TestAttempt> rankedToday = rankingCache.bestAttemptsPerUserToday(mock.getId());
 		if (rankedToday.isEmpty()) {

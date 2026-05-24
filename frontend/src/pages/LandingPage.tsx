@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { UpcomingMockBanner } from '@/components/UpcomingMockBanner'
 import { LandingDailySplash } from '@/components/landing/LandingDailySplash'
 import { LandingPlatformShowcase } from '@/components/landing/LandingPlatformShowcase'
+import { OfficialChannelsCard } from '@/components/OfficialChannelsCard'
 import { LandingSection } from '@/components/landing/LandingSection'
 import { MottoCarousel, type MottoSlide } from '@/components/landing/MottoCarousel'
 import {
@@ -357,6 +358,10 @@ export function LandingPage() {
                 </Card>
               </div>
             )}
+          </div>
+
+          <div className="max-w-3xl mx-auto mt-12 sm:mt-16">
+            <OfficialChannelsCard />
           </div>
         </LandingSection>
 

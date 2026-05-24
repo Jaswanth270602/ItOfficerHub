@@ -26,6 +26,7 @@ public class AdminService {
 	private final TestAttemptRepository attemptRepository;
 	private final RevisionBookmarkRepository revisionBookmarkRepository;
 	private final DailySpotlightRepository dailySpotlightRepository;
+	private final DailySpotlightService dailySpotlightService;
 	private final AppCacheService appCacheService;
 	private final MockCodeService mockCodeService;
 	private final PasswordEncoder passwordEncoder;
@@ -34,6 +35,7 @@ public class AdminService {
 			UserRepository userRepository, TestAttemptRepository attemptRepository,
 			RevisionBookmarkRepository revisionBookmarkRepository,
 			DailySpotlightRepository dailySpotlightRepository,
+			DailySpotlightService dailySpotlightService,
 			AppCacheService appCacheService, MockCodeService mockCodeService,
 			PasswordEncoder passwordEncoder) {
 		this.mockTestRepository = mockTestRepository;
@@ -42,6 +44,7 @@ public class AdminService {
 		this.attemptRepository = attemptRepository;
 		this.revisionBookmarkRepository = revisionBookmarkRepository;
 		this.dailySpotlightRepository = dailySpotlightRepository;
+		this.dailySpotlightService = dailySpotlightService;
 		this.appCacheService = appCacheService;
 		this.mockCodeService = mockCodeService;
 		this.passwordEncoder = passwordEncoder;
@@ -216,6 +219,7 @@ public class AdminService {
 	private void evictCatalogCaches() {
 		appCacheService.evictPublicCatalog();
 		appCacheService.evictDashboardOverview();
+		dailySpotlightService.onCatalogChange();
 	}
 
 	private void ensureReadyForRelease(MockTest m, long id) {

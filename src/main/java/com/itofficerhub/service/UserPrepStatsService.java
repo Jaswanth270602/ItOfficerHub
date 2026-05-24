@@ -24,6 +24,7 @@ import java.util.*;
 public class UserPrepStatsService {
 
 	private static final int DUTY_LOG_DAYS = 365;
+	private static final int CONSISTENCY_WINDOW_DAYS = 84;
 
 	private final TestAttemptRepository attemptRepository;
 	private final MockCatalogService mockCatalogService;
@@ -96,7 +97,11 @@ public class UserPrepStatsService {
 			log.add(new DailyActivityDto(e.getKey().toString(), e.getValue().size(), Math.round(best * 100) / 100.0));
 		}
 		int activeDays = log.size();
-		int consistency = Math.round((activeDays * 100f) / DUTY_LOG_DAYS);
+		LocalDate windowStart = today.minusDays(CONSISTENCY_WINDOW_DAYS - 1L);
+		long activeInWindow = byDay.keySet().stream().filter(d -> !d.isBefore(windowStart)).count();
+		int consistency = activeInWindow > 0
+				? Math.max(1, Math.round((activeInWindow * 100f) / CONSISTENCY_WINDOW_DAYS))
+				: 0;
 		int longest = computeLongestStreakInRange(byDay.keySet(), start, today);
 		return new DutyMeta(log, activeDays, longest, consistency);
 	}
