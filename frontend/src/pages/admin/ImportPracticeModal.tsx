@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api, { apiErrorMessage } from '@/lib/api'
+import { encodeImportBody } from '@/lib/encodedImport'
 import { buildPracticePrompt } from '@/lib/buildPracticePrompt'
 import {
   PRACTICE_INITIAL_TARGET_PER_SUBTOPIC,
@@ -83,7 +84,7 @@ export function ImportPracticeModal({
     try {
       const body = JSON.parse(stripMarkdownFences(jsonText))
       const payload = Array.isArray(body) ? { questions: body } : body.questions ? body : { questions: [body] }
-      const res = await api.post('/admin/practice/import', payload)
+      const res = await api.post('/admin/practice/import-safe', encodeImportBody(payload))
       onSuccess()
       onOpenChange(false)
       setJsonText('')

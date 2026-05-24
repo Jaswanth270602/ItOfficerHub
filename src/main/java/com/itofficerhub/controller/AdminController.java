@@ -123,9 +123,23 @@ public class AdminController {
 		return adminService.importMock(request);
 	}
 
+	/** Base64-wrapped JSON — use when Cloudflare/WAF blocks plain mock import bodies. */
+	@PostMapping("/mocks/import-safe")
+	public MockTestAdminDto importMockSafe(@Valid @RequestBody ImportEncodedRequest wrapped,
+			com.itofficerhub.util.ImportPayloadCodec codec) {
+		return adminService.importMock(codec.decodeMock(wrapped.payload()));
+	}
+
 	@PostMapping("/practice/import")
 	public java.util.Map<String, Object> importPractice(@Valid @RequestBody ImportPracticeRequest request) {
 		int count = practiceService.importQuestions(request);
+		return java.util.Map.of("imported", count);
+	}
+
+	@PostMapping("/practice/import-safe")
+	public java.util.Map<String, Object> importPracticeSafe(@Valid @RequestBody ImportEncodedRequest wrapped,
+			com.itofficerhub.util.ImportPayloadCodec codec) {
+		int count = practiceService.importQuestions(codec.decodePractice(wrapped.payload()));
 		return java.util.Map.of("imported", count);
 	}
 

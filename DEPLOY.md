@@ -127,6 +127,21 @@ Also enabled: security headers (HSTS, `X-Content-Type-Options`, deny framing), r
 
 For stronger protection at scale, add Cloudflare in front of Render (not required for launch).
 
+### Cloudflare WAF blocks admin import (403 “web application firewall”)
+
+IT quiz JSON often contains text like `SELECT`, `DROP TABLE`, or `<script>` in explanations. Cloudflare’s OWASP rules treat that as an attack and return **403** with a **Request ID** — this is **not** an admin-role or app bug.
+
+**Fix A (recommended, in app):** Deploy the latest code. Mock import uses `POST /api/admin/mocks/import-safe` with Base64-encoded JSON so the WAF does not see raw SQL-like strings.
+
+**Fix B (Cloudflare dashboard):** Security → WAF → Create rule → **Skip** (or lower sensitivity) when:
+
+- URI Path contains `/api/admin/mocks/import` **or** `/api/admin/mocks/import-safe`
+- Method equals `POST`
+
+Or temporarily set Security Level to **Essentially Off** for a test import, then tighten again.
+
+**Fix C:** DNS “grey cloud” an `api.` subdomain pointing only to Render (bypasses Cloudflare for API). Point the SPA at that subdomain via `VITE_API_URL`.
+
 ---
 
 ## Step 5 — After first deploy

@@ -38,10 +38,23 @@ api.interceptors.response.use(
 
 export function apiErrorMessage(err: unknown, fallback = 'Request failed'): string {
   const ax = err as {
-    response?: { status?: number; data?: { message?: string; error?: string } }
+    response?: { status?: number; data?: { message?: string; error?: string } | string }
     message?: string
   }
-  const body = ax.response?.data?.error || ax.response?.data?.message
+  const raw = ax.response?.data
+  if (typeof raw === 'string') {
+    if (/web application firewall|firewall \(waf\)|request was blocked/i.test(raw)) {
+      const id = raw.match(/Request ID:\s*([a-f0-9]+)/i)?.[1]
+      return id
+        ? `Blocked by site firewall (WAF), not the app. Request ID: ${id}. Redeploy latest code or add a Cloudflare exception for admin import (see DEPLOY.md).`
+        : 'Blocked by site firewall (WAF), not the app. Redeploy latest code or adjust Cloudflare rules for /api/admin/mocks/import-safe.'
+    }
+    if (raw.length < 500) return raw
+  }
+  const body =
+    raw && typeof raw === 'object'
+      ? (raw as { error?: string; message?: string }).error || (raw as { message?: string }).message
+      : undefined
   if (body) return body
 
   const status = ax.response?.status

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import api, { apiErrorMessage } from '@/lib/api'
+import { encodeImportBody, isWafBlockedResponse, WAF_IMPORT_HINT } from '@/lib/encodedImport'
 import { buildMockPrompt } from '@/lib/buildMockPrompt'
 import { parseMockImportJson } from '@/lib/parseImportJson'
 import { estimateNextMockCode } from '@/lib/mockCode'
@@ -173,7 +174,10 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
         setLoading(false)
         return
       }
-      const res = await api.post<{ mockCode?: string | null; title?: string }>('/admin/mocks/import', payload)
+      const res = await api.post<{ mockCode?: string | null; title?: string }>(
+        '/admin/mocks/import-safe',
+        encodeImportBody(payload)
+      )
       const code = res.data.mockCode
       toast.success(
         code
@@ -188,7 +192,9 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
     } catch (err: unknown) {
       const msg = apiErrorMessage(err, 'Import failed')
       setError(msg)
-      if (msg.toLowerCase().includes('explanation')) {
+      if (isWafBlockedResponse(err)) {
+        setHint(WAF_IMPORT_HINT)
+      } else if (msg.toLowerCase().includes('explanation')) {
         setHint('Claude must add Option breakdown for A–D and ≥400 characters per explanation. Re-copy prompt and regenerate.')
       } else if (msg.toLowerCase().includes('topic')) {
         setHint('Use uppercase topic codes from the prompt (e.g. NETWORKING, DBMS).')
