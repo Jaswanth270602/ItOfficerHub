@@ -11,7 +11,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AnonymousConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.itofficerhub.security.CustomUserDetailsService;
+import com.itofficerhub.security.UserPrincipal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
@@ -63,11 +66,14 @@ public class SecurityConfig {
 						.contentTypeOptions(with -> {})
 						.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)))
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.anonymous(AnonymousConfigurer::disable)
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/health").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/change-password").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/auth/session").authenticated()
 						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/public/visits").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.requestMatchers("/api/**").authenticated()
@@ -89,8 +95,14 @@ public class SecurityConfig {
 		return (request, response, accessDeniedException) -> {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			response.setContentType("application/json");
-			new ObjectMapper().writeValue(response.getOutputStream(),
-					Map.of("error", "Admin access required. Log in at /admin with an administrator account."));
+			String msg = "Admin access required. Log in at /admin with an account that has ADMIN role in the database.";
+			Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext()
+					.getAuthentication();
+			if (auth != null && auth.getPrincipal() instanceof UserPrincipal p) {
+				msg = "Signed in as " + p.getUser().getEmail() + " with role " + p.getUser().getRole()
+						+ ". ADMIN required — use /admin login with your administrator email.";
+			}
+			new ObjectMapper().writeValue(response.getOutputStream(), Map.of("error", msg));
 		};
 	}
 }

@@ -6,18 +6,32 @@ const api = axios.create({ baseURL, timeout: 60000 })
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  } else {
+    delete config.headers.Authorization
+  }
   return config
 })
+
+function isAdminApiUrl(url: string): boolean {
+  return url.includes('/admin/')
+}
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status
     const url = String(error?.config?.url ?? '')
+
     if (status === 401 && !url.includes('/auth/login') && !url.includes('/auth/register')) {
       window.dispatchEvent(new Event('auth:session-expired'))
     }
+
+    if (status === 403 && isAdminApiUrl(url)) {
+      window.dispatchEvent(new Event('auth:session-expired'))
+    }
+
     return Promise.reject(error)
   }
 )
@@ -27,12 +41,15 @@ export function apiErrorMessage(err: unknown, fallback = 'Request failed'): stri
     response?: { status?: number; data?: { message?: string; error?: string } }
     message?: string
   }
-  const body = ax.response?.data?.message || ax.response?.data?.error
+  const body = ax.response?.data?.error || ax.response?.data?.message
   if (body) return body
 
   const status = ax.response?.status
   if (status === 403) {
-    return 'Access denied (403). Log out, then sign in at /admin (not the main Login page). Your account must have ADMIN role in the database.'
+    return 'Access denied — your session is not an admin. Log out, open /admin, and sign in with the administrator email from your database.'
+  }
+  if (status === 401) {
+    return 'Session expired or invalid — please log in again.'
   }
   if (status === 413) {
     return 'Payload too large. Try fewer questions per import or shorter explanations.'
@@ -40,19 +57,8 @@ export function apiErrorMessage(err: unknown, fallback = 'Request failed'): stri
   if (status === 429) {
     return 'Too many requests — wait a minute and try again.'
   }
-  if (status === 401) {
-    return 'Session expired — log in again at /admin.'
-  }
 
-  const msg = ax.message || ''
-  if (msg.includes('status code 403')) {
-    return 'Access denied (403). Use /admin login with an admin account.'
-  }
-  if (msg.includes('status code 413')) {
-    return 'Payload too large — reduce JSON size or split into smaller imports.'
-  }
-
-  return msg || fallback
+  return ax.message || fallback
 }
 
 export default api

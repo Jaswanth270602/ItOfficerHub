@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ServerWarmupGate } from '@/components/ServerWarmupGate'
 import { ToastProvider } from '@/components/ui/toast'
 import { AuthProvider, useAuth } from '@/lib/auth'
+import { AdminRouteGate } from '@/components/admin/AdminRouteGate'
 import { Layout } from '@/components/Layout'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -32,13 +33,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
   const redirect = encodeURIComponent(window.location.pathname + window.location.search)
   return isAuthenticated ? <>{children}</> : <Navigate to={`/login?redirect=${redirect}`} replace />
-}
-
-function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAuth()
-  if (!isAuthenticated) return <Navigate to="/admin" />
-  if (user?.role !== 'ADMIN') return <Navigate to="/" />
-  return <>{children}</>
 }
 
 export default function App() {
@@ -77,12 +71,12 @@ export default function App() {
             />
           </Route>
           <Route path="/admin" element={<AdminLoginPage />} />
-          <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
-          <Route path="/admin/practice" element={<AdminRoute><AdminPracticePage /></AdminRoute>} />
-          <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
-          <Route path="/admin/visitors" element={<AdminRoute><AdminVisitorsPage /></AdminRoute>} />
-          <Route path="/admin/practice/:sectionId/:subtopicSlug" element={<AdminRoute><AdminPracticeSubtopicPage /></AdminRoute>} />
-          <Route path="/admin/mocks/:id" element={<AdminRoute><AdminMockPage /></AdminRoute>} />
+          <Route path="/admin/dashboard" element={<AdminRouteGate><AdminDashboardPage /></AdminRouteGate>} />
+          <Route path="/admin/practice" element={<AdminRouteGate><AdminPracticePage /></AdminRouteGate>} />
+          <Route path="/admin/users" element={<AdminRouteGate><AdminUsersPage /></AdminRouteGate>} />
+          <Route path="/admin/visitors" element={<AdminRouteGate><AdminVisitorsPage /></AdminRouteGate>} />
+          <Route path="/admin/practice/:sectionId/:subtopicSlug" element={<AdminRouteGate><AdminPracticeSubtopicPage /></AdminRouteGate>} />
+          <Route path="/admin/mocks/:id" element={<AdminRouteGate><AdminMockPage /></AdminRouteGate>} />
           </Routes>
         </BrowserRouter>
       </ServerWarmupGate>

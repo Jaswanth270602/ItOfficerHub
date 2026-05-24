@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,18 +12,30 @@ export function AdminLoginPage() {
   const [email, setEmail] = useState('admin@itofficerhub.com')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login } = useAuth()
+  const { login, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    logout(false)
+  }, [logout])
+
+  useEffect(() => {
+    const denied = (location.state as { adminDenied?: boolean } | null)?.adminDenied
+    if (denied) {
+      setError('That account is not an admin on the server. Use the exact administrator email from your database.')
+    }
+  }, [location.state])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     try {
       await login(email, password, true)
-      navigate('/admin/dashboard')
+      navigate('/admin/dashboard', { replace: true })
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-      setError(msg || 'Admin login failed')
+      const ax = err as { response?: { data?: { error?: string } }; message?: string }
+      setError(ax.response?.data?.error || ax.message || 'Admin login failed')
     }
   }
 

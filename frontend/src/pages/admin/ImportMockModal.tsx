@@ -40,7 +40,8 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
   const [hint, setHint] = useState('')
   const [copied, setCopied] = useState(false)
 
-  const isAdmin = user?.role === 'ADMIN'
+  const [serverAdmin, setServerAdmin] = useState(false)
+  const isAdmin = serverAdmin && user?.role === 'ADMIN'
 
   const preview = useMemo(() => {
     if (!jsonText.trim()) return null
@@ -79,17 +80,20 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
     setHint('')
     void (async () => {
       const fresh = await refreshSession()
-      const role = fresh?.role ?? user?.role
-      if (role !== 'ADMIN') {
+      const ok = fresh?.role === 'ADMIN'
+      setServerAdmin(ok)
+      if (!ok) {
         setError(
-          'Admin role required. Log out, then sign in at /admin with your administrator email (not the regular Login page).'
+          fresh
+            ? `Signed in as ${fresh.email} with role ${fresh.role}. Use /admin login with your ADMIN row from the database.`
+            : 'Session invalid. Open /admin and sign in again.'
         )
         setNextCode('')
         return
       }
       await refreshNextCode()
     })()
-  }, [open, examTarget, user?.role])
+  }, [open, examTarget, refreshSession])
 
   const copyClaudePrompt = async () => {
     if (!title.trim()) {
@@ -119,11 +123,16 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
 
   const importMock = async () => {
     const fresh = await refreshSession()
-    if ((fresh?.role ?? user?.role) !== 'ADMIN') {
-      setError('Admin role required. Log out → open /admin → sign in with admin credentials.')
-      setHint('If you use the main Login page, your session may be a student account even with the same email.')
+    if (fresh?.role !== 'ADMIN') {
+      setServerAdmin(false)
+      setError(
+        fresh
+          ? `Server says you are ${fresh.email} (${fresh.role}), not ADMIN. Log out → /admin → login with administrator email.`
+          : 'Session expired. Log in again at /admin.'
+      )
       return
     }
+    setServerAdmin(true)
 
     setLoading(true)
     setError('')

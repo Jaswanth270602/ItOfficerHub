@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import api from '@/lib/api'
+import { useAuth } from '@/lib/auth'
 import { toast } from '@/components/ui/toast'
 import { ScheduleMockModal } from '@/components/admin/ScheduleMockModal'
 import { Button } from '@/components/ui/button'
@@ -47,6 +48,7 @@ const PAGE_SIZE = 10
 type StatusFilter = 'ALL' | LiveStatus
 
 export function AdminDashboardPage() {
+  const { user } = useAuth()
   const [stats, setStats] = useState<Dashboard | null>(null)
   const [mocks, setMocks] = useState<MockAdmin[]>([])
   const [importOpen, setImportOpen] = useState(false)
@@ -163,6 +165,11 @@ export function AdminDashboardPage() {
           <p className="text-sm text-slate-400 mt-1">
             Publish now or schedule — mocks go live at 12:00 AM IST on the chosen date
           </p>
+          {user?.email && (
+            <p className="text-xs text-neon-cyan/80 mt-1">
+              Signed in as {user.email} ({user.role})
+            </p>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Link to="/admin/users" className="w-full sm:w-auto">
