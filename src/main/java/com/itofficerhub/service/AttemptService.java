@@ -284,7 +284,7 @@ public class AttemptService {
 		Set<Long> bookmarked = bookmarkedIdsForUser(attempt.getUser().getId());
 
 		String share = String.format(
-				"🎯 IBPS SO IT Officer Mock Result\n\n%s\nNet Score: %.2f / %.0f (Cutoff %.0f %s)\nCorrect: %d | Wrong: %d | Left: %d\nRank: #%d of %d students | Percentile: %.1f\n(Best score per student · retakes not counted)\n\nItOfficerHub",
+				"🎯 IBPS SO IT Officer Mock Result\n\n%s\nNet Score: %.2f / %.0f (Cutoff %.0f %s)\nCorrect: %d | Wrong: %d | Left: %d\nRank: #%d of %d students | Percentile: %.1f\n(Best score per student · retakes not counted)\n\nFree daily mocks: https://itofficerhub.in",
 				attempt.getMockTest().getTitle(),
 				net, b.maxMarks(), cutoff, cleared ? "✅" : "❌",
 				attempt.getCorrectCount(), attempt.getWrongCount(), attempt.getUnattemptedCount(),

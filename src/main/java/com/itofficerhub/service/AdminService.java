@@ -13,6 +13,9 @@ import com.itofficerhub.util.MockVisibility;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class AdminService {
@@ -25,12 +28,14 @@ public class AdminService {
 	private final DailySpotlightRepository dailySpotlightRepository;
 	private final AppCacheService appCacheService;
 	private final MockCodeService mockCodeService;
+	private final PasswordEncoder passwordEncoder;
 
 	public AdminService(MockTestRepository mockTestRepository, QuestionRepository questionRepository,
 			UserRepository userRepository, TestAttemptRepository attemptRepository,
 			RevisionBookmarkRepository revisionBookmarkRepository,
 			DailySpotlightRepository dailySpotlightRepository,
-			AppCacheService appCacheService, MockCodeService mockCodeService) {
+			AppCacheService appCacheService, MockCodeService mockCodeService,
+			PasswordEncoder passwordEncoder) {
 		this.mockTestRepository = mockTestRepository;
 		this.questionRepository = questionRepository;
 		this.userRepository = userRepository;
@@ -39,6 +44,7 @@ public class AdminService {
 		this.dailySpotlightRepository = dailySpotlightRepository;
 		this.appCacheService = appCacheService;
 		this.mockCodeService = mockCodeService;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	public AdminDashboardDto dashboard() {
@@ -51,6 +57,45 @@ public class AdminService {
 
 	public List<MockTestAdminDto> listMocks() {
 		return mockTestRepository.findAllByOrderByCreatedAtDesc().stream().map(this::toAdminDto).toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<UserAdminDto> listUsers(String roleFilter) {
+		List<User> users;
+		if (roleFilter == null || roleFilter.isBlank() || "ALL".equalsIgnoreCase(roleFilter)) {
+			users = userRepository.findAllByOrderByCreatedAtDesc();
+		} else {
+			Role role = parseRole(roleFilter);
+			users = userRepository.findByRoleOrderByCreatedAtDesc(role);
+		}
+		return users.stream().map(this::toUserAdminDto).toList();
+	}
+
+	@Transactional
+	public void resetUserPassword(Long userId, AdminResetPasswordRequest request) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+		user.setPassword(passwordEncoder.encode(request.newPassword()));
+		userRepository.save(user);
+	}
+
+	private Role parseRole(String raw) {
+		try {
+			return Role.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+		} catch (IllegalArgumentException e) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid role filter");
+		}
+	}
+
+	private UserAdminDto toUserAdminDto(User u) {
+		return new UserAdminDto(
+				u.getId(),
+				u.getEmail(),
+				u.getPhone(),
+				u.getName(),
+				u.getRole().name(),
+				u.getCreatedAt(),
+				u.getPrepPoints());
 	}
 
 	public MockCodePreviewDto previewNextCode(String examTargetRaw) {
@@ -82,10 +127,14 @@ public class AdminService {
 	public MockTestAdminDto updateMock(Long id, MockTestRequest request) {
 		MockTest m = findMock(id);
 		applyMockRequest(m, request);
-		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
-		if (request.published() != null) {
-			appCacheService.evictPublicCatalog();
+		if (request.examTarget() != null) {
+			m.setExamTarget(parseExamTarget(request.examTarget()));
 		}
+		if (request.mockCategory() != null) {
+			m.setMockCategory(parseCategory(request.mockCategory()));
+		}
+		MockTestAdminDto dto = toAdminDto(mockTestRepository.save(m));
+		evictCatalogCaches();
 		return dto;
 	}
 

@@ -7,6 +7,7 @@ import { faqJsonLd, LANDING_FAQ } from '@/lib/seo-faq'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UpcomingMockBanner } from '@/components/UpcomingMockBanner'
+import { LandingDailySplash } from '@/components/landing/LandingDailySplash'
 import { LandingPlatformShowcase } from '@/components/landing/LandingPlatformShowcase'
 import { LandingSection } from '@/components/landing/LandingSection'
 import { MottoCarousel, type MottoSlide } from '@/components/landing/MottoCarousel'
@@ -179,6 +180,7 @@ export function LandingPage() {
 
   return (
     <>
+      <LandingDailySplash />
       <Seo
         path="/"
         title="Crack IBPS SO IT Officer — 100% Free, No Login for Prep"

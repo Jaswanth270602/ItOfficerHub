@@ -24,6 +24,16 @@ public class AdminController {
 		return adminService.dashboard();
 	}
 
+	@GetMapping("/users")
+	public List<UserAdminDto> listUsers(@RequestParam(defaultValue = "USER") String role) {
+		return adminService.listUsers(role);
+	}
+
+	@PutMapping("/users/{id}/password")
+	public void resetUserPassword(@PathVariable Long id, @Valid @RequestBody AdminResetPasswordRequest request) {
+		adminService.resetUserPassword(id, request);
+	}
+
 	@GetMapping("/mocks")
 	public List<MockTestAdminDto> listMocks() {
 		return adminService.listMocks();

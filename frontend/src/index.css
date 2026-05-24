@@ -94,3 +94,38 @@ button:disabled {
 .study-sidebar a:focus-visible {
   @apply outline-2 outline-offset-2 outline-neon-cyan;
 }
+
+@keyframes landing-smiley-bob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) scale(1.12) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(0) scale(1.05) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-3px) scale(1.1) rotate(8deg);
+  }
+}
+
+.landing-splash-smiley {
+  display: inline-block;
+  animation: landing-smiley-bob 1.4s ease-in-out infinite;
+}
+
+@keyframes landing-splash-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.landing-splash-exit {
+  animation: landing-splash-fade-out 0.35s ease forwards;
+  pointer-events: none;
+}

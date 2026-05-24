@@ -17,4 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	List<User> searchUsers(@Param("q") String q);
 
 	List<User> findByRoleAndShowInDirectoryTrueOrderByNameAsc(com.itofficerhub.entity.Role role);
+
+	List<User> findByRoleOrderByCreatedAtDesc(com.itofficerhub.entity.Role role);
+
+	List<User> findAllByOrderByCreatedAtDesc();
 }

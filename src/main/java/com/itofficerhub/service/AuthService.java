@@ -87,6 +87,21 @@ public class AuthService {
 		return p;
 	}
 
+	@org.springframework.transaction.annotation.Transactional
+	public void changePassword(ChangePasswordRequest request) {
+		UserPrincipal principal = currentUser();
+		User user = userRepository.findById(principal.getId())
+				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+		if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+		}
+		if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "New password must be different from current password");
+		}
+		user.setPassword(passwordEncoder.encode(request.newPassword()));
+		userRepository.save(user);
+	}
+
 	private AuthResponse buildAuthResponse(User user) {
 		String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole().name());
 		return new AuthResponse(token, user.getId(), user.getEmail(), user.getName(), user.getRole().name());

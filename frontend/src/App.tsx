@@ -25,6 +25,7 @@ import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { AdminMockPage } from '@/pages/admin/AdminMockPage'
 import { AdminPracticePage } from '@/pages/admin/AdminPracticePage'
 import { AdminPracticeSubtopicPage } from '@/pages/admin/AdminPracticeSubtopicPage'
+import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/admin" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
           <Route path="/admin/practice" element={<AdminRoute><AdminPracticePage /></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
           <Route path="/admin/practice/:sectionId/:subtopicSlug" element={<AdminRoute><AdminPracticeSubtopicPage /></AdminRoute>} />
           <Route path="/admin/mocks/:id" element={<AdminRoute><AdminMockPage /></AdminRoute>} />
           </Routes>

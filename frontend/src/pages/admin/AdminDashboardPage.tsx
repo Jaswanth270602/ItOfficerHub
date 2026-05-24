@@ -6,6 +6,7 @@ import { ScheduleMockModal } from '@/components/admin/ScheduleMockModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImportMockModal } from './ImportMockModal'
+import { PlatformLeaderboardsPanel, type PlatformOverview } from '@/components/dashboard/PlatformLeaderboardsPanel'
 import { BarChart3, BookOpen, CalendarClock, ChevronLeft, ChevronRight, FileJson, FileQuestion, Search, Users, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -54,6 +55,8 @@ export function AdminDashboardPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [page, setPage] = useState(1)
+  const [platformOverview, setPlatformOverview] = useState<PlatformOverview | null>(null)
+  const [platformLoading, setPlatformLoading] = useState(true)
 
   const load = () => {
     api.get('/admin/dashboard').then((r) => setStats(r.data))
@@ -63,7 +66,26 @@ export function AdminDashboardPage() {
     ).catch(() => {})
   }
 
-  useEffect(() => { load() }, [])
+  const loadPlatform = () => {
+    setPlatformLoading(true)
+    api.get('/public/dashboard')
+      .then((r) => {
+        const d = r.data
+        setPlatformOverview({
+          profileOfTheDay: d.profileOfTheDay,
+          hallOfFameTop10: d.hallOfFameTop10 ?? [],
+          todaysMockLeaderboard: d.todaysMockLeaderboard ?? [],
+          mockOfTheDay: d.mockOfTheDay ? { id: d.mockOfTheDay.id, title: d.mockOfTheDay.title } : null,
+          upcomingMock: d.upcomingMock
+            ? { title: d.upcomingMock.title, goLiveDateLabel: d.upcomingMock.goLiveDateLabel }
+            : null,
+        })
+      })
+      .catch(() => setPlatformOverview(null))
+      .finally(() => setPlatformLoading(false))
+  }
+
+  useEffect(() => { load(); loadPlatform() }, [])
 
   const filteredMocks = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -143,6 +165,11 @@ export function AdminDashboardPage() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Link to="/admin/users" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full cursor-pointer gap-1">
+              <Users className="h-4 w-4 shrink-0" /> Users
+            </Button>
+          </Link>
           <Button className="w-full sm:w-auto cursor-pointer" onClick={() => setImportOpen(true)}>
             <FileJson className="h-4 w-4 shrink-0" /> Import Mock
           </Button>
@@ -175,6 +202,13 @@ export function AdminDashboardPage() {
           <Card><CardContent className="pt-6 flex gap-3"><Zap className="text-amber-400" /><div><p className="text-2xl font-bold">{stats.totalAttempts}</p><p className="text-sm text-slate-400">Attempts</p></div></CardContent></Card>
         </div>
       )}
+
+      <PlatformLeaderboardsPanel
+        overview={platformOverview}
+        loading={platformLoading}
+        onRefresh={loadPlatform}
+        adminView
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <h2 className="text-xl font-semibold">Mock Tests</h2>

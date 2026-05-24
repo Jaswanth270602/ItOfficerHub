@@ -18,6 +18,10 @@ import {
   Trophy,
   Users,
 } from 'lucide-react'
+import {
+  OFFICIAL_TELEGRAM_URL,
+  OFFICIAL_YOUTUBE_URL,
+} from '@/lib/officialChannels'
 import { cn } from '@/lib/utils'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -178,6 +182,12 @@ export function Layout() {
             <Link to="/register" className="text-slate-400 hover:text-white py-1">
               Sign up free
             </Link>
+            <a href={OFFICIAL_YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white py-1">
+              YouTube
+            </a>
+            <a href={OFFICIAL_TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white py-1">
+              Telegram
+            </a>
           </nav>
           <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 text-xs sm:text-sm text-slate-500 text-center">
             <span>© {new Date().getFullYear()} ItOfficerHub — IT Officer Hub</span>

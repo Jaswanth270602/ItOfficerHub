@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { AddGroupMembersPanel, MemberPickerList, type StudentPick } from '@/components/AddGroupMembersPanel'
+import { ChangePasswordCard } from '@/components/ChangePasswordCard'
+import { OfficialChannelsCard } from '@/components/OfficialChannelsCard'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ArrowLeft, Ban, Mail, MessageCircle, Plus, RefreshCw, Send, Shield, Trophy, UserPlus, UserRoundPlus, Users } from 'lucide-react'
 
@@ -74,7 +76,7 @@ interface Message {
 
 export function CommunityPage() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<'inbox' | 'students' | 'profile'>('inbox')
+  const [tab, setTab] = useState<'inbox' | 'students' | 'profile' | 'channels'>('inbox')
   const [inbox, setInbox] = useState<Conversation[]>([])
   const [activeId, setActiveId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -311,7 +313,7 @@ export function CommunityPage() {
               <Plus className="h-4 w-4" /> Add group
             </Button>
           )}
-          {(['inbox', 'students', 'profile'] as const).map((t) => (
+          {(['inbox', 'students', 'profile', 'channels'] as const).map((t) => (
             <Button
               key={t}
               size="sm"
@@ -319,7 +321,7 @@ export function CommunityPage() {
               className="cursor-pointer capitalize"
               onClick={() => setTab(t)}
             >
-              {t === 'students' ? 'Students' : t === 'inbox' ? 'Inbox' : 'Privacy'}
+              {t === 'students' ? 'Students' : t === 'inbox' ? 'Inbox' : t === 'channels' ? 'Updates' : 'Privacy'}
             </Button>
           ))}
         </div>
@@ -329,6 +331,10 @@ export function CommunityPage() {
         <p className="mb-4 text-sm text-red-400 bg-red-950/30 border border-red-800/50 rounded-lg px-4 py-2">
           {actionError}
         </p>
+      )}
+
+      {tab === 'channels' && (
+        <OfficialChannelsCard className="max-w-xl" />
       )}
 
       {tab === 'profile' && profile && (
@@ -397,6 +403,10 @@ export function CommunityPage() {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {tab === 'profile' && profile && (
+        <ChangePasswordCard className="max-w-lg mt-6" />
       )}
 
       {tab === 'students' && (

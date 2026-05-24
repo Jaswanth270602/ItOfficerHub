@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import api, { apiErrorMessage } from '@/lib/api'
 import { SolutionExplanation } from '@/components/exam/SolutionExplanation'
 import { ShareMockButton } from '@/components/exam/ShareMockButton'
+import { ScoreShareCard } from '@/components/exam/ScoreShareCard'
+import { toast } from '@/components/ui/toast'
+import { copyScoreShareText, shareScoreScreenshot } from '@/lib/shareScoreCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -173,7 +176,9 @@ export function ResultPage() {
   const [showSolutions, setShowSolutions] = useState(false)
   const [showCompetitive, setShowCompetitive] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [loadError, setLoadError] = useState('')
+  const shareCardRef = useRef<HTMLDivElement>(null)
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set())
   const [bookmarkBusy, setBookmarkBusy] = useState<number | null>(null)
 
@@ -197,6 +202,25 @@ export function ResultPage() {
   const displayRank = myLeaderboard?.rank ?? result?.uniqueRank ?? result?.rank ?? '—'
   const displayPercentile = result?.uniquePercentile ?? result?.percentile
 
+  const shareCardData = useMemo(() => {
+    if (!result) return null
+    return {
+      mockTitle: result.mockTitle,
+      netScore: result.netScore,
+      maxMarks: result.maxMarks,
+      cutoffMarks: result.cutoffMarks,
+      clearedCutoff: result.clearedCutoff,
+      correctCount: result.correctCount,
+      wrongCount: result.wrongCount,
+      unattemptedCount: result.unattemptedCount,
+      rank: myLeaderboard?.rank ?? result.uniqueRank ?? result.rank,
+      percentile: displayPercentile ?? null,
+      uniqueStudents: result.uniqueStudents,
+      timeTakenSeconds: result.timeTakenSeconds,
+      accuracy: result.accuracy,
+    }
+  }, [result, myLeaderboard, displayPercentile])
+
   const { strongTopics, weakTopics } = useMemo(() => {
     const rows = result?.topicBreakdown ?? []
     const withAttempts = rows.filter((t) => t.correct + t.wrong > 0)
@@ -209,27 +233,31 @@ export function ResultPage() {
     return { strongTopics: strong, weakTopics: weak }
   }, [result?.topicBreakdown])
 
-  const copyShare = () => {
-    if (result?.shareMessage) {
-      navigator.clipboard.writeText(result.shareMessage)
+  const copyShare = async () => {
+    if (!shareCardData) return
+    try {
+      await copyScoreShareText(shareCardData)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+      toast.success('Score text copied — attach your score card image when sharing')
+    } catch {
+      toast.error('Could not copy')
     }
   }
 
-  const nativeShare = async () => {
-    if (!result?.shareMessage || !navigator.share) {
-      copyShare()
-      return
-    }
+  const shareScore = async () => {
+    if (!shareCardRef.current || !shareCardData) return
+    setSharing(true)
     try {
-      await navigator.share({
-        title: `ItOfficerHub — ${result.mockTitle}`,
-        text: result.shareMessage,
-        url: window.location.origin,
-      })
+      const outcome = await shareScoreScreenshot(shareCardRef.current, shareCardData)
+      if (outcome === 'shared') toast.success('Score card shared')
+      else if (outcome === 'saved') {
+        toast.success('Score card downloaded — attach the PNG in WhatsApp (no private report link)')
+      }
     } catch {
-      /* user cancelled */
+      toast.error('Could not create score card image')
+    } finally {
+      setSharing(false)
     }
   }
 
@@ -273,6 +301,11 @@ export function ResultPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-[calc(11rem+env(safe-area-inset-bottom))] lg:pb-32">
+      {shareCardData && (
+        <div className="fixed left-[-9999px] top-0 pointer-events-none" aria-hidden>
+          <ScoreShareCard ref={shareCardRef} data={shareCardData} />
+        </div>
+      )}
       {violationNote && (
         <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-200 flex gap-2 items-start">
           <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400" />
@@ -551,38 +584,47 @@ export function ResultPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 justify-center mb-8">
-        <ShareMockButton
-          mockId={result.mockTestId}
-          mockTitle={result.mockTitle}
-          variant="pill"
-          className="col-span-2 sm:col-span-1 justify-center"
-        />
-        <Link to={`/community?shareAttempt=${result.attemptId}`} className="col-span-2 sm:col-span-1">
-          <Button variant="outline" className="cursor-pointer w-full sm:w-auto min-h-[44px]">
-            <Mail className="h-4 w-4" /> Share in Prep Mail
-          </Button>
-        </Link>
-        <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm" onClick={nativeShare}>
-          <Share2 className="h-4 w-4 shrink-0" /> Share score
-        </Button>
-        <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm" onClick={copyShare}>
-          <Copy className="h-4 w-4 shrink-0" /> {copied ? 'Copied' : 'Copy score'}
-        </Button>
-        <Link to="/revision" className="col-span-1">
-          <Button variant="outline" className="cursor-pointer w-full min-h-[44px] text-sm">
-            <BookMarked className="h-4 w-4 shrink-0" /> Revision
-          </Button>
-        </Link>
-        {result.allowRetake && (
-          <Link to={`/mock/${result.mockTestId}`} className="col-span-1">
-            <Button variant="outline" className="cursor-pointer w-full min-h-[44px]">Retake</Button>
-          </Link>
-        )}
-        <Link to="/dashboard" className="col-span-2 sm:col-span-1">
-          <Button className="cursor-pointer w-full min-h-[44px]">More mocks</Button>
-        </Link>
-      </div>
+      <Card className="mb-8 border-cyber-600/80">
+        <CardContent className="pt-5 pb-5 space-y-4">
+          <p className="text-sm text-slate-400 text-center">
+            Share a score card image — no private report link is included.
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button
+              variant="default"
+              className="cursor-pointer min-h-[44px] gap-2"
+              disabled={sharing}
+              onClick={() => void shareScore()}
+            >
+              <Share2 className="h-4 w-4 shrink-0" /> {sharing ? 'Preparing…' : 'Share score card'}
+            </Button>
+            <Button variant="outline" className="cursor-pointer min-h-[44px] gap-2" onClick={() => void copyShare()}>
+              <Copy className="h-4 w-4 shrink-0" /> {copied ? 'Copied' : 'Copy score text'}
+            </Button>
+            <ShareMockButton mockId={result.mockTestId} mockTitle={result.mockTitle} variant="pill" />
+            <Link to={`/community?shareAttempt=${result.attemptId}`}>
+              <Button variant="outline" className="cursor-pointer min-h-[44px] gap-2">
+                <Mail className="h-4 w-4 shrink-0" /> Prep Mail
+              </Button>
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center pt-1 border-t border-cyber-800">
+            <Link to="/revision">
+              <Button variant="outline" className="cursor-pointer min-h-[44px] gap-2">
+                <BookMarked className="h-4 w-4 shrink-0" /> Revision
+              </Button>
+            </Link>
+            {result.allowRetake && (
+              <Link to={`/mock/${result.mockTestId}`}>
+                <Button variant="outline" className="cursor-pointer min-h-[44px]">Retake</Button>
+              </Link>
+            )}
+            <Link to="/dashboard">
+              <Button className="cursor-pointer min-h-[44px]">More mocks</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       <Button
         variant="ghost"
