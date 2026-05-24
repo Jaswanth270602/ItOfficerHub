@@ -3,6 +3,7 @@ package com.itofficerhub.controller;
 import com.itofficerhub.dto.*;
 import com.itofficerhub.service.AdminService;
 import com.itofficerhub.service.PracticeService;
+import com.itofficerhub.service.VisitTrackingService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -13,10 +14,23 @@ public class AdminController {
 
 	private final AdminService adminService;
 	private final PracticeService practiceService;
+	private final VisitTrackingService visitTrackingService;
 
-	public AdminController(AdminService adminService, PracticeService practiceService) {
+	public AdminController(AdminService adminService, PracticeService practiceService,
+			VisitTrackingService visitTrackingService) {
 		this.adminService = adminService;
 		this.practiceService = practiceService;
+		this.visitTrackingService = visitTrackingService;
+	}
+
+	@GetMapping("/visitors")
+	public VisitorAnalyticsDto visitors(
+			@RequestParam(required = false) String date,
+			@RequestParam(required = false) String ip,
+			@RequestParam(required = false) String path,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "50") int size) {
+		return visitTrackingService.adminAnalytics(date, ip, path, page, size);
 	}
 
 	@GetMapping("/dashboard")

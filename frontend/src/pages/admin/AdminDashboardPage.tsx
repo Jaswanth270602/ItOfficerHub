@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImportMockModal } from './ImportMockModal'
 import { PlatformLeaderboardsPanel, type PlatformOverview } from '@/components/dashboard/PlatformLeaderboardsPanel'
-import { BarChart3, BookOpen, CalendarClock, ChevronLeft, ChevronRight, FileJson, FileQuestion, Search, Users, Zap } from 'lucide-react'
+import { BarChart3, BookOpen, CalendarClock, ChevronLeft, ChevronRight, FileJson, FileQuestion, Globe, Search, Users, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Dashboard {
@@ -168,6 +168,11 @@ export function AdminDashboardPage() {
           <Link to="/admin/users" className="w-full sm:w-auto">
             <Button variant="outline" className="w-full cursor-pointer gap-1">
               <Users className="h-4 w-4 shrink-0" /> Users
+            </Button>
+          </Link>
+          <Link to="/admin/visitors" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full cursor-pointer gap-1">
+              <Globe className="h-4 w-4 shrink-0" /> Visitors
             </Button>
           </Link>
           <Button className="w-full sm:w-auto cursor-pointer" onClick={() => setImportOpen(true)}>

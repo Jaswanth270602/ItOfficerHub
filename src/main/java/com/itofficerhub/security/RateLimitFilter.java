@@ -1,6 +1,7 @@
 package com.itofficerhub.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itofficerhub.util.HttpRequestUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,7 +43,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		String clientIp = clientIp(request);
+		String clientIp = HttpRequestUtils.clientIp(request);
 		RateLimitService.Tier tier = tierFor(request, path);
 
 		if (!rateLimitService.tryConsume(clientIp, tier)) {
@@ -70,19 +71,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
 			return RateLimitService.Tier.API_WRITE;
 		}
 		return RateLimitService.Tier.GLOBAL;
-	}
-
-	static String clientIp(HttpServletRequest request) {
-		String forwarded = request.getHeader("X-Forwarded-For");
-		if (forwarded != null && !forwarded.isBlank()) {
-			int comma = forwarded.indexOf(',');
-			return (comma > 0 ? forwarded.substring(0, comma) : forwarded).trim();
-		}
-		String realIp = request.getHeader("X-Real-IP");
-		if (realIp != null && !realIp.isBlank()) {
-			return realIp.trim();
-		}
-		return request.getRemoteAddr();
 	}
 
 	private void write429(HttpServletResponse response) throws IOException {

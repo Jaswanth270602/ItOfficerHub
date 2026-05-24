@@ -32,7 +32,7 @@ export function apiErrorMessage(err: unknown, fallback = 'Request failed'): stri
 
   const status = ax.response?.status
   if (status === 403) {
-    return 'Access denied (403). Log in at /admin with your admin account — a regular student login cannot import mocks.'
+    return 'Access denied (403). Log out, then sign in at /admin (not the main Login page). Your account must have ADMIN role in the database.'
   }
   if (status === 413) {
     return 'Payload too large. Try fewer questions per import or shorter explanations.'

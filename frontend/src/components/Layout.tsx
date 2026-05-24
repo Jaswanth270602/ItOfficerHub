@@ -24,6 +24,7 @@ import {
 } from '@/lib/officialChannels'
 import { cn } from '@/lib/utils'
 import { RouteNoIndexSeo } from '@/components/RouteNoIndexSeo'
+import { VisitTracker } from '@/components/VisitTracker'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -39,6 +40,7 @@ export function Layout() {
   return (
     <div className="min-h-screen flex flex-col min-h-[100dvh]">
       <RouteNoIndexSeo />
+      <VisitTracker />
       <LogoutThankYouModal
         open={goodbyeOpen}
         onOpenChange={(open) => {

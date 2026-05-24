@@ -15,10 +15,17 @@ export function LogoutThankYouModal({ open, onOpenChange }: Props) {
       <DialogContent className="max-w-3xl w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] p-0 gap-0 overflow-hidden border-amber-500/30 bg-cyber-950 max-h-[min(90vh,820px)] overflow-y-auto [&>button]:z-30 [&>button]:top-3 [&>button]:right-3 [&>button]:rounded-lg [&>button]:bg-cyber-950/90 [&>button]:border [&>button]:border-cyber-700 [&>button]:p-2">
         <DialogTitle className="sr-only">Thank you for using ItOfficerHub</DialogTitle>
 
-        {/* Hero header — clear of close button */}
-        <div className="relative h-36 sm:h-44 w-full overflow-hidden shrink-0">
-          <img src="/og-cover.svg" alt="" className="absolute inset-0 w-full h-full object-cover" aria-hidden />
-          <div className="absolute inset-0 bg-gradient-to-t from-cyber-950 via-cyber-950/80 to-amber-950/40" />
+        {/* Hero header — CSS only (og-cover.svg was 404 on some hosts due to SPA catch-all) */}
+        <div className="relative h-36 sm:h-44 w-full overflow-hidden shrink-0 bg-gradient-to-br from-amber-950/50 via-cyber-950 to-cyber-900">
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 20% 30%, rgba(251,191,36,0.25) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(34,211,238,0.15) 0%, transparent 40%)',
+            }}
+            aria-hidden
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-cyber-950 via-cyber-950/80 to-transparent" />
           <div className="absolute inset-0 flex flex-col items-center justify-end pb-5 sm:pb-6 px-6 sm:px-10 pt-12 text-center">
             <div className="inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-cyber-950/80 border border-amber-500/40 shadow-lg shadow-amber-500/10 mb-3">
               <Heart className="h-7 w-7 sm:h-8 sm:w-8 text-amber-400" />

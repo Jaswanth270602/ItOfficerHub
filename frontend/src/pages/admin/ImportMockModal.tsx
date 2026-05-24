@@ -22,7 +22,7 @@ const inputClass =
   'mt-1 w-full rounded-lg border border-cyber-700 bg-cyber-900/80 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon-blue'
 
 export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
-  const { user } = useAuth()
+  const { user, refreshSession } = useAuth()
   const [jsonText, setJsonText] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -77,13 +77,19 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
     if (!open) return
     setError('')
     setHint('')
-    if (user && !isAdmin) {
-      setError('You are logged in as a student. Open /admin and sign in with your admin account to import mocks.')
-      setNextCode('')
-      return
-    }
-    if (isAdmin) void refreshNextCode()
-  }, [open, examTarget, isAdmin, user])
+    void (async () => {
+      const fresh = await refreshSession()
+      const role = fresh?.role ?? user?.role
+      if (role !== 'ADMIN') {
+        setError(
+          'Admin role required. Log out, then sign in at /admin with your administrator email (not the regular Login page).'
+        )
+        setNextCode('')
+        return
+      }
+      await refreshNextCode()
+    })()
+  }, [open, examTarget, user?.role])
 
   const copyClaudePrompt = async () => {
     if (!title.trim()) {
@@ -112,8 +118,10 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
   }
 
   const importMock = async () => {
-    if (!isAdmin) {
-      setError('Admin login required. Go to /admin and sign in with your admin email.')
+    const fresh = await refreshSession()
+    if ((fresh?.role ?? user?.role) !== 'ADMIN') {
+      setError('Admin role required. Log out → open /admin → sign in with admin credentials.')
+      setHint('If you use the main Login page, your session may be a student account even with the same email.')
       return
     }
 

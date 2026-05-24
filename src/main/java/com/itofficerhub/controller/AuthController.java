@@ -35,4 +35,10 @@ public class AuthController {
 		authService.changePassword(request);
 	}
 
+	/** Role and profile from DB (fixes stale localStorage after role changes). */
+	@GetMapping("/session")
+	public SessionDto session() {
+		return authService.currentSession();
+	}
+
 }

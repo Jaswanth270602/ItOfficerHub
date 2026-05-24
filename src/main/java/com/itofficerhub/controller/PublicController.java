@@ -7,6 +7,9 @@ import com.itofficerhub.dto.TopicCatalogItemDto;
 import com.itofficerhub.service.DashboardService;
 import com.itofficerhub.service.PracticeService;
 import com.itofficerhub.service.PublicService;
+import com.itofficerhub.service.VisitTrackingService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -17,12 +20,20 @@ public class PublicController {
 	private final PublicService publicService;
 	private final DashboardService dashboardService;
 	private final PracticeService practiceService;
+	private final VisitTrackingService visitTrackingService;
 
 	public PublicController(PublicService publicService, DashboardService dashboardService,
-			PracticeService practiceService) {
+			PracticeService practiceService, VisitTrackingService visitTrackingService) {
 		this.publicService = publicService;
 		this.dashboardService = dashboardService;
 		this.practiceService = practiceService;
+		this.visitTrackingService = visitTrackingService;
+	}
+
+	@PostMapping("/visits")
+	public void recordVisit(@Valid @RequestBody com.itofficerhub.dto.RecordVisitRequest request,
+			HttpServletRequest httpRequest) {
+		visitTrackingService.recordVisit(httpRequest, request);
 	}
 
 	@GetMapping("/dashboard")

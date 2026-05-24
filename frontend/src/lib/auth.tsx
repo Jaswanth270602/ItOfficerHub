@@ -12,6 +12,8 @@ interface User {
 interface AuthContextType {
   user: User | null
   token: string | null
+  /** Reload role from server (fixes admin UI when localStorage is stale). */
+  refreshSession: () => Promise<User | null>
   login: (email: string, password: string, admin?: boolean) => Promise<void>
   register: (
     name: string,
@@ -85,10 +87,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u)
   }
 
+  const refreshSession = useCallback(async (): Promise<User | null> => {
+    const t = localStorage.getItem('token')
+    if (!t) return null
+    try {
+      const { data } = await api.get<{ userId: number; email: string; name: string; role: string }>('/auth/session')
+      const u: User = { userId: data.userId, email: data.email, name: data.name, role: data.role }
+      localStorage.setItem('user', JSON.stringify(u))
+      setUser(u)
+      return u
+    } catch {
+      return null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (token) void refreshSession()
+  }, [token, refreshSession])
+
   const login = async (email: string, password: string, admin = false) => {
     const endpoint = admin ? '/auth/admin/login' : '/auth/login'
     const { data } = await api.post(endpoint, { email, password })
     saveAuth(data)
+    await refreshSession()
   }
 
   const register = async (
@@ -116,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         token,
+        refreshSession,
         login,
         register,
         logout,

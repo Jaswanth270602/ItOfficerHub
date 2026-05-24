@@ -1,6 +1,10 @@
 package com.itofficerhub.service;
 
-import com.itofficerhub.dto.*;
+import com.itofficerhub.dto.AuthResponse;
+import com.itofficerhub.dto.AuthRequest;
+import com.itofficerhub.dto.ChangePasswordRequest;
+import com.itofficerhub.dto.RegisterRequest;
+import com.itofficerhub.dto.SessionDto;
 import com.itofficerhub.entity.Role;
 import com.itofficerhub.entity.User;
 import com.itofficerhub.exception.ApiException;
@@ -85,6 +89,12 @@ public class AuthService {
 			throw new ApiException(HttpStatus.UNAUTHORIZED, "Not authenticated");
 		}
 		return p;
+	}
+
+	public SessionDto currentSession() {
+		UserPrincipal p = currentUser();
+		User u = p.getUser();
+		return new SessionDto(u.getId(), u.getEmail(), u.getName(), u.getRole().name());
 	}
 
 	@org.springframework.transaction.annotation.Transactional

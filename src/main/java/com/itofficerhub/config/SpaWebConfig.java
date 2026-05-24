@@ -26,6 +26,11 @@ public class SpaWebConfig implements WebMvcConfigurer {
 	}
 
 	static class SpaFallbackResolver extends PathResourceResolver {
+
+		private static final java.util.regex.Pattern STATIC_FILE = java.util.regex.Pattern.compile(
+				".+\\.(svg|png|jpe?g|gif|ico|webp|xml|txt|webmanifest|css|js|map|woff2?)$",
+				java.util.regex.Pattern.CASE_INSENSITIVE);
+
 		@Override
 		protected Resource resolveResourceInternal(HttpServletRequest request, String requestPath,
 				List<? extends Resource> locations, ResourceResolverChain chain) {
@@ -35,6 +40,13 @@ public class SpaWebConfig implements WebMvcConfigurer {
 			Resource resolved = super.resolveResourceInternal(request, requestPath, locations, chain);
 			if (resolved != null) {
 				return resolved;
+			}
+			// Do not serve index.html for missing images/assets (causes broken &lt;img&gt; icons)
+			if (requestPath != null && STATIC_FILE.matcher(requestPath).matches()) {
+				return null;
+			}
+			if (requestPath != null && requestPath.startsWith("assets/")) {
+				return null;
 			}
 			return new ClassPathResource("/static/index.html");
 		}
