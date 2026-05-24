@@ -181,6 +181,9 @@ export function Layout() {
             <Link to="/syllabus" className="text-slate-400 hover:text-white py-1">
               Syllabus
             </Link>
+            <Link to="/ibps-so-it-officer" className="text-slate-400 hover:text-white py-1">
+              IBPS SO IT pattern
+            </Link>
             <Link to="/register" className="text-slate-400 hover:text-white py-1">
               Sign up free
             </Link>

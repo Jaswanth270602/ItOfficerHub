@@ -401,6 +401,10 @@ export function LandingPage() {
                 mocks, previous-year style papers, revision bucket, and{' '}
                 <Link to="/syllabus" className="text-neon-cyan hover:underline">
                   full IBPS SO IT syllabus
+                </Link>{' '}
+                and{' '}
+                <Link to="/ibps-so-it-officer" className="text-neon-cyan hover:underline">
+                  exam pattern &amp; cut-offs
                 </Link>
                 .
               </p>

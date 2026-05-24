@@ -102,6 +102,15 @@ export function SyllabusPage() {
         </CardContent>
       </Card>
 
+      <Card className="mb-10 border-cyber-600">
+        <CardContent className="pt-6">
+          <p className="text-slate-300 mb-2">Prelims, mains &amp; interview — marks, stages and recent cut-offs.</p>
+          <Link to="/ibps-so-it-officer" className="text-neon-cyan text-sm hover:underline">
+            IBPS SO IT Officer exam pattern →
+          </Link>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-wrap gap-3">
         <Link to="/study">
           <Button className="cursor-pointer">Topic-wise Q&A</Button>

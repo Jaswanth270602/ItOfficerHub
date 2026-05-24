@@ -66,6 +66,9 @@ export function MobileHeaderMenu() {
             <NavLink to="/syllabus" className={linkClass}>
               <GraduationCap className="h-5 w-5" /> Syllabus
             </NavLink>
+            <NavLink to="/ibps-so-it-officer" className={linkClass}>
+              <GraduationCap className="h-5 w-5" /> IBPS SO IT pattern
+            </NavLink>
             {isAuthenticated ? (
               <>
                 <NavLink to="/community" className={linkClass}>
