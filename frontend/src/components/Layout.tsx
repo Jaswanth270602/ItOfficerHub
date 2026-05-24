@@ -23,6 +23,7 @@ import {
   OFFICIAL_YOUTUBE_URL,
 } from '@/lib/officialChannels'
 import { cn } from '@/lib/utils'
+import { RouteNoIndexSeo } from '@/components/RouteNoIndexSeo'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -37,6 +38,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col min-h-[100dvh]">
+      <RouteNoIndexSeo />
       <LogoutThankYouModal
         open={goodbyeOpen}
         onOpenChange={(open) => {

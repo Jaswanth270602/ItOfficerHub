@@ -4,7 +4,7 @@ import api, { apiErrorMessage } from '@/lib/api'
 import type { PracticeCatalog, PracticeSection } from '@/lib/practiceCatalog'
 import { AppLogo } from '@/components/AppLogo'
 import { cn } from '@/lib/utils'
-import { Seo } from '@/components/Seo'
+import { StudyShellSeo } from '@/components/study/StudyShellSeo'
 import { Button } from '@/components/ui/button'
 import { BookOpen, ChevronRight, Menu, X } from 'lucide-react'
 
@@ -53,12 +53,7 @@ export function StudyHubShell() {
 
   return (
     <StudyContext.Provider value={{ catalog, loading, error, refresh: load, sectionById }}>
-      <Seo
-        path="/study"
-        title="IBPS SO IT Officer Practice Questions — Topic-wise Q&A"
-        description="Free topic-wise practice questions for IBPS SO IT Officer and PSU IT exams."
-        keywords="IBPS SO IT practice questions, IT Officer MCQ topic wise"
-      />
+      <StudyShellSeo />
 
       <div className="min-h-[calc(100dvh-3.5rem)] lg:min-h-[calc(100dvh-4rem)] bg-cyber-950">
         {/* Top bar — all screens */}

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Seo } from '@/components/Seo'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -36,6 +37,8 @@ export function LoginPage() {
   }
 
   return (
+    <>
+      <Seo path="/login" title="Login" noindex />
     <div className="max-w-md mx-auto px-4 py-16">
       <Card className="border-cyber-600">
         <CardHeader>
@@ -66,5 +69,6 @@ export function LoginPage() {
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }

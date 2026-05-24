@@ -71,7 +71,6 @@ export function Seo({
     upsertMeta('og:locale', 'en_IN', 'property')
     upsertMeta('og:image', image, 'property')
     upsertMeta('og:image:alt', `${SITE_NAME} — IBPS SO IT Officer & TCS NQT mock tests`, 'property')
-
     upsertMeta('twitter:card', 'summary_large_image')
     upsertMeta('twitter:title', pageTitle)
     upsertMeta('twitter:description', description)

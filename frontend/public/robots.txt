@@ -1,7 +1,15 @@
 User-agent: *
 Allow: /
+Allow: /study
 Disallow: /admin
 Disallow: /admin/
 Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /mock/
+Disallow: /result/
+Disallow: /history
+Disallow: /revision
+Disallow: /community
 
 Sitemap: https://itofficerhub.in/sitemap.xml

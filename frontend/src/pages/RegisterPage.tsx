@@ -75,6 +75,7 @@ export function RegisterPage() {
         path="/register"
         title="Sign up free — IBPS SO IT Officer mocks"
         description="Create your free ItOfficerHub account with email and mobile. Daily mocks, All-India rank, topic-wise practice."
+        noindex
       />
       <div className="min-h-[calc(100dvh-8rem)] flex items-center justify-center px-3 sm:px-6 py-10 sm:py-14">
         <div className="w-full max-w-3xl">

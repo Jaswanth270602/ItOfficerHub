@@ -1,0 +1,110 @@
+{
+  "sections": [
+    {
+      "id": "networking",
+      "title": "Computer Networks",
+      "description": "OSI/TCP-IP, addressing, routing, DNS, firewalls — core IBPS IT Officer syllabus.",
+      "subtopics": [
+        { "slug": "osi-tcp-ip", "title": "OSI & TCP/IP Model" },
+        { "slug": "ip-addressing", "title": "IP Addressing & Subnetting" },
+        { "slug": "routing-switching", "title": "Routing & Switching" },
+        { "slug": "dns-dhcp", "title": "DNS & DHCP" },
+        { "slug": "firewalls-nat", "title": "Firewalls & NAT" },
+        { "slug": "network-protocols", "title": "Common Network Protocols" }
+      ]
+    },
+    {
+      "id": "dbms",
+      "title": "DBMS & SQL",
+      "description": "Normalization, SQL, transactions, indexing — high-weight in PSU & IBPS IT papers.",
+      "subtopics": [
+        { "slug": "normalization", "title": "Normalization (1NF–3NF)" },
+        { "slug": "sql-queries", "title": "SQL Queries & Joins" },
+        { "slug": "indexing", "title": "Indexing & Query Plans" },
+        { "slug": "transactions-acid", "title": "Transactions & ACID" },
+        { "slug": "er-modeling", "title": "ER Diagrams & Keys" },
+        { "slug": "nosql-basics", "title": "NoSQL Basics" }
+      ]
+    },
+    {
+      "id": "operating-systems",
+      "title": "Operating Systems",
+      "description": "Processes, scheduling, memory, deadlocks — frequent IT Officer traps.",
+      "subtopics": [
+        { "slug": "process-threads", "title": "Processes & Threads" },
+        { "slug": "cpu-scheduling", "title": "CPU Scheduling" },
+        { "slug": "deadlocks", "title": "Deadlocks & Prevention" },
+        { "slug": "memory-management", "title": "Memory Management" },
+        { "slug": "file-systems", "title": "File Systems" }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Cyber Security",
+      "description": "Encryption, malware, secure coding — growing share in recent papers.",
+      "subtopics": [
+        { "slug": "encryption-basics", "title": "Encryption & Hashing" },
+        { "slug": "malware-attacks", "title": "Malware & Attack Types" },
+        { "slug": "authentication", "title": "Authentication & Authorization" },
+        { "slug": "owasp-basics", "title": "OWASP & Secure Coding" },
+        { "slug": "network-security", "title": "Network Security Controls" }
+      ]
+    },
+    {
+      "id": "web-technologies",
+      "title": "Web Technologies",
+      "description": "HTTP, REST, front-end basics, web servers.",
+      "subtopics": [
+        { "slug": "http-rest", "title": "HTTP & REST APIs" },
+        { "slug": "html-css-js", "title": "HTML, CSS & JavaScript" },
+        { "slug": "web-servers", "title": "Web Servers & Middleware" },
+        { "slug": "cookies-sessions", "title": "Cookies, Sessions & JWT" }
+      ]
+    },
+    {
+      "id": "data-structures",
+      "title": "Data Structures",
+      "description": "Arrays, trees, graphs, complexity — fundamentals for IT aptitude.",
+      "subtopics": [
+        { "slug": "arrays-stacks-queues", "title": "Arrays, Stacks & Queues" },
+        { "slug": "linked-lists", "title": "Linked Lists" },
+        { "slug": "trees-graphs", "title": "Trees & Graphs" },
+        { "slug": "sorting-searching", "title": "Sorting & Searching" },
+        { "slug": "complexity", "title": "Time & Space Complexity" }
+      ]
+    },
+    {
+      "id": "computer-organization",
+      "title": "Computer Organization",
+      "description": "CPU, cache, I/O, instruction cycles.",
+      "subtopics": [
+        { "slug": "cpu-registers", "title": "CPU & Registers" },
+        { "slug": "cache-memory", "title": "Cache & Main Memory" },
+        { "slug": "io-systems", "title": "I/O Systems" },
+        { "slug": "instruction-cycle", "title": "Instruction Cycle & Pipelining" }
+      ]
+    },
+    {
+      "id": "software-engineering",
+      "title": "Software Engineering",
+      "description": "SDLC, testing, Agile, UML — often 2–4 questions per mock.",
+      "subtopics": [
+        { "slug": "sdlc-models", "title": "SDLC & Process Models" },
+        { "slug": "testing-types", "title": "Testing Types & Levels" },
+        { "slug": "agile-scrum", "title": "Agile & Scrum" },
+        { "slug": "uml-basics", "title": "UML Diagrams" }
+      ]
+    },
+    {
+      "id": "cloud-digital",
+      "title": "Cloud & Digital",
+      "description": "Cloud service models, virtualization, digital electronics basics.",
+      "subtopics": [
+        { "slug": "iaas-paas-saas", "title": "IaaS, PaaS & SaaS" },
+        { "slug": "virtualization", "title": "Virtualization & Containers" },
+        { "slug": "boolean-algebra", "title": "Boolean Algebra & Gates" },
+        { "slug": "number-systems", "title": "Number Systems & Conversions" }
+      ]
+    }
+  ]
+}
