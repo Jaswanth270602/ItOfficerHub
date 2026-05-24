@@ -184,7 +184,16 @@ function SectionBlock({
                       {st.questionCount} / {target} questions
                     </p>
                   </div>
-                  <Button
+                  <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto">
+                    <Link
+                      to={`/admin/practice/${section.id}/${st.slug}`}
+                      className="w-full sm:w-auto"
+                    >
+                      <Button type="button" size="sm" variant="outline" className="cursor-pointer w-full">
+                        Manage
+                      </Button>
+                    </Link>
+                    <Button
                     type="button"
                     size="sm"
                     variant={st.questionCount > 0 ? 'outline' : 'default'}
@@ -206,7 +215,8 @@ function SectionBlock({
                       : st.questionCount > 0
                         ? `Import more (${practiceImportBatchSize(st.questionCount)})`
                         : `Import ${PRACTICE_INITIAL_TARGET_PER_SUBTOPIC}`}
-                  </Button>
+                    </Button>
+                  </div>
                 </li>
               )
             })}

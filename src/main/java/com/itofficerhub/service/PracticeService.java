@@ -219,6 +219,117 @@ public class PracticeService {
 		return n;
 	}
 
+	@Transactional(readOnly = true)
+	public List<PracticeQuestionAdminDto> listAdminQuestions(String sectionId, String subtopicSlug) {
+		resolveSubtopic(sectionId, subtopicSlug);
+		return repository.findBySectionIdAndSubtopicSlugOrderByQuestionNumberAsc(sectionId, subtopicSlug)
+				.stream().map(this::toAdminDto).toList();
+	}
+
+	@Transactional
+	public PracticeQuestionAdminDto createAdminQuestion(PracticeQuestionRequest request) {
+		var sec = resolveSubtopic(request.sectionId(), request.subtopicSlug());
+		ensurePracticeCapacity(request.sectionId(), request.subtopicSlug(), 1);
+		PracticeQuestion pq = new PracticeQuestion();
+		pq.setSectionId(request.sectionId());
+		pq.setSubtopicSlug(request.subtopicSlug());
+		pq.setTopic(parseTopic(request.topic(), sec.topic()));
+		applyPracticeRequest(pq, request);
+		if (request.questionNumber() == null || request.questionNumber() <= 0) {
+			pq.setQuestionNumber(repository.findMaxQuestionNumber(request.sectionId(), request.subtopicSlug()) + 1);
+		}
+		return toAdminDto(repository.save(pq));
+	}
+
+	@Transactional
+	public PracticeQuestionAdminDto updateAdminQuestion(Long id, PracticeQuestionRequest request) {
+		PracticeQuestion pq = repository.findById(id)
+				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Practice question not found"));
+		var sec = resolveSubtopic(request.sectionId(), request.subtopicSlug());
+		pq.setSectionId(request.sectionId());
+		pq.setSubtopicSlug(request.subtopicSlug());
+		pq.setTopic(parseTopic(request.topic(), sec.topic()));
+		applyPracticeRequest(pq, request);
+		return toAdminDto(repository.save(pq));
+	}
+
+	@Transactional
+	public void deleteAdminQuestion(Long id) {
+		if (!repository.existsById(id)) {
+			throw new ApiException(HttpStatus.NOT_FOUND, "Practice question not found");
+		}
+		repository.deleteById(id);
+	}
+
+	private com.itofficerhub.util.PracticeCatalog.SectionDef resolveSubtopic(String sectionId, String subtopicSlug) {
+		PracticeCatalog.subtopic(sectionId, subtopicSlug)
+				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Subtopic not found"));
+		return PracticeCatalog.section(sectionId)
+				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Section not found"));
+	}
+
+	private void ensurePracticeCapacity(String sectionId, String subtopicSlug, int adding) {
+		long count = repository.countBySectionIdAndSubtopicSlug(sectionId, subtopicSlug);
+		if (count + adding > TARGET_QUESTIONS_PER_SUBTOPIC) {
+			throw new ApiException(HttpStatus.BAD_REQUEST,
+					"Subtopic limit is " + TARGET_QUESTIONS_PER_SUBTOPIC + " questions");
+		}
+	}
+
+	private Topic parseTopic(String raw, Topic fallback) {
+		if (raw == null || raw.isBlank()) {
+			return fallback;
+		}
+		try {
+			return Topic.valueOf(raw.trim().toUpperCase());
+		} catch (IllegalArgumentException e) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid topic: " + raw);
+		}
+	}
+
+	private void applyPracticeRequest(PracticeQuestion pq, PracticeQuestionRequest request) {
+		pq.setQuestionText(request.questionText().trim());
+		pq.setOptionA(request.optionA().trim());
+		pq.setOptionB(request.optionB().trim());
+		pq.setOptionC(request.optionC().trim());
+		pq.setOptionD(request.optionD().trim());
+		try {
+			pq.setCorrectOption(OptionLabel.valueOf(request.correctOption().trim().toUpperCase()));
+		} catch (IllegalArgumentException e) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "correctOption must be A–D");
+		}
+		if (request.explanation() != null) {
+			pq.setExplanation(request.explanation().trim());
+		}
+		if (request.questionNumber() != null && request.questionNumber() > 0) {
+			pq.setQuestionNumber(request.questionNumber());
+		}
+		if (request.solutionImageUrl() != null) {
+			pq.setSolutionImageUrl(request.solutionImageUrl().isBlank() ? null : request.solutionImageUrl().trim());
+		}
+		if (request.published() != null) {
+			pq.setPublished(request.published());
+		}
+	}
+
+	private PracticeQuestionAdminDto toAdminDto(PracticeQuestion pq) {
+		return new PracticeQuestionAdminDto(
+				pq.getId(),
+				pq.getSectionId(),
+				pq.getSubtopicSlug(),
+				pq.getQuestionNumber(),
+				pq.getTopic().name(),
+				pq.getQuestionText(),
+				pq.getOptionA(),
+				pq.getOptionB(),
+				pq.getOptionC(),
+				pq.getOptionD(),
+				pq.getCorrectOption().name(),
+				pq.getExplanation(),
+				pq.getSolutionImageUrl(),
+				pq.isPublished());
+	}
+
 	private boolean isContiguousFromOne(List<ImportPracticeItem> items, List<Integer> indices) {
 		List<Integer> numbers = new ArrayList<>();
 		for (int i = 0; i < indices.size(); i++) {

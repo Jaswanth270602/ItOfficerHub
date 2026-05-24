@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '@/lib/api'
+import { buildMockPrompt } from '@/lib/buildMockPrompt'
 import { toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -36,6 +37,8 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
   const [difficulty, setDifficulty] = useState('MEDIUM')
   const [examTarget, setExamTarget] = useState('IBPS_SO_IT')
   const [mockCategory, setMockCategory] = useState('FULL')
+  const [questionCount, setQuestionCount] = useState(20)
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState(15)
   const [seriesDay, setSeriesDay] = useState('')
   const [nextCode, setNextCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -51,14 +54,26 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
   }, [open, examTarget])
 
   const copyClaudePrompt = async () => {
+    if (!title.trim()) {
+      setError('Enter a mock title first — it is used in the Claude prompt')
+      return
+    }
+    setError('')
     try {
-      const res = await fetch('/claude-quiz-prompt.txt')
-      const text = await res.text()
+      const text = buildMockPrompt({
+        title: title.trim(),
+        difficulty,
+        questionLimit: questionCount,
+        existingCount: 0,
+        examTarget,
+        mockCategory,
+      })
       await navigator.clipboard.writeText(text)
       setCopied(true)
+      toast.success(`Claude prompt copied (${questionCount} Qs)`)
       setTimeout(() => setCopied(false), 2500)
     } catch {
-      setError('Could not load prompt file')
+      setError('Could not copy prompt')
     }
   }
 
@@ -78,6 +93,8 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
         difficulty: difficulty || parsed.difficulty,
         examTarget,
         mockCategory,
+        questionCount,
+        timeLimitMinutes,
         seriesDay: seriesDay ? parseInt(seriesDay, 10) : parsed.seriesDay ?? null,
       }
       if (!payload.title) {
@@ -132,6 +149,31 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
                 placeholder="20 Q · 15 min · mixed syllabus"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="q-count">Question limit *</Label>
+              <input
+                id="q-count"
+                type="number"
+                min={1}
+                max={100}
+                className={inputClass}
+                value={questionCount}
+                onChange={(e) => setQuestionCount(Number(e.target.value) || 20)}
+              />
+              <p className="text-xs text-slate-500 mt-1">Claude prompt uses this count.</p>
+            </div>
+            <div>
+              <Label htmlFor="time-limit">Time (minutes)</Label>
+              <input
+                id="time-limit"
+                type="number"
+                min={5}
+                max={180}
+                className={inputClass}
+                value={timeLimitMinutes}
+                onChange={(e) => setTimeLimitMinutes(Number(e.target.value) || 15)}
               />
             </div>
             <div>
@@ -193,10 +235,10 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
           </div>
 
           <p className="text-sm text-slate-400">
-            Paste Claude JSON below. Each explanation needs full option breakdown (A–D), line breaks via \n, and Solution steps or a flowchart.
+            Set question limit first, copy Claude prompt ({questionCount} Qs), then paste JSON below.
           </p>
-          <Button type="button" variant="outline" className="w-full cursor-pointer" onClick={copyClaudePrompt}>
-            <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : 'Copy Claude prompt'}
+          <Button type="button" variant="outline" className="w-full cursor-pointer" onClick={() => void copyClaudePrompt()}>
+            <Copy className="h-4 w-4" /> {copied ? 'Prompt copied!' : `Copy Claude prompt (${questionCount} Qs)`}
           </Button>
           <div>
             <Label>Questions JSON</Label>

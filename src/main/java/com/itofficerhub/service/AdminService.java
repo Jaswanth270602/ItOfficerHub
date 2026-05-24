@@ -186,11 +186,17 @@ public class AdminService {
 	@Transactional
 	public QuestionAdminDto createQuestion(QuestionRequest request) {
 		MockTest mock = findMock(request.mockTestId());
+		long count = questionRepository.countByMockTestId(mock.getId());
+		if (count >= mock.getQuestionCount()) {
+			throw new ApiException(HttpStatus.BAD_REQUEST,
+					"Question limit reached (" + mock.getQuestionCount()
+							+ "). Increase the limit in mock settings or delete a question.");
+		}
 		Question q = new Question();
 		q.setMockTest(mock);
 		applyQuestionRequest(q, request);
 		if (q.getOrderIndex() == 0) {
-			q.setOrderIndex((int) questionRepository.countByMockTestId(mock.getId()) + 1);
+			q.setOrderIndex((int) count + 1);
 		}
 		return toQuestionDto(questionRepository.save(q));
 	}
@@ -367,6 +373,9 @@ public class AdminService {
 		if (r.topic() != null && !r.topic().isBlank()) {
 			q.setTopic(Topic.valueOf(r.topic().toUpperCase()));
 		}
+		if (r.topicTag() != null) {
+			q.setTopicTag(r.topicTag().isBlank() ? null : r.topicTag().trim());
+		}
 		if (r.orderIndex() != null) q.setOrderIndex(r.orderIndex());
 	}
 
@@ -384,6 +393,7 @@ public class AdminService {
 		return new QuestionAdminDto(q.getId(), q.getMockTest().getId(), q.getOrderIndex(), q.getQuestionText(),
 				q.getOptionA(), q.getOptionB(), q.getOptionC(), q.getOptionD(),
 				q.getCorrectOption().name(), q.getExplanation(),
-				q.getTopic() != null ? q.getTopic().name() : null);
+				q.getTopic() != null ? q.getTopic().name() : null,
+				q.getTopicTag());
 	}
 }

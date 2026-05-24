@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface PracticeQuestionRepository extends JpaRepository<PracticeQuestion, Long> {
 
+	List<PracticeQuestion> findBySectionIdAndSubtopicSlugOrderByQuestionNumberAsc(
+			String sectionId, String subtopicSlug);
+
 	Optional<PracticeQuestion> findBySectionIdAndSubtopicSlugAndQuestionNumberAndPublishedTrue(
 			String sectionId, String subtopicSlug, int questionNumber);
 

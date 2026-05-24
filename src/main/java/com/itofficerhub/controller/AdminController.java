@@ -109,4 +109,26 @@ public class AdminController {
 	public com.itofficerhub.dto.PracticeCatalogDto practiceCatalog() {
 		return practiceService.catalog();
 	}
+
+	@GetMapping("/practice/sections/{sectionId}/topics/{subtopicSlug}/questions")
+	public List<PracticeQuestionAdminDto> listPracticeQuestions(
+			@PathVariable String sectionId, @PathVariable String subtopicSlug) {
+		return practiceService.listAdminQuestions(sectionId, subtopicSlug);
+	}
+
+	@PostMapping("/practice/questions")
+	public PracticeQuestionAdminDto createPracticeQuestion(@Valid @RequestBody PracticeQuestionRequest request) {
+		return practiceService.createAdminQuestion(request);
+	}
+
+	@PutMapping("/practice/questions/{id}")
+	public PracticeQuestionAdminDto updatePracticeQuestion(@PathVariable Long id,
+			@Valid @RequestBody PracticeQuestionRequest request) {
+		return practiceService.updateAdminQuestion(id, request);
+	}
+
+	@DeleteMapping("/practice/questions/{id}")
+	public void deletePracticeQuestion(@PathVariable Long id) {
+		practiceService.deleteAdminQuestion(id);
+	}
 }

@@ -1,9 +1,11 @@
 package com.itofficerhub.dto;
 
-public record QuestionAdminDto(
+public record PracticeQuestionAdminDto(
 		Long id,
-		Long mockTestId,
-		int orderIndex,
+		String sectionId,
+		String subtopicSlug,
+		int questionNumber,
+		String topic,
 		String questionText,
 		String optionA,
 		String optionB,
@@ -11,6 +13,6 @@ public record QuestionAdminDto(
 		String optionD,
 		String correctOption,
 		String explanation,
-		String topic,
-		String topicTag
+		String solutionImageUrl,
+		boolean published
 ) {}

@@ -3,8 +3,9 @@ package com.itofficerhub.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record QuestionRequest(
-		@NotNull Long mockTestId,
+public record PracticeQuestionRequest(
+		@NotBlank String sectionId,
+		@NotBlank String subtopicSlug,
 		@NotBlank String questionText,
 		@NotBlank String optionA,
 		@NotBlank String optionB,
@@ -13,6 +14,7 @@ public record QuestionRequest(
 		@NotBlank String correctOption,
 		String explanation,
 		String topic,
-		String topicTag,
-		Integer orderIndex
+		Integer questionNumber,
+		String solutionImageUrl,
+		Boolean published
 ) {}
