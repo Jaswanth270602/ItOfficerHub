@@ -1,6 +1,8 @@
 You are a senior IBPS Specialist Officer (IT Officer) content author building mocks for ItOfficerHub.
 
-TASK: Generate exactly 20 MCQs as ONE JSON object. No markdown fences, no commentary before/after — only valid JSON starting with { and ending with }.
+CRITICAL: Reply with ONE raw JSON object ONLY. First character { last character }. No markdown fences. No text before or after JSON. No chat explanations.
+
+TASK: Generate exactly 20 MCQs as ONE JSON object with a "questions" array.
 
 MOCK SETTINGS (edit these 3 lines only):
 - title: "IBPS SO IT Officer — Networking & Security Mock 1"

@@ -24,9 +24,15 @@ export function buildMockPrompt(opts: {
     opts.topics ??
     'NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES (spread evenly, 2–4 Q each)'
 
-  return `You are a senior IBPS Specialist Officer (IT Officer) content author building mocks for ItOfficerHub.
+  return `You are a senior IBPS Specialist Officer (IT Officer) content author for ItOfficerHub.
 
-TASK: Generate exactly ${batchSize} MCQs as ONE JSON object. No markdown fences — only valid JSON.
+CRITICAL OUTPUT RULES (import will FAIL otherwise):
+1. Reply with ONE raw JSON object only — first character must be { and last character must be }.
+2. Do NOT wrap in markdown code fences. Do NOT write any text before or after the JSON.
+3. Do NOT explain, summarise, or chat — only the JSON object.
+4. If you cannot comply, output exactly: {"error":"cannot generate"}
+
+TASK: Generate exactly ${batchSize} MCQs inside "questions".
 
 MOCK SETTINGS:
 - title: "${opts.title}"
@@ -35,22 +41,28 @@ MOCK SETTINGS:
 - mockCategory: ${opts.mockCategory ?? 'FULL'}
 - questionCount limit: ${opts.questionLimit}
 - topics (spread evenly): ${topics}
-${existingCount > 0 ? `- APPEND batch: orderIndex ${startIdx} through ${endIdx} (${existingCount} questions already exist — do NOT restart at 1)\n` : ''}
-RULES:
-- Exactly ${batchSize} questions in the "questions" array
-- orderIndex: ${startIdx} through ${endIdx} on each item
+${existingCount > 0 ? `- APPEND batch: orderIndex ${startIdx} through ${endIdx} (${existingCount} questions already exist)\n` : ''}
+QUESTION RULES:
+- Exactly ${batchSize} items in "questions"
+- orderIndex: ${startIdx} through ${endIdx}
 - 4 options A–D; exactly one correct (correctOption: "A"|"B"|"C"|"D")
-- Every question MUST have "topic" AND "topicTag" (2–6 words, e.g. "TCP/IP & OSI Model")
-- IBPS SO IT style; varied difficulty; no duplicate stems
+- Every question MUST have "topic" (uppercase enum) AND "topicTag" (2–6 words)
+- IBPS SO IT style; no duplicate stems
 
-EXPLANATION (mandatory — minimum 400 characters each):
-- Use \\n for line breaks in JSON
-- Include "Option breakdown:" with Option A, B, C, D individually — mark correct with ✓ CORRECT
-- Include "References:" line
-- Quant/numerical: "Solution steps:" with ≥3 numbered steps
-- Tech topics: flowchart (-->, graph TD) OR ASCII diagram when helpful
+EXPLANATION (each question — server rejects if shorter):
+- Minimum 400 characters in "explanation" string
+- Use \\n for line breaks inside JSON
+- Must include these section headers exactly:
+  Core concept:
+  Option breakdown:  (all four: Option A, Option B, Option C, Option D — mark correct with ✓ CORRECT)
+  References:
+- For numerical/subnetting: add "Solution steps:" with ≥3 numbered steps
+- For theory: optional "Key distinction:" and "Exam tip:"
 
-JSON SCHEMA:
+VALID topic values only:
+NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
+
+JSON TEMPLATE (fill all fields; keep valid JSON — escape quotes inside strings):
 
 {
   "title": "${opts.title}",
@@ -61,13 +73,13 @@ JSON SCHEMA:
   "examTarget": "${opts.examTarget ?? 'IBPS_SO_IT'}",
   "questions": [
     {
-      "questionText": "...",
+      "questionText": "Your MCQ stem here?",
       "optionA": "...",
       "optionB": "...",
       "optionC": "...",
       "optionD": "...",
       "correctOption": "C",
-      "explanation": "Core concept:\\n• ...\\n\\nOption breakdown:\\n• Option A — ...\\n• Option B — ...\\n• Option C — ✓ CORRECT — ...\\n• Option D — ...\\n\\nReferences: ...",
+      "explanation": "Core concept:\\n• ...\\n\\nOption breakdown:\\n• Option A — ...\\n• Option B — ...\\n• Option C — ✓ CORRECT — ...\\n• Option D — ...\\n\\nReferences: IBPS SO IT syllabus",
       "solutionImageUrl": null,
       "topic": "NETWORKING",
       "topicTag": "TCP/IP & OSI Model",
@@ -76,10 +88,6 @@ JSON SCHEMA:
   ]
 }
 
-VALID topic values: NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
-
-Before output, self-check: ${batchSize} questions; orderIndex ${startIdx}–${endIdx}; topic + topicTag on every row; each explanation ≥400 chars with full option breakdown.
-
-Admin import: paste JSON at ItOfficerHub → Admin → Import Mock (or Manage Mock).
+Self-check before sending: ${batchSize} questions; valid JSON; no trailing commas; every explanation ≥400 chars with Option breakdown for A–D.
 `
 }

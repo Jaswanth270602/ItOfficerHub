@@ -16,8 +16,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.itofficerhub.security.CustomUserDetailsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -68,7 +72,24 @@ public class SecurityConfig {
 						.requestMatchers("/api/**").authenticated()
 						.anyRequest().permitAll())
 				.authenticationProvider(authenticationProvider())
+				.exceptionHandling(ex -> ex
+						.accessDeniedHandler(accessDeniedHandler())
+						.authenticationEntryPoint((request, response, authException) -> {
+							response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+							response.setContentType("application/json");
+							new ObjectMapper().writeValue(response.getOutputStream(),
+									Map.of("error", "Authentication required. Log in and send a valid Bearer token."));
+						}))
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
+	}
+
+	private AccessDeniedHandler accessDeniedHandler() {
+		return (request, response, accessDeniedException) -> {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			response.setContentType("application/json");
+			new ObjectMapper().writeValue(response.getOutputStream(),
+					Map.of("error", "Admin access required. Log in at /admin with an administrator account."));
+		};
 	}
 }
