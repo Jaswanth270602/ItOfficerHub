@@ -112,11 +112,31 @@ export const FINAL_CUTOFF_2025 = [
   { cat: 'UR', score: '57.93' },
 ] as const
 
+export const EXAMS_WE_TARGET = [
+  'IBPS Specialist Officer (IT Officer)',
+  'NIACL / LIC / GIC IT Officer',
+  'Other PSU IT professional knowledge papers',
+] as const
+
+/** Subject-wise PK topics for mocks & Study Q&A — maps to mock filters. */
+export const IT_SYLLABUS_SUBJECTS = [
+  { code: 'NETWORKING', name: 'Computer Networks', points: ['OSI/TCP-IP', 'IP addressing & subnetting', 'Routing, switching, VLANs', 'DNS, DHCP, firewalls'] },
+  { code: 'DBMS', name: 'DBMS & SQL', points: ['Normalization', 'SQL queries & joins', 'Indexing, transactions', 'ACID properties'] },
+  { code: 'OPERATING_SYSTEMS', name: 'Operating Systems', points: ['Process & threads', 'Scheduling & deadlocks', 'Memory management', 'File systems'] },
+  { code: 'SECURITY', name: 'Cyber Security', points: ['Encryption basics', 'Malware & attacks', 'OWASP / secure coding', 'Authentication'] },
+  { code: 'WEB_TECHNOLOGIES', name: 'Web Technologies', points: ['HTTP/REST', 'HTML/CSS/JS basics', 'APIs & middleware', 'Web servers'] },
+  { code: 'DATA_STRUCTURES', name: 'Data Structures', points: ['Arrays, stacks, queues', 'Trees & graphs', 'Sorting', 'Complexity'] },
+  { code: 'COMPUTER_ORGANIZATION', name: 'Computer Organization', points: ['CPU & registers', 'Cache & memory', 'I/O', 'Instruction cycles'] },
+  { code: 'SOFTWARE_ENGINEERING', name: 'Software Engineering', points: ['SDLC & Agile', 'Testing types', 'UML basics', 'Maintenance'] },
+  { code: 'CLOUD_COMPUTING', name: 'Cloud Computing', points: ['IaaS/PaaS/SaaS', 'Virtualization', 'AWS/Azure basics', 'Containers intro'] },
+  { code: 'DIGITAL_ELECTRONICS', name: 'Digital Electronics', points: ['Boolean algebra', 'Logic gates', 'Combinational circuits', 'Number systems'] },
+] as const
+
 export const TOC = [
   { id: 'overview', label: 'Overview' },
   { id: 'dates', label: 'Important dates' },
   { id: 'pattern', label: 'Exam pattern' },
-  { id: 'syllabus', label: 'Syllabus' },
+  { id: 'syllabus', label: 'Syllabus & topics' },
   { id: 'eligibility', label: 'Eligibility' },
   { id: 'vacancies', label: 'Vacancies' },
   { id: 'salary', label: 'Salary' },

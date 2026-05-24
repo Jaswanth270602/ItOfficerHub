@@ -14,7 +14,6 @@ import { HistoryPage } from '@/pages/HistoryPage'
 import { CommunityPage } from '@/pages/CommunityPage'
 import { RevisionPage } from '@/pages/RevisionPage'
 import { TcsNqtPage } from '@/pages/TcsNqtPage'
-import { SyllabusPage } from '@/pages/SyllabusPage'
 import { IbpsSoItOfficerPage } from '@/pages/IbpsSoItOfficerPage'
 import { StudyHubShell } from '@/components/study/StudyHubShell'
 import { StudyHubHomePage } from '@/pages/study/StudyHubHomePage'
@@ -55,7 +54,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mocks" element={<MocksPage />} />
             <Route path="/tcs-nqt" element={<TcsNqtPage />} />
-            <Route path="/syllabus" element={<SyllabusPage />} />
+            <Route path="/syllabus" element={<Navigate to="/ibps-so-it-officer" replace />} />
             <Route path="/ibps-so-it-officer" element={<IbpsSoItOfficerPage />} />
             <Route path="/study" element={<StudyHubShell />}>
               <Route index element={<StudyHubHomePage />} />

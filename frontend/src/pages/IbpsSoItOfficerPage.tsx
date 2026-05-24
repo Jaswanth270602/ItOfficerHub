@@ -18,8 +18,11 @@ import {
   MAINS_CUTOFF_2025,
   MAINS_PK_SECTIONAL_2025,
   FINAL_CUTOFF_2025,
+  EXAMS_WE_TARGET,
+  IT_SYLLABUS_SUBJECTS,
   TOC,
 } from '@/lib/ibpsSoItOfficerData'
+import { TOPIC_SHORT } from '@/lib/topics'
 import {
   AlertCircle,
   ArrowRight,
@@ -151,8 +154,8 @@ export function IbpsSoItOfficerPage() {
     <>
       <Seo
         path="/ibps-so-it-officer"
-        title="IBPS SO IT Officer Exam Pattern, Syllabus & Cut-off 2026"
-        description="IBPS SO IT Officer (Scale I) exam pattern — prelims 125 marks, mains 60 MCQs professional knowledge, interview 80:20. Eligibility, salary, 2025 cut-offs & free mock tests on ItOfficerHub."
+        title="IBPS SO IT Officer Syllabus, Exam Pattern & Cut-off 2026"
+        description="IBPS SO IT Officer syllabus and exam pattern — prelims, mains professional knowledge topics, eligibility, salary, 2025 cut-offs. Subject-wise CN, DBMS, OS prep on ItOfficerHub."
         keywords="IBPS SO IT Officer, IBPS SO IT exam pattern, IBPS IT Officer syllabus, IBPS SO IT cut off, IBPS Specialist Officer IT, IT Officer Scale 1, IBPS SO 2026, professional knowledge IT officer"
         jsonLd={jsonLd}
       />
@@ -164,7 +167,7 @@ export function IbpsSoItOfficerPage() {
             Official pattern · Updated for 2026 cycle
           </p>
           <h1 className="page-title max-w-3xl leading-tight">
-            IBPS SO IT Officer — exam pattern &amp; preparation guide
+            IBPS SO IT Officer — syllabus, exam pattern &amp; cut-offs
           </h1>
           <p className="page-subtitle max-w-2xl mt-3 text-base leading-relaxed">
             Everything you need about the <strong className="text-slate-200">Information Technology</strong> stream under
@@ -303,20 +306,35 @@ export function IbpsSoItOfficerPage() {
               </Card>
             </Section>
 
-            <Section id="syllabus" title="Professional knowledge syllabus" icon={BookOpen}>
+            <Section id="syllabus" title="Syllabus &amp; IT topics" icon={BookOpen}>
               <p className="text-sm text-slate-400 mb-4">
-                IBPS lists a broad IT syllabus in the notification. Mains questions are MCQ-style on fundamentals below.
-                For topic-wise practice with solutions, use our{' '}
-                <Link to="/study" className="text-neon-cyan hover:underline">
-                  Study Q&amp;A
-                </Link>{' '}
-                or the{' '}
-                <Link to="/syllabus" className="text-neon-cyan hover:underline">
-                  subject-wise syllabus
-                </Link>{' '}
-                page aligned to modern IT Officer papers.
+                ItOfficerHub focuses on <strong className="text-slate-200">professional knowledge (IT)</strong> — the
+                technical section for IBPS SO IT and PSU IT papers. Prelims (English, reasoning, quant) are listed under
+                exam pattern above; below is what we cover for mains and mocks.
               </p>
-              <ul className="grid sm:grid-cols-2 gap-2">
+
+              <Card className="mb-6 border-neon-cyan/30">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Exams we target</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-disc list-inside text-slate-300 space-y-1 text-sm">
+                    {EXAMS_WE_TARGET.map((e) => (
+                      <li key={e}>{e}</li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-slate-500 mt-3">
+                    For TCS NQT aptitude (quant, reasoning, verbal), see{' '}
+                    <Link to="/tcs-nqt" className="text-sky-400 hover:underline">
+                      TCS NQT mocks
+                    </Link>
+                    .
+                  </p>
+                </CardContent>
+              </Card>
+
+              <p className="text-sm font-medium text-white mb-3">IBPS notification — broad PK areas</p>
+              <ul className="grid sm:grid-cols-2 gap-2 mb-8">
                 {PK_SYLLABUS_TOPICS.map((topic) => (
                   <li
                     key={topic}
@@ -327,6 +345,42 @@ export function IbpsSoItOfficerPage() {
                   </li>
                 ))}
               </ul>
+
+              <p className="text-sm font-medium text-white mb-3">Subject-wise prep (our mocks &amp; Study Q&amp;A)</p>
+              <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                {IT_SYLLABUS_SUBJECTS.map((t) => (
+                  <Card key={t.code} className="border-cyber-700">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-cyber-800 text-neon-cyan">
+                          {TOPIC_SHORT[t.code as keyof typeof TOPIC_SHORT]}
+                        </span>
+                        {t.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-sm text-slate-400 space-y-0.5">
+                        {t.points.map((p) => (
+                          <li key={p}>• {p}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <Card className="border-neon-cyan/40 bg-neon-cyan/5">
+                <CardContent className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <p className="text-sm text-slate-400">
+                    Drill topics with solutions — then run full timed mocks when ready.
+                  </p>
+                  <Link to="/study">
+                    <Button size="sm" className="cursor-pointer shrink-0">
+                      Open Study Q&amp;A
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
             </Section>
 
             <Section id="eligibility" title="Eligibility" icon={Scale}>

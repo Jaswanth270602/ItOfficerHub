@@ -78,7 +78,7 @@ export function Layout() {
                 <Building2 className="h-4 w-4" /> TCS NQT
               </span>
             </NavLink>
-            <NavLink to="/syllabus" className={navLinkClass}>
+            <NavLink to="/ibps-so-it-officer" className={navLinkClass}>
               <span className="flex items-center gap-1">
                 <GraduationCap className="h-4 w-4" /> Syllabus
               </span>
@@ -178,11 +178,8 @@ export function Layout() {
             <Link to="/tcs-nqt" className="text-slate-400 hover:text-white py-1">
               TCS NQT Aptitude
             </Link>
-            <Link to="/syllabus" className="text-slate-400 hover:text-white py-1">
-              Syllabus
-            </Link>
             <Link to="/ibps-so-it-officer" className="text-slate-400 hover:text-white py-1">
-              IBPS SO IT pattern
+              Syllabus &amp; pattern
             </Link>
             <Link to="/register" className="text-slate-400 hover:text-white py-1">
               Sign up free

@@ -63,11 +63,8 @@ export function MobileHeaderMenu() {
             <NavLink to="/tcs-nqt" className={linkClass}>
               <Building2 className="h-5 w-5" /> TCS NQT
             </NavLink>
-            <NavLink to="/syllabus" className={linkClass}>
-              <GraduationCap className="h-5 w-5" /> Syllabus
-            </NavLink>
             <NavLink to="/ibps-so-it-officer" className={linkClass}>
-              <GraduationCap className="h-5 w-5" /> IBPS SO IT pattern
+              <GraduationCap className="h-5 w-5" /> Syllabus
             </NavLink>
             {isAuthenticated ? (
               <>

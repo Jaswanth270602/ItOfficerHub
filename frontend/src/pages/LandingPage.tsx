@@ -70,7 +70,7 @@ const EXAM_BADGES = [
   { label: 'BOB IT', href: '/mocks', className: 'border-orange-500/40 bg-orange-500/10 text-orange-300' },
   { label: 'UCO Bank IT', href: '/mocks', className: 'border-teal-500/40 bg-teal-500/10 text-teal-300' },
   { label: 'PSU IT', href: '/mocks', className: 'border-neon-blue/45 bg-neon-blue/10 text-neon-blue' },
-  { label: 'NIACL / LIC', href: '/syllabus', className: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
+  { label: 'NIACL / LIC', href: '/ibps-so-it-officer', className: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
   { label: 'GIC / RBI IT', href: '/mocks', className: 'border-violet-500/40 bg-violet-500/10 text-violet-300' },
   { label: 'TCS NQT', href: '/tcs-nqt', className: 'border-neon-purple/45 bg-neon-purple/10 text-neon-purple' },
 ] as const
@@ -399,12 +399,8 @@ export function LandingPage() {
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
                 <strong className="text-slate-200">ItOfficerHub</strong> focuses on the IT Officer niche — sectional
                 mocks, previous-year style papers, revision bucket, and{' '}
-                <Link to="/syllabus" className="text-neon-cyan hover:underline">
-                  full IBPS SO IT syllabus
-                </Link>{' '}
-                and{' '}
                 <Link to="/ibps-so-it-officer" className="text-neon-cyan hover:underline">
-                  exam pattern &amp; cut-offs
+                  syllabus, exam pattern &amp; cut-offs
                 </Link>
                 .
               </p>

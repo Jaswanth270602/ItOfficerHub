@@ -27,7 +27,6 @@ const urls = [
   url('/mocks', 0.9, 'daily'),
   url('/study', 0.9, 'daily'),
   url('/tcs-nqt', 0.75, 'weekly'),
-  url('/syllabus', 0.75, 'weekly'),
   url('/ibps-so-it-officer', 0.88, 'weekly'),
 ]
 
