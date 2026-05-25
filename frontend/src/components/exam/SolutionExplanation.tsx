@@ -35,52 +35,115 @@ function isDiagramHeaderLine(line: string): boolean {
   )
 }
 
-/** Lines that belong to a Mermaid/ASCII block (not general explanation prose). */
-function isDiagramContinuationLine(line: string): boolean {
+function isProseLine(line: string): boolean {
   const t = line.trim()
-  if (!t) return true
+  if (!t) return false
+  if (t.startsWith('•')) return true
+  if (/^option\s+[A-D]/i.test(t)) return true
+  if (/^\d+\.\s/.test(t)) return true
+  if (isSectionHeader(line) && !isDiagramHeaderLine(line)) return true
+  return false
+}
+
+function isMermaidLine(line: string): boolean {
+  const t = line.trim()
+  if (!t) return false
   if (MERMAID_START.test(t)) return true
+  if (isDiagramHeaderLine(line)) return true
   if (/^subgraph\b/i.test(t)) return true
   if (/^end\s*$/i.test(t)) return true
   if (/^style\b/i.test(t)) return true
   if (/^classDef\b/i.test(t)) return true
-  // Mermaid edges / node lines only (avoid matching "Option A — … — INCORRECT")
-  if ((t.includes('-->') || t.includes('-.->') || /\s--\s/.test(t)) && !t.startsWith('•') && !/^option\s/i.test(t)) {
-    return /^[\s\w\[\]()"':;.#-]+$/i.test(t) || /^[A-Za-z0-9_]+\s*[\[\(]/.test(t)
+  if (/-->/.test(t) || /-.->/.test(t) || /---/.test(t)) {
+    if (t.startsWith('•')) return false
+    if (/^option\s+[A-D]/i.test(t)) return false
+    return true
   }
+  if (/^[A-Za-z0-9_]+\s*[\[\(]/.test(t)) return true
   return false
 }
 
 function findDiagramRange(lines: string[]): { start: number; end: number } | null {
+  let start = -1
   for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i]
-    const t = raw.trim()
-
-    if (isDiagramHeaderLine(raw)) {
-      let end = i + 1
-      while (end < lines.length) {
-        const lt = lines[end].trim().toLowerCase()
-        if (lt.startsWith('references:')) break
-        if (lines[end].trim() && isSectionHeader(lines[end]) && !isDiagramHeaderLine(lines[end])) break
-        if (lines[end].trim() && !isDiagramContinuationLine(lines[end]) && end > i + 1) break
-        end++
-      }
-      return { start: i, end: Math.max(i + 1, end) }
-    }
-
-    if (MERMAID_START.test(t)) {
-      let end = i + 1
-      while (end < lines.length) {
-        const lt = lines[end].trim().toLowerCase()
-        if (lt.startsWith('references:')) break
-        if (lines[end].trim() && isSectionHeader(lines[end])) break
-        if (lines[end].trim() && !isDiagramContinuationLine(lines[end])) break
-        end++
-      }
-      return { start: i, end: Math.max(i + 1, end) }
+    if (isDiagramHeaderLine(lines[i]) || MERMAID_START.test(lines[i].trim())) {
+      start = i
+      break
     }
   }
-  return null
+  if (start < 0) return null
+
+  let end = start + 1
+  while (end < lines.length) {
+    const raw = lines[end]
+    const t = raw.trim().toLowerCase()
+    if (t.startsWith('references:')) break
+    if (raw.trim() && isSectionHeader(raw) && !isDiagramHeaderLine(raw)) break
+    if (raw.trim() && isProseLine(raw)) break
+    if (!raw.trim()) {
+      end++
+      continue
+    }
+    if (!isMermaidLine(raw) && end > start + 1) break
+    end++
+  }
+
+  return { start, end: Math.max(start + 1, end) }
+}
+
+/** Pull stray Mermaid lines out of the teaching body into the diagram block. */
+function extractStrayMermaidFromBody(
+  body: string,
+  diagram: string | null
+): { body: string; diagram: string | null } {
+  const lines = body.split('\n')
+  const kept: string[] = []
+  const stray: string[] = []
+
+  for (const line of lines) {
+    if (line.trim() && isMermaidLine(line) && !isDiagramHeaderLine(line)) {
+      stray.push(line)
+    } else {
+      kept.push(line)
+    }
+  }
+
+  if (stray.length === 0) {
+    return { body: body.trim(), diagram }
+  }
+
+  const bodyOut = kept
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  const parts = [...stray]
+  if (diagram) parts.push(diagram)
+
+  return { body: bodyOut, diagram: orderDiagramLines(parts.join('\n')) }
+}
+
+function orderDiagramLines(text: string): string {
+  const lines = text.split('\n').filter((l) => l.trim() && !isDiagramHeaderLine(l))
+  if (lines.length === 0) return text.trim()
+
+  const graphIdx = lines.findIndex((l) => MERMAID_START.test(l.trim()))
+  if (graphIdx < 0) return lines.join('\n').trim()
+
+  const graphLine = lines[graphIdx]
+  const edges = lines.filter((l, i) => i !== graphIdx && (/-->/.test(l) || /-.->/.test(l)))
+  const rest = lines.filter((l, i) => i !== graphIdx && !edges.includes(l))
+
+  return [graphLine, ...edges, ...rest].join('\n').trim()
+}
+
+function normalizeDiagramText(raw: string): string {
+  return raw
+    .split('\n')
+    .filter((l) => !isDiagramHeaderLine(l) || MERMAID_START.test(l.replace(/^[^:]+:\s*/, '').trim()))
+    .join('\n')
+    .replace(/^(flowchart|mermaid|diagram):\s*/gim, '')
+    .trim()
 }
 
 function splitExplanation(text: string): { body: string; diagram: string | null; references: string | null } {
@@ -94,7 +157,7 @@ function splitExplanation(text: string): { body: string; diagram: string | null;
   let references: string | null = null
 
   if (diagramRange) {
-    diagram = bodySlice.slice(diagramRange.start, diagramRange.end).join('\n').trim() || null
+    diagram = normalizeDiagramText(bodySlice.slice(diagramRange.start, diagramRange.end).join('\n')) || null
   }
 
   if (refStart >= 0) {
@@ -106,11 +169,10 @@ function splitExplanation(text: string): { body: string; diagram: string | null;
     bodyLines = [...bodySlice.slice(0, diagramRange.start), ...bodySlice.slice(diagramRange.end)]
   }
 
-  return {
-    body: bodyLines.join('\n').trim(),
-    diagram,
-    references,
-  }
+  const merged = extractStrayMermaidFromBody(bodyLines.join('\n').trim(), diagram)
+  diagram = merged.diagram ? orderDiagramLines(merged.diagram) : null
+
+  return { body: merged.body, diagram, references }
 }
 
 function optionLineClass(line: string, correctOption?: string): string | null {
@@ -131,6 +193,10 @@ function renderBodyLine(line: string, index: number, correctOption?: string) {
   const trimmed = line.trim()
   if (!trimmed) return <div key={`sp-${index}`} className="h-2" aria-hidden />
 
+  if (isMermaidLine(line) && !isDiagramHeaderLine(line)) {
+    return null
+  }
+
   if (isSectionHeader(trimmed)) {
     return (
       <p key={`hdr-${index}`} className="text-xs font-semibold uppercase tracking-wider text-neon-cyan/90 mt-4 first:mt-0 mb-1">
@@ -150,7 +216,7 @@ function renderBodyLine(line: string, index: number, correctOption?: string) {
 
   if (/^\d+\.\s/.test(trimmed)) {
     return (
-      <p key={`step-${index}`} className="text-sm leading-relaxed text-slate-100 pl-4 whitespace-pre-wrap font-mono">
+      <p key={`step-${index}`} className="text-sm leading-relaxed text-slate-100 pl-4 whitespace-pre-wrap">
         {trimmed}
       </p>
     )
@@ -173,17 +239,16 @@ export function SolutionExplanation({
   correctOption?: string
 }) {
   const { body, diagram, references } = splitExplanation(text)
-  const bodyLines = body.split('\n')
 
   return (
     <div className={cn('space-y-1', className)}>
-      <div className="space-y-1">{bodyLines.map((line, i) => renderBodyLine(line, i, correctOption))}</div>
+      <div className="space-y-1">{body.split('\n').map((line, i) => renderBodyLine(line, i, correctOption))}</div>
 
       {diagram && (
-        <div className="rounded-xl border border-neon-cyan/30 bg-cyber-950/80 p-4 overflow-x-auto mt-4">
-          <p className="text-[10px] uppercase tracking-widest text-neon-cyan mb-2 font-semibold">Flowchart / diagram</p>
-          <pre className="text-sm font-mono text-emerald-200/90 leading-snug whitespace-pre-wrap break-words">
-            {diagram.replace(/^(flowchart|mermaid|diagram):\s*/i, '')}
+        <div className="rounded-xl border border-neon-cyan/25 bg-gradient-to-b from-cyber-900/60 to-cyber-950/90 p-4 mt-5 shadow-inner shadow-neon-cyan/5">
+          <p className="text-[10px] uppercase tracking-widest text-neon-cyan/80 mb-3 font-semibold">Flowchart / diagram</p>
+          <pre className="text-[13px] font-mono text-emerald-200/85 leading-relaxed whitespace-pre-wrap break-words overflow-x-auto max-w-full">
+            {diagram}
           </pre>
         </div>
       )}

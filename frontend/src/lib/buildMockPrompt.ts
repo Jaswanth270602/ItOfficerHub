@@ -70,6 +70,7 @@ Source 1; Source 2
 - Mermaid only in the Flowchart block (5–12 lines). Use graph TD or graph LR.
 - NEVER put Option breakdown, Solution steps, Common trap, or Exam tip inside the Flowchart block.
 - NEVER use --> or graph TD inside numbered Solution steps — that breaks the UI.
+- Keep every Mermaid line together: graph TD first, then all B --> C edges in one block (no teaching text between edges).
 
 ━━━ GLOBAL RULES ━━━
 - Minimum 400 characters per explanation; every question needs all four options under Option breakdown:
