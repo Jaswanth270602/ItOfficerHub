@@ -1,33 +1,48 @@
 You are a senior IBPS Specialist Officer (IT Officer) content author for ItOfficerHub Study Q&A.
 
-TASK: Generate exactly 20 MCQs for ONE subtopic. Output ONLY valid JSON (no markdown fences, no commentary).
+CRITICAL: Reply with ONE raw JSON object only. No markdown fences. No commentary.
 
-SUBTOPIC (edit these 4 lines only):
-- sectionId: "networking"
-- subtopicSlug: "osi-tcp-ip"
-- sectionTitle: "Networking"
-- subtopicTitle: "OSI & TCP/IP"
+TASK: Generate MCQs for ONE subtopic (batch size shown in Admin UI — up to 50 per subtopic).
+
+SUBTOPIC (edit these 4 lines to match the subtopic you are filling):
+- sectionId: "dbms"
+- subtopicSlug: "er-modeling"
+- sectionTitle: "DBMS & SQL"
+- subtopicTitle: "ER Diagrams & Keys"
+
+SYLLABUS TOPIC — use the enum for your sectionId (NOT subtopicTitle):
+
+| sectionId | topic (use exactly) |
+|-----------|---------------------|
+| networking | NETWORKING |
+| dbms | DBMS |
+| operating-systems | OPERATING_SYSTEMS |
+| security | SECURITY |
+| web-technologies | WEB_TECHNOLOGIES |
+| data-structures | DATA_STRUCTURES |
+| computer-organization | COMPUTER_ORGANIZATION |
+| software-engineering | SOFTWARE_ENGINEERING |
+| cloud-digital | CLOUD_COMPUTING |
+
+Example: for sectionId "dbms" / subtopicSlug "er-modeling" → "topic": "DBMS" (NOT "ER Diagrams & Keys").
 
 RULES:
-- Exactly 20 questions in the "questions" array (questionNumber 1–20)
-- Same sectionId and subtopicSlug on every row
-- 4 options A–D; exactly one correct (correctOption: "A"|"B"|"C"|"D")
-- IBPS SO IT / PSU IT style; varied difficulty; no duplicate stems
-- Every explanation: ≥300 characters, "Option breakdown:" with Option A, B, C, D, ✓ CORRECT marked
-- For numerical questions include "Solution steps:" with numbered working
-- Use \n for line breaks in JSON explanations
+- questionNumber: sequential for the batch (see Admin copy-prompt for start/end)
+- 4 options A–D; one correct (correctOption: "A"|"B"|"C"|"D")
+- explanation ≥300 chars with "Option breakdown:" and Options A–D, ✓ CORRECT on one line
+- Use \n for line breaks in JSON
 
 JSON SCHEMA:
 
 {
-  "sectionId": "networking",
-  "subtopicSlug": "osi-tcp-ip",
+  "sectionId": "dbms",
+  "subtopicSlug": "er-modeling",
   "questions": [
     {
-      "sectionId": "networking",
-      "subtopicSlug": "osi-tcp-ip",
+      "sectionId": "dbms",
+      "subtopicSlug": "er-modeling",
       "questionNumber": 1,
-      "topic": "NETWORKING",
+      "topic": "DBMS",
       "questionText": "...",
       "optionA": "...",
       "optionB": "...",
@@ -41,6 +56,6 @@ JSON SCHEMA:
   ]
 }
 
-VALID sectionId + subtopicSlug pairs — use exactly from PracticeCatalog (networking, dbms, operating-systems, security, web-technologies, data-structures, computer-organization, software-engineering, cloud-digital).
+Self-check: correct sectionId + subtopicSlug; topic = syllabus enum from table; never subtopic title in topic field.
 
-Admin: ItOfficerHub → Admin → Practice Q&A → expand subject → Import on subtopic. Copy prompt is pre-filled per subtopic in the UI.
+Admin: Use "Copy Claude prompt" on each subtopic — it pre-fills sectionId, slug, and topic automatically.

@@ -1,3 +1,23 @@
+/**
+ * Syllabus topic enum per Study section (must match Java Topic + PracticeCatalog.java).
+ * Use in Claude prompts — NOT the subtopic title (e.g. "ER Diagrams & Keys").
+ */
+export const PRACTICE_SECTION_TOPIC: Record<string, string> = {
+  networking: 'NETWORKING',
+  dbms: 'DBMS',
+  'operating-systems': 'OPERATING_SYSTEMS',
+  security: 'SECURITY',
+  'web-technologies': 'WEB_TECHNOLOGIES',
+  'data-structures': 'DATA_STRUCTURES',
+  'computer-organization': 'COMPUTER_ORGANIZATION',
+  'software-engineering': 'SOFTWARE_ENGINEERING',
+  'cloud-digital': 'CLOUD_COMPUTING',
+}
+
+export function practiceSectionTopicEnum(sectionId: string): string {
+  return PRACTICE_SECTION_TOPIC[sectionId] ?? 'NETWORKING'
+}
+
 /** Section icons for sidebar (lucide names mapped in component) */
 export const SECTION_ICONS: Record<string, string> = {
   networking: 'Network',

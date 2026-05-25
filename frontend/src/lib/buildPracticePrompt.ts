@@ -1,6 +1,7 @@
 import {
   PRACTICE_INITIAL_TARGET_PER_SUBTOPIC,
   practiceImportBatchSize,
+  practiceSectionTopicEnum,
 } from '@/lib/practiceCatalog'
 
 /** Max questions per Claude import batch (same as subtopic goal). */
@@ -16,6 +17,7 @@ export function buildPracticePrompt(
   const batchSize = practiceImportBatchSize(existingCount)
   const startNum = existingCount + 1
   const endNum = existingCount + batchSize
+  const syllabusTopic = practiceSectionTopicEnum(sectionId)
 
   if (batchSize === 0) {
     return `This subtopic already has ${PRACTICE_INITIAL_TARGET_PER_SUBTOPIC} questions. No further imports needed unless you delete some first.`
@@ -23,13 +25,20 @@ export function buildPracticePrompt(
 
   return `You are a senior IBPS Specialist Officer (IT Officer) content author for ItOfficerHub Study Q&A.
 
-TASK: Generate exactly ${batchSize} MCQs for ONE subtopic. Output ONLY valid JSON (no markdown fences, no commentary).
+CRITICAL: Reply with ONE raw JSON object only — first character { last character }. No markdown fences. No text before or after JSON.
+
+TASK: Generate exactly ${batchSize} MCQs for ONE subtopic. Output ONLY valid JSON.
 
 SUBTOPIC (use exactly):
 - sectionId: "${sectionId}"
 - subtopicSlug: "${subtopicSlug}"
 - sectionTitle: "${sectionTitle}"
-- subtopicTitle: "${subtopicTitle}"
+- subtopicTitle: "${subtopicTitle}" (display label only — do NOT put this in "topic")
+
+SYLLABUS TOPIC (required on every question):
+- "topic": "${syllabusTopic}" (uppercase enum for this section — same on all ${batchSize} rows)
+- NEVER use subtopicTitle ("${subtopicTitle}") or sectionTitle as topic — import will fail
+- You may omit "topic" entirely; the server defaults to ${syllabusTopic} for sectionId "${sectionId}"
 
 EXISTING CONTENT: ${existingCount} question(s) already live — your batch APPENDS new questions only.
 
@@ -41,6 +50,7 @@ RULES:
 - Every explanation: ≥300 characters, "Option breakdown:" with Option A, B, C, D individually, ✓ CORRECT marked
 - For numerical questions include "Solution steps:" with numbered working
 - Use \\n for line breaks in JSON explanations
+- Flowchart optional; if used, keep all Mermaid lines under "Flowchart:" before References (or end with Exam tip only)
 
 JSON SCHEMA:
 
@@ -52,22 +62,27 @@ JSON SCHEMA:
       "sectionId": "${sectionId}",
       "subtopicSlug": "${subtopicSlug}",
       "questionNumber": ${startNum},
-      "topic": "NETWORKING",
+      "topic": "${syllabusTopic}",
       "questionText": "...",
       "optionA": "...",
       "optionB": "...",
       "optionC": "...",
       "optionD": "...",
       "correctOption": "C",
-      "explanation": "Core concept:\\n• ...\\n\\nOption breakdown:\\n• Option A — ...\\n• Option B — ...\\n• Option C — ✓ CORRECT — ...\\n• Option D — ...\\n\\nExam tip:\\n• ...",
+      "explanation": "Core concept:\\n• ...\\n\\nOption breakdown:\\n• Option A — ...\\n• Option B — ...\\n• Option C — ✓ CORRECT — ...\\n• Option D — ...\\n\\nExam tip:\\n• ...\\n\\nReferences: IBPS SO IT — ${subtopicTitle}",
       "solutionImageUrl": null,
       "published": true
     }
   ]
 }
 
-Before output, self-check: ${batchSize} questions; questionNumber ${startNum}–${endNum}; same sectionId and subtopicSlug on every row; each explanation has full option breakdown.
+SELF-CHECK before sending:
+[ ] ${batchSize} questions; questionNumber ${startNum}–${endNum}
+[ ] Every row: sectionId "${sectionId}", subtopicSlug "${subtopicSlug}"
+[ ] Every row: topic is "${syllabusTopic}" (or field omitted) — NOT "${subtopicTitle}"
+[ ] Option breakdown with A, B, C, D and one ✓ CORRECT
+[ ] Valid JSON only
 
-Admin import: paste JSON at ItOfficerHub → Admin → Practice Q&A → Import on subtopic "${subtopicTitle}".
+Admin import: paste JSON at ItOfficerHub → Admin → Practice Q&A → Import on "${subtopicTitle}".
 `
 }

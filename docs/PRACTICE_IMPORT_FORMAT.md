@@ -34,13 +34,28 @@ Use for **Study Hub** (`/study`) — IndiaBIX-style topic navigation. Separate f
 
 You may also paste a **single question object** or a **bare array** of questions.
 
-## Validation (lighter than mocks)
+## Validation
 
 | Field | Rule |
 |--------|------|
 | sectionId / subtopicSlug | Must match catalog in `PracticeCatalog.java` |
-| explanation | ≥ 80 chars, ≥ 2 bullet lines (`•` or `-`) |
+| topic | Syllabus enum for the **section** (e.g. `DBMS` for `dbms`), **not** the subtopic title. Omit to auto-fill from section. |
+| explanation | ≥ 300 chars, `Option breakdown:` with Options A–D |
 | correctOption | `A`, `B`, `C`, or `D` |
+
+### topic by sectionId
+
+| sectionId | topic |
+|-----------|--------|
+| networking | NETWORKING |
+| dbms | DBMS |
+| operating-systems | OPERATING_SYSTEMS |
+| security | SECURITY |
+| web-technologies | WEB_TECHNOLOGIES |
+| data-structures | DATA_STRUCTURES |
+| computer-organization | COMPUTER_ORGANIZATION |
+| software-engineering | SOFTWARE_ENGINEERING |
+| cloud-digital | CLOUD_COMPUTING |
 
 ## API
 

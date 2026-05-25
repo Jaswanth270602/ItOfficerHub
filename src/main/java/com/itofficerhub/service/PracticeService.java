@@ -167,7 +167,7 @@ public class PracticeService {
 				try {
 					topic = Topic.valueOf(item.topic().trim().toUpperCase());
 				} catch (IllegalArgumentException e) {
-					throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + qNum + ": invalid topic");
+					// Claude often puts subtopic titles (e.g. "ER Diagrams & Keys") in topic — use section default
 				}
 			}
 
