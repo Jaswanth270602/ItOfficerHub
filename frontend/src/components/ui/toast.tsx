@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react'
@@ -58,6 +59,48 @@ export function useToast() {
   return ctx
 }
 
+function ConfirmDialog({
+  message,
+  onCancel,
+  onConfirm,
+}: {
+  message: string
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/75"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onCancel()
+      }}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="toast-confirm-title"
+        className="w-full max-w-md rounded-xl border border-cyber-600 bg-cyber-950 p-5 shadow-2xl pointer-events-auto"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3 mb-5">
+          <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+          <p id="toast-confirm-title" className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
+            {message}
+          </p>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" className="cursor-pointer" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="button" className="cursor-pointer" onClick={onConfirm}>
+            Confirm
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const [confirm, setConfirm] = useState<ConfirmState>(null)
@@ -87,10 +130,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }
   }, [push, askConfirm])
 
-  const resolveConfirm = (value: boolean) => {
-    confirm?.resolve(value)
-    setConfirm(null)
-  }
+  const resolveConfirm = useCallback(
+    (value: boolean) => {
+      setConfirm((current) => {
+        current?.resolve(value)
+        return null
+      })
+    },
+    []
+  )
 
   return (
     <ToastContext.Provider value={{ toast: push, confirm: askConfirm }}>
@@ -126,31 +174,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         })}
       </div>
 
-      {confirm && (
-        <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/70">
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="toast-confirm-title"
-            className="w-full max-w-md rounded-xl border border-cyber-600 bg-cyber-950 p-5 shadow-2xl"
-          >
-            <div className="flex items-start gap-3 mb-5">
-              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-              <p id="toast-confirm-title" className="text-sm text-slate-200 leading-relaxed">
-                {confirm.message}
-              </p>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" className="cursor-pointer" onClick={() => resolveConfirm(false)}>
-                Cancel
-              </Button>
-              <Button type="button" className="cursor-pointer" onClick={() => resolveConfirm(true)}>
-                Confirm
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {confirm &&
+        createPortal(
+          <ConfirmDialog
+            message={confirm.message}
+            onCancel={() => resolveConfirm(false)}
+            onConfirm={() => resolveConfirm(true)}
+          />,
+          document.body
+        )}
     </ToastContext.Provider>
   )
 }

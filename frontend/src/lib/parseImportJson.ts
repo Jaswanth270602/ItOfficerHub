@@ -1,5 +1,8 @@
 /** Extract and validate Claude/mock import JSON from pasted text (handles fences + chat prose). */
 
+/** Minimum explanation length (matches server import validation). */
+export const MOCK_EXPLANATION_MIN_CHARS = 200
+
 const VALID_TOPICS = new Set([
   'NETWORKING',
   'DBMS',
@@ -130,8 +133,12 @@ function validateQuestions(questions: unknown[]): { warnings: string[]; errors: 
     if (!topic) errors.push(`Question ${n}: "topic" is required.`)
     else if (!VALID_TOPICS.has(topic)) warnings.push(`Question ${n}: topic "${topic}" may be rejected by server.`)
     const exp = String(q.explanation ?? '')
-    if (exp.length < 400) {
-      warnings.push(`Question ${n}: explanation is ${exp.length} chars (server needs ≥400 with Option breakdown).`)
+    if (exp.length < MOCK_EXPLANATION_MIN_CHARS) {
+      warnings.push(
+        `Question ${n}: explanation is ${exp.length} chars (import needs ≥${MOCK_EXPLANATION_MIN_CHARS} with Option breakdown).`
+      )
+    } else if (exp.length < 350) {
+      warnings.push(`Question ${n}: explanation is ${exp.length} chars (short — consider expanding for students).`)
     } else if (!exp.toLowerCase().includes('option breakdown')) {
       warnings.push(`Question ${n}: add an "Option breakdown:" section in explanation.`)
     }

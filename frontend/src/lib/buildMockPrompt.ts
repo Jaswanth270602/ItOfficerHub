@@ -57,23 +57,18 @@ Key distinction:
 Exam tip:
 • One bullet for quick recall under time pressure
 
-Flowchart:
-graph TD
-  A[Step label] --> B[Next step]
-  B --> C[Outcome]
-
 References:
 Source 1; Source 2
 
-━━━ DIAGRAM RULES (Template B only, or when process flow helps) ━━━
-- "Flowchart:" must be its own line, immediately BEFORE Mermaid lines, and AFTER Exam tip / Key distinction.
-- Mermaid only in the Flowchart block (5–12 lines). Use graph TD or graph LR.
-- NEVER put Option breakdown, Solution steps, Common trap, or Exam tip inside the Flowchart block.
-- NEVER use --> or graph TD inside numbered Solution steps — that breaks the UI.
-- Keep every Mermaid line together: graph TD first, then all B --> C edges in one block (no teaching text between edges).
+━━━ FLOWCHART (OPTIONAL — do not force on every question) ━━━
+- Add a Flowchart block only when a process/protocol truly benefits from a diagram (aim for ~30–50% of conceptual questions, not all 20).
+- If you skip it, go straight from Exam tip to References — import accepts explanations with NO flowchart.
+- NEVER invent a fake one-line diagram just to satisfy a checklist — poor diagrams hurt students.
+- When you DO include one: put "Flowchart:" on its own line, then graph TD/LR (5–12 lines), all Mermaid lines contiguous, then References.
+- NEVER put Option breakdown or teaching text inside the Flowchart block; NEVER use --> or graph TD inside numbered Solution steps.
 
 ━━━ GLOBAL RULES ━━━
-- Minimum 400 characters per explanation; every question needs all four options under Option breakdown:
+- Minimum 200 characters per explanation (400+ recommended); every question needs all four options under Option breakdown:
 - Mark the correct option with "✓ CORRECT" on its bullet line.
 - "References:" must be the last line of the explanation string.
 - Use the same section order for every question in this batch.
@@ -158,10 +153,11 @@ JSON TEMPLATE (fill all fields; escape quotes inside strings):
 SELF-CHECK (every question before you send):
 [ ] ${batchSize} questions; orderIndex ${startIdx}–${endIdx}
 [ ] Valid JSON; no trailing commas
-[ ] explanation ≥ 400 chars with exact section headers in correct order
+[ ] explanation ≥ 200 chars with exact section headers in correct order
 [ ] Option breakdown has four • lines (A, B, C, D) with exactly one ✓ CORRECT
-[ ] Calculation questions use Template A (Solution steps, Common trap) — no Flowchart unless essential
-[ ] Conceptual questions use Template B; Flowchart block only under "Flowchart:" line before References
+[ ] Calculation questions use Template A; Conceptual use Template B
+[ ] Flowchart is optional — omit entirely when text explanation is enough
+[ ] If Flowchart present: all Mermaid lines together under "Flowchart:" before References
 [ ] No --> or graph TD inside numbered Solution steps
 [ ] References: is the last line
 `

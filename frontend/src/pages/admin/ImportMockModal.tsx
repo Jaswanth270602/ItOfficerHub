@@ -147,16 +147,6 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
       return
     }
 
-    if (parsed.warnings.length > 0) {
-      const proceed = await toast.confirm(
-        `${parsed.warnings.length} warning(s) — server may still reject.\n\n${parsed.warnings.slice(0, 3).join('\n')}\n\nImport anyway?`
-      )
-      if (!proceed) {
-        setLoading(false)
-        return
-      }
-    }
-
     try {
       const payload = {
         ...parsed.data,
@@ -195,7 +185,7 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
       if (isWafBlockedResponse(err)) {
         setHint(WAF_IMPORT_HINT)
       } else if (msg.toLowerCase().includes('explanation')) {
-        setHint('Claude must add Option breakdown for A–D and ≥400 characters per explanation. Re-copy prompt and regenerate.')
+        setHint('Claude must add Option breakdown for A–D, References line, and at least 200 characters per explanation. Flowchart is optional.')
       } else if (msg.toLowerCase().includes('topic')) {
         setHint('Use uppercase topic codes from the prompt (e.g. NETWORKING, DBMS).')
       }
@@ -380,7 +370,9 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
                         )}
                       </>
                     )}
-                    {preview.warnings.length > 0 && ` · ${preview.warnings.length} warning(s)`}
+                    {preview.warnings.length > 0 && (
+                      <span className="text-amber-300/90"> · {preview.warnings.length} note(s) — import still allowed</span>
+                    )}
                   </>
                 ) : (
                   <>

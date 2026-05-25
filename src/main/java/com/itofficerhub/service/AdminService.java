@@ -326,16 +326,15 @@ public class AdminService {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
 						"Question " + i + ": topic is required (syllabus chapter for analytics)");
 			}
-			Topic topic;
 			try {
-				topic = Topic.valueOf(q.topic().trim().toUpperCase());
+				Topic.valueOf(q.topic().trim().toUpperCase());
 			} catch (IllegalArgumentException e) {
 				throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + i + ": invalid topic " + q.topic());
 			}
 			String exp = q.explanation();
-			if (exp == null || exp.trim().length() < 400) {
+			if (exp == null || exp.trim().length() < 200) {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must be at least 400 characters with full option breakdown");
+						"Question " + i + ": explanation must be at least 200 characters with full option breakdown");
 			}
 			if (!exp.toLowerCase().contains("option breakdown")) {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
@@ -349,10 +348,6 @@ public class AdminService {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
 						"Question " + i + ": explanation must include a References: line");
 			}
-			if (!hasSolutionStepsOrDiagram(exp, topic)) {
-				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": add Solution steps (numbered) for quant questions OR a flowchart for tech topics");
-			}
 		}
 	}
 
@@ -360,25 +355,6 @@ public class AdminService {
 		String upper = exp.toUpperCase();
 		return upper.contains("OPTION A") && upper.contains("OPTION B")
 				&& upper.contains("OPTION C") && upper.contains("OPTION D");
-	}
-
-	private static boolean hasSolutionStepsOrDiagram(String exp, Topic topic) {
-		if (hasDiagramInExplanation(exp)) {
-			return true;
-		}
-		if (topic == Topic.QUANTITATIVE_APTITUDE || topic == Topic.LOGICAL_REASONING
-				|| topic == Topic.VERBAL_ABILITY) {
-			long numbered = exp.lines().filter(l -> l.trim().matches("\\d+\\.\\s.+")).count();
-			return exp.toLowerCase().contains("solution steps") && numbered >= 3;
-		}
-		return false;
-	}
-
-	private static boolean hasDiagramInExplanation(String exp) {
-		String lower = exp.toLowerCase();
-		return exp.contains("-->") || exp.contains("→") || exp.contains("graph ")
-				|| exp.contains("flowchart") || exp.contains("sequenceDiagram")
-				|| lower.contains("ascii diagram") || lower.contains("flow:");
 	}
 
 	private MockCategory parseCategory(String raw) {

@@ -21,10 +21,10 @@ EXAM RULES:
 - IBPS SO IT syllabus style; practical traps; no duplicate stems
 - orderIndex 1 through 20
 
-EXPLANATION QUALITY (mandatory — import API rejects short/missing diagrams):
-- Minimum 8 lines / 200+ characters in "explanation" (use \n for line breaks)
-- At least 6 bullet lines starting with "• " (why correct, why each wrong option fails, trap, hook, exam tip)
-- **Required** Mermaid `graph TD` flowchart OR ASCII diagram with `-->` / `→` arrows (label with "Flowchart:" or "ASCII diagram:")
+EXPLANATION QUALITY (mandatory — import API rejects incomplete breakdowns):
+- Minimum 200+ characters in "explanation" (use \n for line breaks)
+- **Required:** "Option breakdown:" with all four options (A–D) and "References:" line
+- **Optional:** Mermaid flowchart under "Flowchart:" — use only when it helps; import works without any diagram
 - End with "References:" and 2 real sources
 - **topic** is **required** on every question (syllabus chapter — powers weak/strong topic report after the exam)
 
@@ -60,7 +60,7 @@ VALID topic values (uppercase): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, W
 
 VALID difficulty: EASY, MEDIUM, HARD
 
-Before you output, self-check: 20 questions, each has topic, explanation ≥200 chars with ≥6 • bullets, diagram present, References line present, valid JSON only.
+Before you output, self-check: 20 questions, each has topic, explanation ≥200 chars, Option breakdown for A–D, References line present, valid JSON only. Flowchart optional.
 ```
 
 ---
@@ -83,7 +83,7 @@ Before you output, self-check: 20 questions, each has topic, explanation ≥200 
 | title | Yes | Shown on dashboard |
 | difficulty | Yes | EASY, MEDIUM, HARD |
 | questions | Yes | 20 recommended |
-| explanation | Strongly required | Multi-line + bullets + diagram + references |
+| explanation | Strongly required | Multi-line + Option breakdown + references (flowchart optional) |
 | solutionImageUrl | No | HTTPS URL to diagram image |
 | topic | **Yes** | Syllabus chapter — required for analytics (import fails if missing) |
 | mockCategory | No | FULL, SECTIONAL, PYQ, CHALLENGE (30-day plan uses CHALLENGE + seriesDay) |
@@ -97,7 +97,7 @@ Before you output, self-check: 20 questions, each has topic, explanation ≥200 
 | Problem | Fix |
 |---------|-----|
 | Claude wrapped JSON in ``` | Modal strips fences; or delete fences manually |
-| Short explanations / no diagram | Re-run prompt; need 200+ chars, 6+ bullets, Mermaid or `-->` diagram |
+| Short explanations | Re-run prompt; need 200+ chars and full Option breakdown for A–D |
 | Import rejected on topic | Set `topic` on every question from the valid list |
 | Invalid topic | Use uppercase values from list |
 | Publish fails | Ensure question count matches mock setting (usually 20) |

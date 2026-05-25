@@ -48,7 +48,7 @@ Exam tip:
 References:
 Source 1; Source 2
 
-Skip "Flowchart:" for pure calculation/subnetting unless a diagram is essential.
+(No Flowchart needed for most calculation questions.)
 
 ━━━ TEMPLATE B — Conceptual / definition / protocol ━━━
 
@@ -67,29 +67,25 @@ Key distinction:
 Exam tip:
 • Quick recall line
 
-Flowchart:
-graph TD
-  A[Label] --> B[Next]
-  B --> C[Result]
-
 References:
 Source 1; Source 2
 
-━━━ DIAGRAM RULES (Template B only) ━━━
-- "Flowchart:" on its own line immediately before Mermaid (after Exam tip, before References).
-- Only Mermaid/ASCII in the Flowchart block (5–12 lines). Never put Option breakdown or Solution steps there.
-- NEVER put graph TD or --> inside numbered Solution steps — the app treats that as a diagram and breaks layout.
+━━━ FLOWCHART (OPTIONAL — not required for import) ━━━
+- Use on ~30–50% of questions where a process flow genuinely helps (handshakes, SQL pipeline, OSI layer flow, etc.).
+- Skip entirely when prose + Option breakdown is enough — the server imports without any diagram.
+- NEVER add a placeholder/fake Flowchart on every question.
+- When included: after Exam tip, add "Flowchart:" then Mermaid (graph TD, 5–12 lines, all edges together), then References.
+- NEVER put teaching text inside the Flowchart block; NEVER use --> or graph TD inside numbered Solution steps.
 
-GLOBAL:
-- Minimum 400 characters per explanation
+GLOBAL (required for import):
+- Minimum 200 characters per explanation (400+ recommended)
 - All four options in Option breakdown; one ✓ CORRECT
 - "References:" must be the last line
-- Consistent template choice across all 20 questions
 
-OPTIONAL VISUAL:
+OPTIONAL:
 - solutionImageUrl: public HTTPS diagram URL, or null
 
-JSON SCHEMA:
+JSON SCHEMA (example without flowchart — valid for import):
 
 {
   "title": "...",
@@ -100,16 +96,16 @@ JSON SCHEMA:
   "seriesDay": null,
   "questions": [
     {
-      "questionText": "...",
-      "optionA": "...",
-      "optionB": "...",
-      "optionC": "...",
-      "optionD": "...",
-      "correctOption": "C",
-      "explanation": "Core concept:\n• TCP three-way handshake establishes a reliable byte stream before data transfer.\n\nOption breakdown:\n• Option A — SYN only — INCORRECT because handshake needs SYN-ACK and ACK, not SYN alone\n• Option B — UDP connection — INCORRECT because UDP is connectionless\n• Option C — SYN, SYN-ACK, ACK — ✓ CORRECT because this is the standard 3-step TCP setup\n• Option D — FIN, ACK — INCORRECT because FIN terminates; it does not establish a connection\n\nKey distinction:\n• SYN starts setup; FIN ends — do not swap them in MCQs\n\nExam tip:\n• Remember S-S-A order: client SYN → server SYN-ACK → client ACK\n\nFlowchart:\ngraph TD\n  C[Client SYN] --> S[Server SYN-ACK]\n  S --> A[Client ACK]\n\nReferences: RFC 793; IBPS SO IT — Networking",
+      "questionText": "Which normal form removes partial dependency?",
+      "optionA": "1NF",
+      "optionB": "2NF",
+      "optionC": "3NF",
+      "optionD": "BCNF",
+      "correctOption": "B",
+      "explanation": "Core concept:\n• 2NF applies to tables in 1NF and removes partial dependency on a composite key.\n\nOption breakdown:\n• Option A — 1NF — INCORRECT because 1NF only removes repeating groups\n• Option B — 2NF — ✓ CORRECT because partial dependency is eliminated at 2NF\n• Option C — 3NF — INCORRECT because 3NF removes transitive dependency, not partial\n• Option D — BCNF — INCORRECT because BCNF is stricter than 3NF\n\nKey distinction:\n• 2NF vs 3NF: partial vs transitive dependency\n\nExam tip:\n• Remember order: 1NF → 2NF → 3NF → BCNF\n\nReferences: Codd normal forms; IBPS SO IT — DBMS",
       "solutionImageUrl": null,
-      "topic": "NETWORKING",
-      "topicTag": "TCP/IP & OSI Model",
+      "topic": "DBMS",
+      "topicTag": "Normalization & Keys",
       "orderIndex": 1
     }
   ]
@@ -119,4 +115,4 @@ VALID topic: NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DA
 
 VALID difficulty: EASY, MEDIUM, HARD
 
-Self-check EACH question: ≥400 chars; four Option lines; ✓ CORRECT; References last; Template A has Solution steps; Template B has Flowchart only under "Flowchart:"; valid JSON; 20 questions; topic + topicTag set.
+Self-check EACH question: ≥200 chars; four Option lines; ✓ CORRECT; References last; Flowchart only when it adds real value (optional); valid JSON; 20 questions; topic + topicTag set.
