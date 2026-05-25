@@ -2,6 +2,82 @@ export function mockImportBatchSize(questionLimit: number, existingCount: number
   return Math.max(0, questionLimit - existingCount)
 }
 
+/** Shared explanation rules — imported mocks render section-by-section in the result UI. */
+const EXPLANATION_RULES = `
+EXPLANATION FORMAT (mandatory — the app parses section headers; wrong order breaks the UI):
+
+Use literal \\\\n between lines in JSON. Put a blank line (\\\\n\\\\n) between every section.
+
+Pick exactly ONE template per question. Copy section headers verbatim (same spelling, trailing colon).
+
+━━━ TEMPLATE A — Calculation / subnetting / numerical (use when math or formula is involved) ━━━
+Section order (do not reorder, do not skip):
+
+Core concept:
+• One bullet: what is being tested
+
+Solution steps:
+1. State formula or rule (no arrows → or --> on numbered lines)
+2. Substitute values with numbers shown
+3. Show intermediate calculation
+4. State final answer and which option letter matches
+
+Option breakdown:
+• Option A — [value/meaning] — INCORRECT because [specific reason]
+• Option B — [value/meaning] — INCORRECT because [reason]
+• Option C — [value/meaning] — ✓ CORRECT — matches step 4
+• Option D — [value/meaning] — INCORRECT because [reason]
+
+Common trap:
+• One bullet on the typical IBPS mistake
+
+Exam tip:
+• One bullet with a memory hook (arrows → allowed only inside • bullets, not in numbered steps)
+
+References:
+Source 1; Source 2
+
+Do NOT add a Flowchart block for pure calculation/subnetting questions unless a diagram is essential.
+
+━━━ TEMPLATE B — Conceptual / definition / protocol (no heavy calculation) ━━━
+Section order:
+
+Core concept:
+• 2–3 bullets explaining the idea in plain English
+
+Option breakdown:
+• Option A — [simplified] — INCORRECT because [reason]
+• Option B — [simplified] — INCORRECT because [reason]
+• Option C — [simplified] — ✓ CORRECT because [2–3 lines why it fits]
+• Option D — [simplified] — INCORRECT because [reason]
+
+Key distinction:
+• One bullet comparing the closest trap pair
+
+Exam tip:
+• One bullet for quick recall under time pressure
+
+Flowchart:
+graph TD
+  A[Step label] --> B[Next step]
+  B --> C[Outcome]
+
+References:
+Source 1; Source 2
+
+━━━ DIAGRAM RULES (Template B only, or when process flow helps) ━━━
+- "Flowchart:" must be its own line, immediately BEFORE Mermaid lines, and AFTER Exam tip / Key distinction.
+- Mermaid only in the Flowchart block (5–12 lines). Use graph TD or graph LR.
+- NEVER put Option breakdown, Solution steps, Common trap, or Exam tip inside the Flowchart block.
+- NEVER use --> or graph TD inside numbered Solution steps — that breaks the UI.
+
+━━━ GLOBAL RULES ━━━
+- Minimum 400 characters per explanation; every question needs all four options under Option breakdown:
+- Mark the correct option with "✓ CORRECT" on its bullet line.
+- "References:" must be the last line of the explanation string.
+- Use the same section order for every question in this batch.
+`
+
 export function buildMockPrompt(opts: {
   title: string
   difficulty: string
@@ -46,23 +122,13 @@ QUESTION RULES:
 - Exactly ${batchSize} items in "questions"
 - orderIndex: ${startIdx} through ${endIdx}
 - 4 options A–D; exactly one correct (correctOption: "A"|"B"|"C"|"D")
-- Every question MUST have "topic" (uppercase enum) AND "topicTag" (2–6 words)
+- Every question MUST have "topic" (uppercase enum) AND "topicTag" (2–6 words, specific sub-topic)
 - IBPS SO IT style; no duplicate stems
-
-EXPLANATION (each question — server rejects if shorter):
-- Minimum 400 characters in "explanation" string
-- Use \\n for line breaks inside JSON
-- Must include these section headers exactly:
-  Core concept:
-  Option breakdown:  (all four: Option A, Option B, Option C, Option D — mark correct with ✓ CORRECT)
-  References:
-- For numerical/subnetting: add "Solution steps:" with ≥3 numbered steps
-- For theory: optional "Key distinction:" and "Exam tip:"
-
+${EXPLANATION_RULES}
 VALID topic values only:
 NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
 
-JSON TEMPLATE (fill all fields; keep valid JSON — escape quotes inside strings):
+JSON TEMPLATE (fill all fields; escape quotes inside strings):
 
 {
   "title": "${opts.title}",
@@ -73,21 +139,29 @@ JSON TEMPLATE (fill all fields; keep valid JSON — escape quotes inside strings
   "examTarget": "${opts.examTarget ?? 'IBPS_SO_IT'}",
   "questions": [
     {
-      "questionText": "Your MCQ stem here?",
-      "optionA": "...",
-      "optionB": "...",
-      "optionC": "...",
-      "optionD": "...",
-      "correctOption": "C",
-      "explanation": "Core concept:\\n• ...\\n\\nOption breakdown:\\n• Option A — ...\\n• Option B — ...\\n• Option C — ✓ CORRECT — ...\\n• Option D — ...\\n\\nReferences: IBPS SO IT syllabus",
+      "questionText": "A company uses subnet mask 255.255.255.192 on Class C network 192.168.10.0. How many usable host addresses per subnet?",
+      "optionA": "30",
+      "optionB": "62",
+      "optionC": "126",
+      "optionD": "254",
+      "correctOption": "B",
+      "explanation": "Core concept:\\n• Usable hosts per subnet = 2^h − 2 (subtract network and broadcast).\\n\\nSolution steps:\\n1. Mask 255.255.255.192 → host bits h = 6\\n2. Total addresses per subnet = 2^6 = 64\\n3. Usable hosts = 64 − 2 = 62\\n4. Matches Option B (62)\\n\\nOption breakdown:\\n• Option A — 30 — INCORRECT because that implies 5 host bits (2^5−2=30), not /26\\n• Option B — 62 — ✓ CORRECT — matches step 4 with h=6\\n• Option C — 126 — INCORRECT because /25 gives 126 usable, not /26\\n• Option D — 254 — INCORRECT because that is an unsubnetted Class C block\\n\\nCommon trap:\\n• Forgetting to subtract 2 for network and broadcast addresses.\\n\\nExam tip:\\n• /26 → 62 usable; /25 → 126; /24 → 254 — memorise the common /26 and /27 values.\\n\\nReferences: RFC 950; IBPS SO IT — IP Addressing & Subnetting",
       "solutionImageUrl": null,
       "topic": "NETWORKING",
-      "topicTag": "TCP/IP & OSI Model",
+      "topicTag": "IP Addressing & Subnetting",
       "orderIndex": ${startIdx}
     }
   ]
 }
 
-Self-check before sending: ${batchSize} questions; valid JSON; no trailing commas; every explanation ≥400 chars with Option breakdown for A–D.
+SELF-CHECK (every question before you send):
+[ ] ${batchSize} questions; orderIndex ${startIdx}–${endIdx}
+[ ] Valid JSON; no trailing commas
+[ ] explanation ≥ 400 chars with exact section headers in correct order
+[ ] Option breakdown has four • lines (A, B, C, D) with exactly one ✓ CORRECT
+[ ] Calculation questions use Template A (Solution steps, Common trap) — no Flowchart unless essential
+[ ] Conceptual questions use Template B; Flowchart block only under "Flowchart:" line before References
+[ ] No --> or graph TD inside numbered Solution steps
+[ ] References: is the last line
 `
 }

@@ -13,83 +13,83 @@ EXAM RULES:
 - 4 options A–D per question; exactly ONE correct (correctOption: "A"|"B"|"C"|"D")
 - IBPS SO IT syllabus style; practical traps; no duplicate stems
 - orderIndex 1 through 20
-- Every question MUST have "topic" (syllabus chapter) AND "topicTag" (specific sub-topic attribute for analytics)
+- Every question MUST have "topic" (syllabus chapter) AND "topicTag" (specific sub-topic, 2–6 words)
 
-EXPLANATION QUALITY (mandatory — short or one-line answers are REJECTED):
+EXPLANATION FORMAT (mandatory — ItOfficerHub parses section headers; wrong order puts text in the wrong UI box):
 
-Every "explanation" must be a FULL TEACHING NOTE for students (minimum 400 characters, target 15–25 lines).
-Use literal \n in JSON for every line break. Use blank lines (\n\n) between sections so spacing renders correctly in the app.
+Use literal \n in JSON for line breaks. Use blank lines (\n\n) between sections.
 
-Pick ONE format based on question type:
+Pick exactly ONE template per question. Section headers must match exactly (spelling + colon).
 
-━━━ FORMAT A — Calculation / numerical / formula-based (Quant, subnetting, complexity, Boolean, etc.) ━━━
-
-Structure exactly like this (replace content; keep section headers):
+━━━ TEMPLATE A — Calculation / subnetting / numerical ━━━
+Use for subnetting, complexity, Boolean algebra, formulas, any worked math.
 
 Core concept:
-• One-line definition of what is being tested
+• One bullet: what is being tested
 
 Solution steps:
-1. Write the formula or rule used
-2. Substitute given values (show numbers)
-3. Intermediate calculation with working
-4. Final result and which option matches
+1. Formula or rule (do NOT use arrows → or Mermaid --> on numbered lines)
+2. Substitute values
+3. Intermediate calculation
+4. Final result and matching option letter
 
 Option breakdown:
-• Option A — [what this value/statement means] — INCORRECT because [specific reason]
+• Option A — [meaning] — INCORRECT because [reason]
 • Option B — [meaning] — INCORRECT because [reason]
-• Option C — [meaning] — ✓ CORRECT — matches step 4 above
+• Option C — [meaning] — ✓ CORRECT — matches step 4
 • Option D — [meaning] — INCORRECT because [reason]
 
 Common trap:
-• One line on the typical IBPS distractor
+• Typical IBPS mistake in one bullet
 
 Exam tip:
-• One actionable memory hook for the exam hall
+• Memory hook (→ allowed only inside • bullets, not in numbered steps)
 
 References:
-RFC or syllabus source 1; source 2
+Source 1; Source 2
 
-━━━ FORMAT B — Direct / conceptual MCQ (definitions, “which is true”, protocol behaviour, theory) ━━━
+Skip "Flowchart:" for pure calculation/subnetting unless a diagram is essential.
 
-Structure exactly like this:
+━━━ TEMPLATE B — Conceptual / definition / protocol ━━━
 
 Core concept:
-• 2–3 lines explaining the underlying idea in plain English (not one sentence)
+• 2–3 bullets in plain English
 
 Option breakdown:
-• Option A — [restated option text in simpler words] — INCORRECT because [why it is wrong / when it would be true]
-• Option B — [restated] — INCORRECT because [reason]
-• Option C — [restated] — ✓ CORRECT because [2–3 lines: definition, example, why it fits the stem]
-• Option D — [restated] — INCORRECT because [reason]
+• Option A — [simplified] — INCORRECT because [reason]
+• Option B — [simplified] — INCORRECT because [reason]
+• Option C — [simplified] — ✓ CORRECT because [why it fits]
+• Option D — [simplified] — INCORRECT because [reason]
 
 Key distinction:
-• Compare the closest two options (often the trap pair)
+• Compare the closest trap pair
 
 Exam tip:
-• One line students can recall under time pressure
+• Quick recall line
+
+Flowchart:
+graph TD
+  A[Label] --> B[Next]
+  B --> C[Result]
 
 References:
-IBPS SO IT syllabus topic; official doc or standard name
+Source 1; Source 2
 
-━━━ DIAGRAM (tech / process questions only — skip for pure Quant or Verbal) ━━━
-After "Exam tip:" and before "References:", add EITHER:
-- Mermaid flowchart (5–12 lines), e.g. graph TD with A --> B --> C
-- OR ASCII flow with arrows (-->, →)
-Label with a line "Flowchart:" before the diagram.
-Skip diagram block entirely for QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY unless a visual is essential.
+━━━ DIAGRAM RULES (Template B only) ━━━
+- "Flowchart:" on its own line immediately before Mermaid (after Exam tip, before References).
+- Only Mermaid/ASCII in the Flowchart block (5–12 lines). Never put Option breakdown or Solution steps there.
+- NEVER put graph TD or --> inside numbered Solution steps — the app treats that as a diagram and breaks layout.
 
-CRITICAL RULES:
-- NEVER give a one-line or 2-line explanation. Students expect textbook-quality solutions.
-- ALWAYS include all four options in "Option breakdown:" — each option gets its own • line.
-- Mark the correct option with "✓ CORRECT" on that bullet.
-- Show math/working on separate numbered lines (numbered steps), not crammed into one sentence.
-- Preserve \n and \n\n — the app renders them with line breaks.
+GLOBAL:
+- Minimum 400 characters per explanation
+- All four options in Option breakdown; one ✓ CORRECT
+- "References:" must be the last line
+- Consistent template choice across all 20 questions
 
 OPTIONAL VISUAL:
-- If a diagram helps beyond text, set "solutionImageUrl" to a public HTTPS image URL. Leave null if none.
+- solutionImageUrl: public HTTPS diagram URL, or null
 
-JSON SCHEMA (follow exactly):
+JSON SCHEMA:
 
 {
   "title": "...",
@@ -115,21 +115,8 @@ JSON SCHEMA (follow exactly):
   ]
 }
 
-VALID topic values (uppercase, required on every question): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
-
-topicTag (required, 2–6 words): specific sub-topic shown on result report, e.g. "Deadlock & Semaphores", "Normalization & Keys", "Paging & Virtual Memory", "SQL Joins", "OWASP Top 10"
+VALID topic: NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
 
 VALID difficulty: EASY, MEDIUM, HARD
 
-OPTIONAL mock tags:
-- mockCategory: FULL | SECTIONAL | PYQ | CHALLENGE
-- examTarget: IBPS_SO_IT | NIACL_IT | LIC_IT | GIC_IT | RBI_IT | PSU_IT_GENERAL | TCS_NQT | MIXED
-- seriesDay: 1-30 only when mockCategory is CHALLENGE
-
-Before you output, self-check EACH question:
-- explanation ≥ 400 characters
-- has "Option breakdown:" with four • Option A/B/C/D lines
-- correct option marked ✓ CORRECT
-- has "References:" line
-- tech topics include diagram OR quant topics include "Solution steps:" with ≥ 3 numbered steps
-- valid JSON only; 20 questions; topic + topicTag on every question
+Self-check EACH question: ≥400 chars; four Option lines; ✓ CORRECT; References last; Template A has Solution steps; Template B has Flowchart only under "Flowchart:"; valid JSON; 20 questions; topic + topicTag set.

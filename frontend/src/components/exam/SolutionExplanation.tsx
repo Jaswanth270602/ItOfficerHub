@@ -8,59 +8,102 @@ const SECTION_HEADERS = [
   'key distinction',
   'exam tip',
   'flowchart',
+  'mermaid',
+  'diagram',
   'references',
 ] as const
+
+const MERMAID_START =
+  /^(graph\s+(TD|LR|BT|RL)|flowchart\s+(TD|LR)|sequenceDiagram|classDiagram|stateDiagram)/i
 
 function isSectionHeader(line: string): boolean {
   const t = line.trim().replace(/:$/, '').toLowerCase()
   return SECTION_HEADERS.some((h) => t === h || t.startsWith(h + ':'))
 }
 
+function isDiagramHeaderLine(line: string): boolean {
+  const t = line.trim().toLowerCase()
+  const bare = t.replace(/:$/, '')
+  return (
+    bare === 'flowchart' ||
+    bare === 'mermaid' ||
+    bare === 'diagram' ||
+    bare.startsWith('ascii diagram') ||
+    t.startsWith('flowchart:') ||
+    t.startsWith('mermaid:') ||
+    t.startsWith('diagram:')
+  )
+}
+
+/** Lines that belong to a Mermaid/ASCII block (not general explanation prose). */
+function isDiagramContinuationLine(line: string): boolean {
+  const t = line.trim()
+  if (!t) return true
+  if (MERMAID_START.test(t)) return true
+  if (/^subgraph\b/i.test(t)) return true
+  if (/^end\s*$/i.test(t)) return true
+  if (/^style\b/i.test(t)) return true
+  if (/^classDef\b/i.test(t)) return true
+  // Mermaid edges / node lines only (avoid matching "Option A — … — INCORRECT")
+  if ((t.includes('-->') || t.includes('-.->') || /\s--\s/.test(t)) && !t.startsWith('•') && !/^option\s/i.test(t)) {
+    return /^[\s\w\[\]()"':;.#-]+$/i.test(t) || /^[A-Za-z0-9_]+\s*[\[\(]/.test(t)
+  }
+  return false
+}
+
+function findDiagramRange(lines: string[]): { start: number; end: number } | null {
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i]
+    const t = raw.trim()
+
+    if (isDiagramHeaderLine(raw)) {
+      let end = i + 1
+      while (end < lines.length) {
+        const lt = lines[end].trim().toLowerCase()
+        if (lt.startsWith('references:')) break
+        if (lines[end].trim() && isSectionHeader(lines[end]) && !isDiagramHeaderLine(lines[end])) break
+        if (lines[end].trim() && !isDiagramContinuationLine(lines[end]) && end > i + 1) break
+        end++
+      }
+      return { start: i, end: Math.max(i + 1, end) }
+    }
+
+    if (MERMAID_START.test(t)) {
+      let end = i + 1
+      while (end < lines.length) {
+        const lt = lines[end].trim().toLowerCase()
+        if (lt.startsWith('references:')) break
+        if (lines[end].trim() && isSectionHeader(lines[end])) break
+        if (lines[end].trim() && !isDiagramContinuationLine(lines[end])) break
+        end++
+      }
+      return { start: i, end: Math.max(i + 1, end) }
+    }
+  }
+  return null
+}
+
 function splitExplanation(text: string): { body: string; diagram: string | null; references: string | null } {
   const lines = text.split('\n')
-  const diagramStart = lines.findIndex((l) => {
-    const t = l.trim().toLowerCase()
-    return (
-      t === 'flowchart:' ||
-      t.startsWith('flowchart:') ||
-      t.includes('graph td') ||
-      t.includes('graph lr') ||
-      (t.includes('graph ') && !t.startsWith('core concept')) ||
-      t.includes('sequencediagram') ||
-      t.startsWith('flow:') ||
-      t.includes('ascii diagram') ||
-      (l.includes('-->') && !l.trim().startsWith('•')) ||
-      (l.includes('→') && !l.trim().startsWith('•'))
-    )
-  })
-
   const refStart = lines.findIndex((l) => l.trim().toLowerCase().startsWith('references:'))
+  const bodyEnd = refStart >= 0 ? refStart : lines.length
+  const bodySlice = lines.slice(0, bodyEnd)
 
+  const diagramRange = findDiagramRange(bodySlice)
   let diagram: string | null = null
   let references: string | null = null
 
-  if (diagramStart >= 0) {
-    let diagramEnd = diagramStart + 1
-    while (diagramEnd < lines.length) {
-      const t = lines[diagramEnd].trim().toLowerCase()
-      if (t.startsWith('references:')) break
-      diagramEnd++
-    }
-    diagram = lines.slice(diagramStart, diagramEnd).join('\n').trim() || null
+  if (diagramRange) {
+    diagram = bodySlice.slice(diagramRange.start, diagramRange.end).join('\n').trim() || null
   }
 
   if (refStart >= 0) {
     references = lines.slice(refStart).join('\n').trim() || null
   }
 
-  const bodyEnd = refStart >= 0 ? refStart : lines.length
-  let bodyLines = lines.slice(0, bodyEnd)
-  if (diagramStart >= 0 && diagramStart < bodyEnd) {
-    let diagramEnd = diagramStart + 1
-    while (diagramEnd < bodyEnd && !lines[diagramEnd].trim().toLowerCase().startsWith('references:')) {
-      diagramEnd++
-    }
-    bodyLines = [...lines.slice(0, diagramStart), ...lines.slice(diagramEnd, bodyEnd)]
+  let bodyLines = bodySlice
+  if (diagramRange) {
+    bodyLines = [...bodySlice.slice(0, diagramRange.start), ...bodySlice.slice(diagramRange.end)]
   }
 
   return {
@@ -139,7 +182,9 @@ export function SolutionExplanation({
       {diagram && (
         <div className="rounded-xl border border-neon-cyan/30 bg-cyber-950/80 p-4 overflow-x-auto mt-4">
           <p className="text-[10px] uppercase tracking-widest text-neon-cyan mb-2 font-semibold">Flowchart / diagram</p>
-          <pre className="text-sm font-mono text-emerald-200/90 leading-snug whitespace-pre">{diagram.replace(/^flowchart:\s*/i, '')}</pre>
+          <pre className="text-sm font-mono text-emerald-200/90 leading-snug whitespace-pre-wrap break-words">
+            {diagram.replace(/^(flowchart|mermaid|diagram):\s*/i, '')}
+          </pre>
         </div>
       )}
 
