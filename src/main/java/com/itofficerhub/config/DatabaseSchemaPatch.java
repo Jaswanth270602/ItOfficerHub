@@ -235,5 +235,29 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
 					""");
 			jdbc.execute("DROP TABLE attempt_answers");
 		}
+		patchQuestionsTopicCheck();
+	}
+
+	/** Align DB topic CHECK with {@link com.itofficerhub.entity.Topic} (includes aptitude enums). */
+	private void patchQuestionsTopicCheck() {
+		if (!tableExists("questions")) {
+			return;
+		}
+		try {
+			jdbc.execute("ALTER TABLE questions DROP CONSTRAINT IF EXISTS questions_topic_check");
+			jdbc.execute("""
+					ALTER TABLE questions ADD CONSTRAINT questions_topic_check CHECK (
+					    topic IS NULL OR topic IN (
+					        'NETWORKING', 'DBMS', 'OPERATING_SYSTEMS', 'SECURITY',
+					        'WEB_TECHNOLOGIES', 'DATA_STRUCTURES', 'COMPUTER_ORGANIZATION',
+					        'SOFTWARE_ENGINEERING', 'CLOUD_COMPUTING', 'DIGITAL_ELECTRONICS',
+					        'QUANTITATIVE_APTITUDE', 'LOGICAL_REASONING', 'VERBAL_ABILITY'
+					    )
+					)
+					""");
+			log.info("questions_topic_check updated for aptitude topics");
+		} catch (Exception e) {
+			log.warn("questions_topic_check patch skipped: {}", e.getMessage());
+		}
 	}
 }
