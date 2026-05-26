@@ -150,6 +150,7 @@ export function AdminMockPage() {
     try {
       const text = buildMockPrompt({
         title: metaForm.title.trim() || 'Mock',
+        description: metaForm.description.trim(),
         difficulty: metaForm.difficulty,
         questionLimit: metaForm.questionCount,
         existingCount: questions.length,

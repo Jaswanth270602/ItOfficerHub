@@ -107,6 +107,7 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
     try {
       const text = buildMockPrompt({
         title: title.trim(),
+        description: description.trim(),
         difficulty,
         questionLimit: questionCount,
         existingCount: 0,
