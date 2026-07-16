@@ -54,38 +54,40 @@ export function Layout() {
         />
       )}
 
-      <header className="border-b border-cyber-700/50 bg-cyber-900/70 backdrop-blur-lg sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
+      <header className="border-b border-cyber-700/50 bg-cyber-900/70 backdrop-blur-lg sticky top-0 z-40 pt-[env(safe-area-inset-top)] overflow-visible">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 min-h-14 sm:min-h-16 h-14 sm:h-16 flex items-center justify-between gap-2 overflow-visible">
           <AppLogo textClassName="text-base sm:text-lg" />
 
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 min-w-0 overflow-x-auto">
-            <NavLink to="/dashboard" className={navLinkClass}>
-              Dashboard
-            </NavLink>
-            <NavLink to="/study" className={navLinkClass}>
-              <span className="flex items-center gap-1">
-                <BookOpen className="h-4 w-4" /> Study Q&A
-              </span>
-            </NavLink>
-            <NavLink to="/mocks" className={navLinkClass}>
-              <span className="flex items-center gap-1">
-                <Layers className="h-4 w-4" /> Mocks
-              </span>
-            </NavLink>
-            <NavLink to="/ibps-so-2026" className={navLinkClass}>
-              <span className="flex items-center gap-1">
-                <Timer className="h-4 w-4" /> IBPS 2026
-              </span>
-            </NavLink>
-            <NavLink to="/ibps-so-it-officer" className={navLinkClass}>
-              <span className="flex items-center gap-1">
-                <GraduationCap className="h-4 w-4" /> Syllabus
-              </span>
-            </NavLink>
+          <div className="hidden lg:flex items-center gap-2 min-w-0 flex-1 justify-end">
+            <nav className="flex items-center gap-1 xl:gap-2 min-w-0 overflow-x-auto overflow-y-visible">
+              <NavLink to="/dashboard" className={navLinkClass}>
+                Dashboard
+              </NavLink>
+              <NavLink to="/study" className={navLinkClass}>
+                <span className="flex items-center gap-1">
+                  <BookOpen className="h-4 w-4" /> Study Q&A
+                </span>
+              </NavLink>
+              <NavLink to="/mocks" className={navLinkClass}>
+                <span className="flex items-center gap-1">
+                  <Layers className="h-4 w-4" /> Mocks
+                </span>
+              </NavLink>
+              <NavLink to="/ibps-so-2026" className={navLinkClass}>
+                <span className="flex items-center gap-1">
+                  <Timer className="h-4 w-4" /> IBPS 2026
+                </span>
+              </NavLink>
+              <NavLink to="/ibps-so-it-officer" className={navLinkClass}>
+                <span className="flex items-center gap-1">
+                  <GraduationCap className="h-4 w-4" /> Syllabus
+                </span>
+              </NavLink>
+            </nav>
             {isAuthenticated && user ? (
-              <UserMenu name={user.name} email={user.email} onLogout={logout} className="ml-1" />
+              <UserMenu name={user.name} email={user.email} onLogout={logout} />
             ) : (
-              <>
+              <div className="flex items-center gap-1 shrink-0">
                 <Link to="/login">
                   <Button variant="ghost" size="sm" className="cursor-pointer">
                     Login
@@ -96,9 +98,9 @@ export function Layout() {
                     Sign up
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
-          </nav>
+          </div>
 
           <div className="flex lg:hidden items-center gap-2 shrink-0">
             {isAuthenticated && user ? (

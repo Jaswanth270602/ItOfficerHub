@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { BookMarked, ChevronDown, ClipboardList, Heart, LogOut, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -23,13 +23,18 @@ const MENU_LINKS = [
   { to: '/community', label: 'Prep Mail', icon: Mail },
   { to: '/revision', label: 'Revision', icon: BookMarked },
   { to: '/history', label: 'My attempts', icon: ClipboardList },
-  { to: '/support', label: 'Support hub', icon: Heart },
+  { to: '/support', label: 'Support ITOfficerHub ❤️', icon: Heart },
 ] as const
 
 export function UserMenu({ name, email, onLogout, compact = false, className }: Props) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const menuId = useId()
+  const location = useLocation()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     if (!open) return
@@ -68,7 +73,7 @@ export function UserMenu({ name, email, onLogout, compact = false, className }: 
           className={cn(
             'flex items-center justify-center rounded-full font-semibold text-neon-cyan',
             'bg-gradient-to-br from-neon-cyan/20 to-neon-blue/25 ring-1 ring-neon-cyan/30',
-            compact ? 'h-8 w-8 text-xs' : 'h-8 w-8 text-xs'
+            'h-8 w-8 text-xs'
           )}
           aria-hidden
         >
@@ -90,8 +95,8 @@ export function UserMenu({ name, email, onLogout, compact = false, className }: 
           id={menuId}
           role="menu"
           className={cn(
-            'absolute right-0 mt-2 w-56 z-50 overflow-hidden',
-            'rounded-xl border border-cyber-700 bg-cyber-950/95 backdrop-blur-md shadow-xl shadow-black/40'
+            'absolute right-0 top-full mt-2 w-60 z-[100]',
+            'rounded-xl border border-cyber-700 bg-cyber-950 shadow-xl shadow-black/50'
           )}
         >
           <div className="px-3 py-3 border-b border-cyber-800">
@@ -112,8 +117,8 @@ export function UserMenu({ name, email, onLogout, compact = false, className }: 
                 }
                 onClick={() => setOpen(false)}
               >
-                <Icon className={to === '/support' ? 'h-4 w-4 text-rose-400' : 'h-4 w-4 text-slate-500'} />
-                {label}
+                <Icon className={to === '/support' ? 'h-4 w-4 text-rose-400 shrink-0' : 'h-4 w-4 text-slate-500 shrink-0'} />
+                <span className="leading-snug">{label}</span>
               </Link>
             ))}
           </div>
