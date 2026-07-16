@@ -72,7 +72,7 @@ const EXAM_BADGES = [
   { label: 'PSU IT', href: '/mocks', className: 'border-neon-blue/45 bg-neon-blue/10 text-neon-blue' },
   { label: 'NIACL / LIC', href: '/ibps-so-it-officer', className: 'border-amber-500/40 bg-amber-500/10 text-amber-300' },
   { label: 'GIC / RBI IT', href: '/mocks', className: 'border-violet-500/40 bg-violet-500/10 text-violet-300' },
-  { label: 'TCS NQT', href: '/tcs-nqt', className: 'border-neon-purple/45 bg-neon-purple/10 text-neon-purple' },
+  { label: 'IBPS SO 2026', href: '/ibps-so-2026', className: 'border-neon-purple/45 bg-neon-purple/10 text-neon-purple' },
 ] as const
 
 const MOTTO_SLIDES: MottoSlide[] = [
@@ -263,9 +263,9 @@ export function LandingPage() {
                   Daily mock
                 </Button>
               </Link>
-              <Link to="/tcs-nqt" className="w-full sm:w-auto">
+              <Link to="/ibps-so-2026" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="cursor-pointer gap-2 w-full min-h-[48px]">
-                  <GraduationCap className="h-5 w-5 shrink-0" /> TCS NQT aptitude
+                  <GraduationCap className="h-5 w-5 shrink-0" /> IBPS SO 2026
                 </Button>
               </Link>
               <Link to="/mocks" className="w-full sm:w-auto">

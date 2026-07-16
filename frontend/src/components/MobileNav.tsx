@@ -7,14 +7,13 @@ import { cn } from '@/lib/utils'
 import {
   BookMarked,
   BookOpen,
-  Building2,
   ClipboardList,
   GraduationCap,
   Home,
   Layers,
-  LogOut,
   Mail,
   Menu,
+  Timer,
   User,
 } from 'lucide-react'
 
@@ -26,7 +25,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 
 export function MobileHeaderMenu() {
   const [open, setOpen] = useState(false)
-  const { user, logout, isAuthenticated } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const location = useLocation()
 
   const close = () => setOpen(false)
@@ -50,7 +49,7 @@ export function MobileHeaderMenu() {
             <DialogTitle className="text-left">Menu</DialogTitle>
             {user?.name && <p className="text-sm text-slate-400 text-left">{user.name}</p>}
           </DialogHeader>
-          <nav className="flex-1 overflow-y-auto p-3 space-y-1" onClick={close}>
+          <nav className="flex-1 overflow-y-auto p-3 space-y-1 pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={close}>
             <NavLink to="/dashboard" className={linkClass}>
               <Home className="h-5 w-5" /> Dashboard
             </NavLink>
@@ -60,8 +59,8 @@ export function MobileHeaderMenu() {
             <NavLink to="/mocks" className={linkClass}>
               <Layers className="h-5 w-5" /> Mocks
             </NavLink>
-            <NavLink to="/tcs-nqt" className={linkClass}>
-              <Building2 className="h-5 w-5" /> TCS NQT
+            <NavLink to="/ibps-so-2026" className={linkClass}>
+              <Timer className="h-5 w-5" /> IBPS 2026
             </NavLink>
             <NavLink to="/ibps-so-it-officer" className={linkClass}>
               <GraduationCap className="h-5 w-5" /> Syllabus
@@ -89,17 +88,9 @@ export function MobileHeaderMenu() {
               </>
             )}
           </nav>
-          {isAuthenticated && (
-            <div className="p-4 border-t border-cyber-700 shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <Button variant="outline" className="w-full cursor-pointer gap-2" onClick={() => { logout(); close() }}>
-                <LogOut className="h-4 w-4" /> Logout
-              </Button>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
 
-      {/* Suppress duplicate active state flash when menu closed */}
       <span className="sr-only" aria-live="polite">
         {location.pathname}
       </span>

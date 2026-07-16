@@ -3,18 +3,15 @@ import { useAuth } from '@/lib/auth'
 import { MobileBottomNav, MobileHeaderMenu } from '@/components/MobileNav'
 import { LogoutThankYouModal } from '@/components/community/LogoutThankYouModal'
 import { CommunityWelcomeModal } from '@/components/community/CommunityWelcomeModal'
+import { UserMenu } from '@/components/UserMenu'
 import { Button } from './ui/button'
 import { AppLogo } from '@/components/AppLogo'
 import {
-  BookMarked,
   BookOpen,
-  Building2,
-  ClipboardList,
   GraduationCap,
   Layers,
-  LogOut,
-  Mail,
   ShieldCheck,
+  Timer,
   Trophy,
   Users,
 } from 'lucide-react'
@@ -75,9 +72,9 @@ export function Layout() {
                 <Layers className="h-4 w-4" /> Mocks
               </span>
             </NavLink>
-            <NavLink to="/tcs-nqt" className={navLinkClass}>
+            <NavLink to="/ibps-so-2026" className={navLinkClass}>
               <span className="flex items-center gap-1">
-                <Building2 className="h-4 w-4" /> TCS NQT
+                <Timer className="h-4 w-4" /> IBPS 2026
               </span>
             </NavLink>
             <NavLink to="/ibps-so-it-officer" className={navLinkClass}>
@@ -85,30 +82,8 @@ export function Layout() {
                 <GraduationCap className="h-4 w-4" /> Syllabus
               </span>
             </NavLink>
-            {isAuthenticated ? (
-              <>
-                <NavLink to="/community" className={navLinkClass}>
-                  <span className="flex items-center gap-1">
-                    <Mail className="h-4 w-4" /> Prep Mail
-                  </span>
-                </NavLink>
-                <NavLink to="/revision" className={navLinkClass}>
-                  <span className="flex items-center gap-1">
-                    <BookMarked className="h-4 w-4" /> Revision
-                  </span>
-                </NavLink>
-                <NavLink to="/history" className={navLinkClass}>
-                  <span className="flex items-center gap-1">
-                    <ClipboardList className="h-4 w-4" /> History
-                  </span>
-                </NavLink>
-                <span className="text-xs text-slate-500 hidden xl:inline truncate max-w-[100px]" title={user?.name}>
-                  {user?.name}
-                </span>
-                <Button variant="ghost" size="sm" className="cursor-pointer shrink-0" onClick={() => logout()} aria-label="Logout">
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </>
+            {isAuthenticated && user ? (
+              <UserMenu name={user.name} email={user.email} onLogout={logout} className="ml-1" />
             ) : (
               <>
                 <Link to="/login">
@@ -126,7 +101,9 @@ export function Layout() {
           </nav>
 
           <div className="flex lg:hidden items-center gap-2 shrink-0">
-            {!isAuthenticated && (
+            {isAuthenticated && user ? (
+              <UserMenu name={user.name} email={user.email} onLogout={logout} compact />
+            ) : (
               <Link to="/login">
                 <Button size="sm" className="cursor-pointer text-xs h-8 px-2">
                   Login
@@ -163,7 +140,7 @@ export function Layout() {
               <Users className="h-6 w-6 text-neon-cyan" />
               <p className="text-sm font-medium text-white">Built for aspirants</p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                IBPS SO IT, PSU IT &amp; TCS NQT — by IT officers, for IT officers
+                IBPS SO IT 2026 &amp; PSU IT — by IT officers, for IT officers
               </p>
             </div>
           </div>
@@ -177,8 +154,8 @@ export function Layout() {
             <Link to="/mocks" className="text-slate-400 hover:text-white py-1">
               IBPS SO IT Mocks
             </Link>
-            <Link to="/tcs-nqt" className="text-slate-400 hover:text-white py-1">
-              TCS NQT Aptitude
+            <Link to="/ibps-so-2026" className="text-slate-400 hover:text-white py-1">
+              IBPS SO 2026
             </Link>
             <Link to="/ibps-so-it-officer" className="text-slate-400 hover:text-white py-1">
               Syllabus &amp; pattern
@@ -195,7 +172,7 @@ export function Layout() {
           </nav>
           <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 text-xs sm:text-sm text-slate-500 text-center">
             <span>© {new Date().getFullYear()} ItOfficerHub — IT Officer Hub</span>
-            <span>Free IBPS SO IT &amp; TCS NQT mocks · P +2 · N 0.5 · 25 Q</span>
+            <span>IBPS SO IT 2026 mocks · P +2 · N 0.5 · 25 Q</span>
           </div>
         </div>
       </footer>
