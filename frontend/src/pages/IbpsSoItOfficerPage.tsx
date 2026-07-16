@@ -10,9 +10,10 @@ import {
   PRELIMS_PATTERN,
   MAINS_PATTERN,
   IMPORTANT_DATES_2026,
-  VACANCY_SUMMARY_LAST_CYCLE,
+  VACANCY_BANKWISE_IT_2026,
   ELIGIBILITY_EDUCATION,
   ELIGIBILITY_AGE,
+  APPLICATION_FEE,
   PK_SYLLABUS_TOPICS,
   PRELIMS_CUTOFF_2025,
   MAINS_CUTOFF_2025,
@@ -64,7 +65,9 @@ function DataTable({
               key={i}
               className={cn(
                 'border-t border-cyber-800/80',
-                i === rows.length - 1 && row[0] === 'Total' ? 'bg-neon-blue/5 font-medium text-white' : 'text-slate-400'
+                i === rows.length - 1 || row[0] === 'Total' || row[0]?.toLowerCase().includes('total')
+                  ? 'bg-neon-blue/5 font-medium text-white'
+                  : 'text-slate-400'
               )}
             >
               {row.map((cell, j) => (
@@ -112,7 +115,7 @@ export function IbpsSoItOfficerPage() {
         '@type': 'Article',
         headline: 'IBPS SO IT Officer Exam Pattern, Syllabus & Cut-offs',
         description:
-          'Complete guide to IBPS Specialist Officer IT stream — prelims, mains professional knowledge, interview, eligibility, salary and previous cut-offs.',
+          'IBPS SO IT Officer 2026 (CRP SPL-XVI) guide — revised prelims and mains exam pattern, 301 IT vacancies, eligibility, salary and previous cut-offs.',
         url: 'https://itofficerhub.in/ibps-so-it-officer',
         author: { '@type': 'Organization', name: 'ItOfficerHub' },
         publisher: { '@type': 'Organization', name: 'ItOfficerHub', url: 'https://itofficerhub.in' },
@@ -126,15 +129,15 @@ export function IbpsSoItOfficerPage() {
             name: 'How many stages are in the IBPS SO IT Officer exam?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Three stages: Preliminary exam (English, Reasoning, Quant), Main exam (Professional Knowledge — 60 MCQs), and Interview. Final merit uses 80% mains and 20% interview.',
+              text: 'Three stages: Preliminary exam (English, Reasoning, Quant, and Professional Knowledge), Main exam (multi-section objective + English descriptive), and Interview. Final merit uses 80% mains and 20% interview; within mains, only Professional Knowledge counts for merit.',
             },
           },
           {
             '@type': 'Question',
-            name: 'What is the IBPS SO IT Officer mains exam pattern?',
+            name: 'What is the IBPS SO IT Officer mains exam pattern 2026?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'One objective paper — Professional Knowledge with 60 questions, 60 marks, 45 minutes, bilingual (English and Hindi). Wrong answers carry a 0.25 negative mark.',
+              text: 'Objective sections: English (30 Q/30 marks), Reasoning (40/40), Quantitative Aptitude (30/30), Professional Knowledge (50 Q/100 marks), plus a descriptive English paper (25 marks). Total 225 marks in 155 minutes. Non-PK sections are qualifying; merit is from Professional Knowledge only.',
             },
           },
           {
@@ -155,8 +158,8 @@ export function IbpsSoItOfficerPage() {
       <Seo
         path="/ibps-so-it-officer"
         title="IBPS SO IT Officer Syllabus, Exam Pattern & Cut-off 2026"
-        description="IBPS SO IT Officer syllabus and exam pattern — prelims, mains professional knowledge topics, eligibility, salary, 2025 cut-offs. Subject-wise CN, DBMS, OS prep on ItOfficerHub."
-        keywords="IBPS SO IT Officer, IBPS SO IT exam pattern, IBPS IT Officer syllabus, IBPS SO IT cut off, IBPS Specialist Officer IT, IT Officer Scale 1, IBPS SO 2026, professional knowledge IT officer"
+        description="IBPS SO IT Officer 2026 (CRP SPL-XVI) — revised prelims & mains pattern, 301 IT vacancies, syllabus, eligibility, salary & 2025 cut-offs. Free PK mocks on ItOfficerHub."
+        keywords="IBPS SO IT Officer 2026, IBPS SO IT exam pattern revised, IBPS IT Officer syllabus, IBPS SO IT cut off, IBPS Specialist Officer IT, IT Officer Scale 1, CRP SPL-XVI, professional knowledge IT officer"
         jsonLd={jsonLd}
       />
 
@@ -164,15 +167,15 @@ export function IbpsSoItOfficerPage() {
         {/* Hero */}
         <header className="mb-10">
           <p className="text-xs font-medium uppercase tracking-widest text-neon-cyan mb-2">
-            Official pattern · Updated for 2026 cycle
+            CRP SPL-XVI · Notification out · Revised pattern 2026
           </p>
           <h1 className="page-title max-w-3xl leading-tight">
             IBPS SO IT Officer — syllabus, exam pattern &amp; cut-offs
           </h1>
           <p className="page-subtitle max-w-2xl mt-3 text-base leading-relaxed">
             Everything you need about the <strong className="text-slate-200">Information Technology</strong> stream under
-            IBPS Specialist Officer recruitment — stages, marks, syllabus, eligibility, and recent cut-offs. Cross-check
-            dates on{' '}
+            IBPS Specialist Officer (CRP SPL-XVI) — revised prelims &amp; mains pattern, 301 IT vacancies, dates,
+            eligibility, and previous cut-offs. Always verify on{' '}
             <a
               href={IBPS_OFFICIAL_URL}
               target="_blank"
@@ -180,8 +183,8 @@ export function IbpsSoItOfficerPage() {
               className="text-neon-cyan hover:underline inline-flex items-center gap-0.5"
             >
               ibps.in <ExternalLink className="h-3 w-3" />
-            </a>{' '}
-            when the notification drops.
+            </a>
+            .
           </p>
           <div className="flex flex-wrap gap-3 mt-6">
             <Link to="/mocks">
@@ -255,8 +258,8 @@ export function IbpsSoItOfficerPage() {
 
             <Section id="dates" title="Important dates (2026 cycle)" icon={Calendar}>
               <p className="text-sm text-slate-400 mb-4">
-                Per the IBPS exam calendar, CRP SPL-XVI prelims and mains are tentatively scheduled as below. Registration
-                windows will be announced with the official notification.
+                As per the IBPS SO Notification 2026 (CRP SPL-XVI). Online applications: 1–21 July 2026. Prelims on 29
+                August; Mains on 1 November.
               </p>
               <div className="space-y-2">
                 {IMPORTANT_DATES_2026.map((row) => (
@@ -271,26 +274,41 @@ export function IbpsSoItOfficerPage() {
               </div>
             </Section>
 
-            <Section id="pattern" title="Exam pattern" icon={FileText}>
+            <Section id="pattern" title="Exam pattern (revised 2026)" icon={FileText}>
+              <Card className="border-amber-500/25 bg-amber-950/10 mb-6">
+                <CardContent className="pt-4 flex gap-3 text-sm text-slate-300">
+                  <AlertCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                  <p>
+                    Pattern changed for CRP SPL-XVI: Prelims now includes <strong className="text-white">Professional Knowledge</strong>{' '}
+                    (25 Q / 50 marks). Mains is a multi-section paper (objective + descriptive) — only{' '}
+                    <strong className="text-white">Professional Knowledge</strong> counts for mains merit; other sections are
+                    qualifying.
+                  </p>
+                </CardContent>
+              </Card>
               <p className="text-sm text-slate-400 mb-6">
-                Selection has three stages. You must clear sectional and overall cut-offs in prelims to reach mains, then
-                mains cut-off for interview. Interview qualifying marks are typically <strong className="text-slate-200">40%</strong>{' '}
-                for general and <strong className="text-slate-200">35%</strong> for reserved categories (on 100 marks).
+                Selection has three stages. Clear prelims to reach mains, then mains cut-off for interview. Interview
+                qualifying marks are typically <strong className="text-slate-200">40%</strong> for general and{' '}
+                <strong className="text-slate-200">35%</strong> for reserved categories (on 100 marks).
               </p>
 
               <h3 className="text-base font-medium text-white mb-3">Stage 1 — Preliminary</h3>
               <p className="text-sm text-slate-500 mb-3">
-                Three objective tests, online. Sectional timing applies — you cannot switch sections early. Total{' '}
-                <strong className="text-slate-300">125 marks</strong> from 150 questions.
+                Four objective sections with sectional timing (20 minutes each). Total{' '}
+                <strong className="text-slate-300">100 questions · 125 marks · 80 minutes</strong>.
               </p>
               <DataTable headers={PRELIMS_PATTERN.headers} rows={PRELIMS_PATTERN.rows} className="mb-8" />
 
-              <h3 className="text-base font-medium text-white mb-3">Stage 2 — Main (Professional Knowledge)</h3>
+              <h3 className="text-base font-medium text-white mb-3">Stage 2 — Main Examination</h3>
               <p className="text-sm text-slate-500 mb-3">
-                Only IT core topics — networking, DBMS, OS, security, software engineering, etc. This is where most
-                aspirants using ItOfficerHub focus their prep.
+                Objective paper (English, Reasoning, Quant, Professional Knowledge) plus a descriptive English paper.
+                Duration <strong className="text-slate-300">{MAINS_PATTERN.duration}</strong>. Grand total{' '}
+                <strong className="text-slate-300">225 marks</strong>.
               </p>
-              <DataTable headers={MAINS_PATTERN.headers} rows={MAINS_PATTERN.rows} className="mb-8" />
+              <DataTable headers={MAINS_PATTERN.headers} rows={MAINS_PATTERN.rows} className="mb-3" />
+              <p className="text-sm text-neon-cyan/90 mb-8 border border-neon-cyan/20 rounded-lg px-4 py-3 bg-neon-cyan/5">
+                {MAINS_PATTERN.note}
+              </p>
 
               <h3 className="text-base font-medium text-white mb-3">Stage 3 — Interview</h3>
               <Card className="border-cyber-700">
@@ -299,8 +317,9 @@ export function IbpsSoItOfficerPage() {
                     Conducted by participating public sector banks. Maximum marks <strong className="text-white">100</strong>.
                   </p>
                   <p>
-                    <strong className="text-slate-200">Final merit</strong> = normalized mains score (weight 80) + interview
-                    score (weight 20). Provisional allotment follows category-wise merit and vacancies.
+                    <strong className="text-slate-200">Final merit</strong> = Mains (weight 80) + Interview (weight 20). Within
+                    Mains, only Professional Knowledge contributes to the score used for merit. Provisional allotment
+                    follows category-wise merit and vacancies.
                   </p>
                 </CardContent>
               </Card>
@@ -308,9 +327,8 @@ export function IbpsSoItOfficerPage() {
 
             <Section id="syllabus" title="Syllabus &amp; IT topics" icon={BookOpen}>
               <p className="text-sm text-slate-400 mb-4">
-                ItOfficerHub focuses on <strong className="text-slate-200">professional knowledge (IT)</strong> — the
-                technical section for IBPS SO IT and PSU IT papers. Prelims (English, reasoning, quant) are listed under
-                exam pattern above; below is what we cover for mains and mocks.
+                ItOfficerHub focuses on <strong className="text-slate-200">professional knowledge (IT)</strong> — now tested
+                in both Prelims (25 Q / 50 marks) and Mains (50 Q / 100 marks). Below is what we cover for PK prep and mocks.
               </p>
 
               <Card className="mb-6 border-neon-cyan/30">
@@ -410,10 +428,10 @@ export function IbpsSoItOfficerPage() {
                   </CardHeader>
                   <CardContent className="text-sm text-slate-400 space-y-3">
                     <p>
-                      Usually <strong className="text-white">{ELIGIBILITY_AGE.min}–{ELIGIBILITY_AGE.max} years</strong>{' '}
-                      (born between dates specified in the notification).
+                      <strong className="text-white">{ELIGIBILITY_AGE.min}–{ELIGIBILITY_AGE.max} years</strong> as on{' '}
+                      <strong className="text-slate-200">{ELIGIBILITY_AGE.asOn}</strong>.
                     </p>
-                    <p className="text-xs text-slate-500">Upper age relaxation (indicative):</p>
+                    <p className="text-xs text-slate-500">Upper age relaxation:</p>
                     <ul className="space-y-1">
                       {ELIGIBILITY_AGE.relaxations.map((r) => (
                         <li key={r.category} className="flex justify-between gap-4 border-b border-cyber-800/80 py-1.5">
@@ -425,27 +443,42 @@ export function IbpsSoItOfficerPage() {
                   </CardContent>
                 </Card>
               </div>
+              <Card className="border-cyber-700 mt-6">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Application fee</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-sm text-slate-400 space-y-2">
+                    {APPLICATION_FEE.map((row) => (
+                      <li key={row.category} className="flex justify-between gap-4 border-b border-cyber-800/80 py-1.5 last:border-0">
+                        <span>{row.category}</span>
+                        <span className="text-slate-300 shrink-0">{row.fee}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             </Section>
 
-            <Section id="vacancies" title="Vacancies" icon={Landmark}>
+            <Section id="vacancies" title="Vacancies (IT Officer 2026)" icon={Landmark}>
               <p className="text-sm text-slate-400 mb-4">
-                Vacancy numbers are released bank-wise in the IBPS SO notification. Last recruitment cycle had{' '}
-                <strong className="text-slate-200">170 indicative posts</strong> for IT Officer across participating banks
-                (e.g. significant intake in Punjab National Bank). Treat 2026 numbers as unknown until the PDF is live.
+                CRP SPL-XVI announced <strong className="text-slate-200">301 IT Officer (Scale I)</strong> posts across
+                participating banks (total SO vacancies: 745). Bank-wise IT intake below; some banks reported NR in the
+                summary tables.
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg">
-                {VACANCY_SUMMARY_LAST_CYCLE.map((v) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl">
+                {VACANCY_BANKWISE_IT_2026.map((v) => (
                   <div
-                    key={v.category}
+                    key={v.bank}
                     className={cn(
                       'rounded-lg border px-3 py-3 text-center',
-                      v.category.includes('Total')
+                      v.bank.includes('Total')
                         ? 'border-neon-cyan/40 bg-neon-cyan/5 col-span-2 sm:col-span-3'
                         : 'border-cyber-700/60 bg-cyber-900/30'
                     )}
                   >
                     <p className="text-2xl font-bold text-white tabular-nums">{v.count}</p>
-                    <p className="text-xs text-slate-500 mt-1">{v.category}</p>
+                    <p className="text-xs text-slate-500 mt-1">{v.bank}</p>
                   </div>
                 ))}
               </div>
@@ -479,8 +512,8 @@ export function IbpsSoItOfficerPage() {
             <Section id="cutoffs" title="Previous cut-offs (IT Officer)" icon={FileText}>
               <p className="text-sm text-slate-400 mb-6">
                 Cut-offs change every year with paper difficulty and vacancies. Figures below are from{' '}
-                <strong className="text-slate-200">IBPS SO 2025</strong> official scorecards — use them for rough targets,
-                not guarantees.
+                <strong className="text-slate-200">IBPS SO 2025</strong> (old pattern — prelims without PK; mains 60 marks
+                PK only). Use them for rough targets only; 2026 revised pattern will produce different score distributions.
               </p>
 
               <h3 className="text-sm font-medium text-white mb-2">Prelims — overall (out of 125)</h3>

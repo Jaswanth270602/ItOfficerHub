@@ -1,48 +1,65 @@
-/** Static reference data for /ibps-so-it-officer — align with official IBPS notifications when they release. */
+/** Static reference data for /ibps-so-it-officer — CRP SPL-XVI (IBPS SO 2026) notification. */
 
 export const IBPS_OFFICIAL_URL = 'https://www.ibps.in/'
 
 export const HIGHLIGHTS = [
   { label: 'Conducting body', value: 'Institute of Banking Personnel Selection (IBPS)' },
-  { label: 'Post', value: 'Specialist Officer — IT Officer (Scale I)' },
-  { label: 'Selection stages', value: 'Prelims → Mains (Professional Knowledge) → Interview' },
-  { label: 'Prelims (tentative)', value: '29 August 2026 · 125 marks · 2 hours' },
-  { label: 'Mains (tentative)', value: '1 November 2026 · 60 marks · 45 minutes' },
-  { label: 'Final merit', value: '80% Mains + 20% Interview (out of 100 each stage scaled)' },
+  { label: 'Exam / post', value: 'CRP SPL-XVI — IT Officer (Scale I)' },
+  { label: 'Selection stages', value: 'Prelims → Mains → Interview' },
+  { label: 'Prelims', value: '29 August 2026 · 100 Q · 125 marks · 80 minutes' },
+  { label: 'Mains', value: '1 November 2026 · 225 marks · 155 minutes' },
+  { label: 'Final merit', value: '80% Mains + 20% Interview (Mains merit from Professional Knowledge only)' },
   { label: 'Negative marking', value: '0.25 marks deducted per wrong answer (objective papers)' },
-  { label: 'Last cycle vacancies (IT)', value: '170 (indicative — check new notification)' },
+  { label: 'IT Officer vacancies (2026)', value: '301 posts (Scale I)' },
 ] as const
 
+/** Prelims pattern for IT Officer (also AFO / HR / Marketing) — CRP SPL-XVI revised. */
 export const PRELIMS_PATTERN = {
-  headers: ['Test', 'Medium', 'Questions', 'Marks', 'Duration'],
+  headers: ['Subject', 'Questions', 'Marks', 'Duration'],
   rows: [
-    ['English Language', 'English only', '50', '25', '40 min'],
-    ['Reasoning', 'English & Hindi', '50', '50', '40 min'],
-    ['Quantitative Aptitude', 'English & Hindi', '50', '50', '40 min'],
-    ['Total', '—', '150', '125', '2 hours'],
+    ['English Language', '25', '25', '20 min'],
+    ['Reasoning', '25', '25', '20 min'],
+    ['Quantitative Aptitude', '25', '25', '20 min'],
+    ['Professional Knowledge (IT)', '25', '50', '20 min'],
+    ['Total', '100', '125', '80 minutes'],
   ],
 } as const
 
+/** Mains pattern for IT Officer (also AFO / HR / Marketing) — CRP SPL-XVI revised. */
 export const MAINS_PATTERN = {
-  headers: ['Test', 'Questions', 'Marks', 'Medium', 'Duration'],
-  rows: [['Professional Knowledge (IT)', '60', '60', 'English & Hindi', '45 minutes']],
+  headers: ['Section', 'Questions', 'Marks'],
+  rows: [
+    ['English Language', '30', '30'],
+    ['Reasoning', '40', '40'],
+    ['Quantitative Aptitude', '30', '30'],
+    ['Professional Knowledge — Objective (IT)', '50', '100'],
+    ['Objective test total', '150', '200'],
+    ['Descriptive Paper (English — 2 questions)', '—', '25'],
+    ['Grand total', '150 + Descriptive', '225'],
+  ],
+  duration: '155 minutes',
+  note: 'All sections except Professional Knowledge are qualifying. Mains merit for final selection is based only on Professional Knowledge marks.',
 } as const
 
 export const IMPORTANT_DATES_2026 = [
-  { event: 'Notification & online registration', date: 'Expected June 2026 (per IBPS calendar)' },
-  { event: 'Application fee payment', date: 'As per notification' },
-  { event: 'Preliminary exam', date: '29 August 2026 (tentative)' },
-  { event: 'Main exam', date: '1 November 2026 (tentative)' },
-  { event: 'Interview', date: 'After mains result — participating banks' },
+  { event: 'Notification released', date: '30 June 2026' },
+  { event: 'Online registration', date: '1 July – 21 July 2026' },
+  { event: 'Application correction window', date: '22 – 23 July 2026' },
+  { event: 'Preliminary exam', date: '29 August 2026' },
+  { event: 'Prelims result', date: 'September – October 2026' },
+  { event: 'Main exam', date: '1 November 2026' },
+  { event: 'Personality test & interview', date: 'November – December 2026' },
+  { event: 'Provisional allotment', date: 'January 2027' },
 ] as const
 
-export const VACANCY_SUMMARY_LAST_CYCLE = [
-  { category: 'Unreserved (UR)', count: 72 },
-  { category: 'OBC (NCL)', count: 45 },
-  { category: 'SC', count: 25 },
-  { category: 'ST', count: 12 },
-  { category: 'EWS', count: 16 },
-  { category: 'Total (IT stream)', count: 170 },
+/** Bank-wise IT Officer (Scale I) vacancies — CRP SPL-XVI. NR = not reported in summary tables. */
+export const VACANCY_BANKWISE_IT_2026 = [
+  { bank: 'Bank of India', count: 110 },
+  { bank: 'Punjab National Bank', count: 100 },
+  { bank: 'Central Bank of India', count: 50 },
+  { bank: 'Indian Overseas Bank', count: 25 },
+  { bank: 'Punjab & Sind Bank', count: 16 },
+  { bank: 'Total (IT Officer)', count: 301 },
 ] as const
 
 export const ELIGIBILITY_EDUCATION = [
@@ -54,13 +71,20 @@ export const ELIGIBILITY_EDUCATION = [
 export const ELIGIBILITY_AGE = {
   min: 20,
   max: 30,
+  asOn: '1 July 2026',
   relaxations: [
     { category: 'SC / ST', years: '+5' },
     { category: 'OBC (NCL)', years: '+3' },
     { category: 'Persons with benchmark disability', years: '+10' },
     { category: 'Ex-servicemen', years: '+5' },
+    { category: 'Affected by 1984 riots', years: '+5' },
   ],
 } as const
+
+export const APPLICATION_FEE = [
+  { category: 'General & Others', fee: '₹850 (incl. intimation charges)' },
+  { category: 'SC / ST / PwD', fee: '₹175 (intimation charges only)' },
+] as const
 
 export const PK_SYLLABUS_TOPICS = [
   'Software fundamentals & engineering',
