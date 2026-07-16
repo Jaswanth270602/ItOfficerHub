@@ -1,7 +1,12 @@
 /** Extract and validate Claude/mock import JSON from pasted text (handles fences + chat prose). */
 
-/** Minimum explanation length (matches server import validation). */
-export const MOCK_EXPLANATION_MIN_CHARS = 200
+import {
+  composeStoredExplanation,
+  extractOptionExplains,
+  hasAllOptionExplains,
+  type OptionExplainMap,
+  type OptionLetter,
+} from '@/lib/composeExplanation'
 
 const VALID_TOPICS = new Set([
   'NETWORKING',
@@ -99,12 +104,71 @@ function looksLikeChatProse(text: string): boolean {
   return (
     !/"questions"\s*:/.test(text) &&
     (lower.includes('here is') ||
-      lower.includes('here\'s') ||
+      lower.includes("here's") ||
       lower.includes('getelementby') ||
       lower.includes('queryselector') ||
       lower.includes('let me') ||
-      text.length > 500 && !text.trimStart().startsWith('{'))
+      (text.length > 500 && !text.trimStart().startsWith('{')))
   )
+}
+
+function readOptionMap(q: Record<string, unknown>): OptionExplainMap {
+  const nested = q.optionExplanations
+  const fromNested: OptionExplainMap = {}
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    for (const letter of ['A', 'B', 'C', 'D'] as OptionLetter[]) {
+      const v = (nested as Record<string, unknown>)[letter] ?? (nested as Record<string, unknown>)[letter.toLowerCase()]
+      if (typeof v === 'string' && v.trim()) fromNested[letter] = v.trim()
+    }
+  }
+  return {
+    A: typeof q.explainA === 'string' ? q.explainA : fromNested.A,
+    B: typeof q.explainB === 'string' ? q.explainB : fromNested.B,
+    C: typeof q.explainC === 'string' ? q.explainC : fromNested.C,
+    D: typeof q.explainD === 'string' ? q.explainD : fromNested.D,
+  }
+}
+
+/** Normalize one question: compose explanation, drop nested helpers the API does not need. */
+export function normalizeImportQuestion(raw: Record<string, unknown>, index: number): Record<string, unknown> {
+  const optionMap = readOptionMap(raw)
+  const legacyExp = typeof raw.explanation === 'string' ? raw.explanation : ''
+  const fromLegacy = extractOptionExplains(legacyExp)
+  const merged: OptionExplainMap = {
+    A: optionMap.A || fromLegacy.A,
+    B: optionMap.B || fromLegacy.B,
+    C: optionMap.C || fromLegacy.C,
+    D: optionMap.D || fromLegacy.D,
+  }
+
+  const explanation = composeStoredExplanation({
+    explanation: legacyExp,
+    explainA: merged.A,
+    explainB: merged.B,
+    explainC: merged.C,
+    explainD: merged.D,
+  })
+
+  const orderIndex =
+    typeof raw.orderIndex === 'number' && Number.isFinite(raw.orderIndex) ? raw.orderIndex : index + 1
+
+  return {
+    questionText: raw.questionText,
+    optionA: raw.optionA,
+    optionB: raw.optionB,
+    optionC: raw.optionC,
+    optionD: raw.optionD,
+    correctOption: String(raw.correctOption ?? '').trim().toUpperCase(),
+    explanation,
+    explainA: merged.A ?? null,
+    explainB: merged.B ?? null,
+    explainC: merged.C ?? null,
+    explainD: merged.D ?? null,
+    solutionImageUrl: raw.solutionImageUrl ?? null,
+    topic: typeof raw.topic === 'string' ? raw.topic.trim().toUpperCase() : raw.topic,
+    topicTag: raw.topicTag ?? null,
+    orderIndex,
+  }
 }
 
 function validateQuestions(questions: unknown[]): { warnings: string[]; errors: string[] } {
@@ -132,28 +196,30 @@ function validateQuestions(questions: unknown[]): { warnings: string[]; errors: 
     const topic = String(q.topic ?? '').trim().toUpperCase()
     if (!topic) errors.push(`Question ${n}: "topic" is required.`)
     else if (!VALID_TOPICS.has(topic)) warnings.push(`Question ${n}: topic "${topic}" may be rejected by server.`)
-    const exp = String(q.explanation ?? '')
-    if (exp.length < MOCK_EXPLANATION_MIN_CHARS) {
-      warnings.push(
-        `Question ${n}: explanation is ${exp.length} chars (import needs ≥${MOCK_EXPLANATION_MIN_CHARS} with Option breakdown).`
-      )
-    } else if (exp.length < 350) {
-      warnings.push(`Question ${n}: explanation is ${exp.length} chars (short — consider expanding for students).`)
-    } else if (!exp.toLowerCase().includes('option breakdown')) {
-      warnings.push(`Question ${n}: add an "Option breakdown:" section in explanation.`)
+
+    const optionMap = readOptionMap(q)
+    const legacyExp = String(q.explanation ?? '')
+    const merged = {
+      A: optionMap.A || extractOptionExplains(legacyExp).A,
+      B: optionMap.B || extractOptionExplains(legacyExp).B,
+      C: optionMap.C || extractOptionExplains(legacyExp).C,
+      D: optionMap.D || extractOptionExplains(legacyExp).D,
+    }
+    const main = legacyExp.trim()
+    if (!main && !hasAllOptionExplains(merged)) {
+      errors.push(`Question ${n}: add "explanation" plus explainA–explainD (or optionExplanations).`)
+    } else if (!hasAllOptionExplains(merged)) {
+      errors.push(`Question ${n}: need explainA, explainB, explainC, and explainD (one short reason each).`)
+    } else if (!main) {
+      warnings.push(`Question ${n}: missing short "explanation" — using option reasons only.`)
     }
   })
 
   return { warnings, errors }
 }
 
-/** Fill missing orderIndex as 1..N (server does this too; keeps Claude output consistent). */
 export function normalizeQuestionOrder(questions: Record<string, unknown>[]): Record<string, unknown>[] {
-  return questions.map((q, i) => ({
-    ...q,
-    orderIndex:
-      typeof q.orderIndex === 'number' && Number.isFinite(q.orderIndex) ? q.orderIndex : i + 1,
-  }))
+  return questions.map((q, i) => normalizeImportQuestion(q, i))
 }
 
 export function parseMockImportJson(raw: string): ParseImportResult {

@@ -1,6 +1,6 @@
 # Quiz Import Format
 
-See the full reference in the project repo: `docs/QUIZ_IMPORT_FORMAT.md`
+See the full reference: `docs/QUIZ_IMPORT_FORMAT.md`
 
 Quick shape to paste in Admin → **Import Mock**:
 
@@ -9,6 +9,8 @@ Quick shape to paste in Admin → **Import Mock**:
   "title": "IBPS SO IT Officer - Mock Title",
   "description": "Optional",
   "difficulty": "MEDIUM",
+  "questionCount": 25,
+  "timeLimitMinutes": 20,
   "questions": [
     {
       "questionText": "Your question?",
@@ -17,8 +19,13 @@ Quick shape to paste in Admin → **Import Mock**:
       "optionC": "Option 3",
       "optionD": "Option 4",
       "correctOption": "B",
-      "explanation": "Why B is correct",
+      "explanation": "Why B is correct (1–3 sentences).",
+      "explainA": "Why A is wrong.",
+      "explainB": "Why B is correct.",
+      "explainC": "Why C is wrong.",
+      "explainD": "Why D is wrong.",
       "topic": "NETWORKING",
+      "topicTag": "Subnetting",
       "orderIndex": 1
     }
   ]
@@ -27,6 +34,6 @@ Quick shape to paste in Admin → **Import Mock**:
 
 **difficulty:** `EASY` | `MEDIUM` | `HARD`  
 **correctOption:** `A` | `B` | `C` | `D`  
-**topic (optional):** `NETWORKING`, `DBMS`, `OPERATING_SYSTEMS`, `SECURITY`, `WEB_TECHNOLOGIES`, `DATA_STRUCTURES`, `COMPUTER_ORGANIZATION`, `SOFTWARE_ENGINEERING`, `CLOUD_COMPUTING`, `DIGITAL_ELECTRONICS`
+**topic (required):** `NETWORKING`, `DBMS`, `OPERATING_SYSTEMS`, `SECURITY`, `WEB_TECHNOLOGIES`, `DATA_STRUCTURES`, `COMPUTER_ORGANIZATION`, `SOFTWARE_ENGINEERING`, `CLOUD_COMPUTING`, `DIGITAL_ELECTRONICS`
 
-Use 20 questions per mock for the standard exam pattern.
+Standard mock: **25 questions · 50 marks (+2 each) · 20 minutes · −0.5 wrong**.

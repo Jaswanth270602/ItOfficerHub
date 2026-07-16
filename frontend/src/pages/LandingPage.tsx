@@ -97,7 +97,7 @@ const MOTTO_SLIDES: MottoSlide[] = [
     accent: 'emerald',
   },
   {
-    quote: 'Real P +1 / N −0.25 marking. Real timer. Real exam pressure.',
+    quote: 'Real P +2 / N −0.5 marking. Real timer. Real exam pressure.',
     tag: 'Exam-accurate mocks',
     accent: 'amber',
   },

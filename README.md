@@ -1,6 +1,6 @@
 # ItOfficerHub
 
-Free mock test platform for **IBPS SO IT Officer** exams — 20 questions, 15 minutes, +1 / −0.25 marking, percentile ranking, Prep Mail community.
+Free mock test platform for **IBPS SO IT Officer** exams — 25 questions, 50 marks (+2 each), 20 minutes, −0.5 negative marking, percentile ranking, Prep Mail community.
 
 ## Tech stack
 

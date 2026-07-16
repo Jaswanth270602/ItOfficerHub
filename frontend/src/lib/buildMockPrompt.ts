@@ -7,11 +7,6 @@ function esc(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, ' ')
 }
 
-/** Escape multi-line explanation for JSON example inside the prompt. */
-function escJson(s: string): string {
-  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r\n/g, '\n').replace(/\n/g, '\\n').replace(/\r/g, '')
-}
-
 const TOPIC_INFERENCE: { topic: string; label: string; keywords: string[] }[] = [
   { topic: 'DATA_STRUCTURES', label: 'Data Structures', keywords: ['data structure', 'data structures', 'algorithm', 'sorting', 'linked list', 'binary tree', 'graph', 'bfs', 'dfs', 'stack', 'queue', 'heap', 'hash table'] },
   { topic: 'DBMS', label: 'DBMS', keywords: ['dbms', 'sql', 'normalization', 'transaction', 'acid', 'indexing', 'er diagram', 'relational', 'join', 'query'] },
@@ -56,22 +51,39 @@ function buildTopicDirective(
     return `Derive the single syllabus topic from the mock TITLE and DESCRIPTION above. Use that topic enum on EVERY question (do not mix unrelated chapters).`
   }
 
-  return 'NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES (spread evenly, 2–4 Q each unless title implies one subject)'
+  return 'NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES (spread evenly)'
 }
 
-function exampleQuestionBlock(focusTopic: string | null, startIdx: number): {
+function exampleQuestionBlock(focusTopic: string | null): {
   topic: string
   topicTag: string
   questionText: string
+  optionA: string
+  optionB: string
+  optionC: string
+  optionD: string
+  correctOption: string
   explanation: string
+  explainA: string
+  explainB: string
+  explainC: string
+  explainD: string
 } {
   if (focusTopic === 'DATA_STRUCTURES') {
     return {
       topic: 'DATA_STRUCTURES',
       topicTag: 'Stacks & Queues',
       questionText: 'Which data structure is most suitable for implementing undo/redo operations in an application?',
-      explanation:
-        'Core concept:\\n• Undo/redo needs LIFO access to the most recent action first.\\n\\nOption breakdown:\\n• Option A — Queue — INCORRECT because queues are FIFO, not LIFO\\n• Option B — Stack — ✓ CORRECT — stacks provide LIFO push/pop ideal for undo\\n• Option C — Binary tree — INCORRECT because trees are not required for simple sequential undo\\n• Option D — Hash table — INCORRECT because hashing solves lookup, not ordered reversal\\n\\nKey distinction:\\n• Stack = LIFO; Queue = FIFO — do not swap in MCQs\\n\\nExam tip:\\n• Undo/redo, DFS, expression evaluation → think Stack first\\n\\nReferences: CLRS; IBPS SO IT — Data Structures',
+      optionA: 'Queue',
+      optionB: 'Stack',
+      optionC: 'Binary tree',
+      optionD: 'Hash table',
+      correctOption: 'B',
+      explanation: 'Undo/redo needs last-in-first-out access so the most recent action can be reversed first.',
+      explainA: 'Queues are FIFO — the oldest item comes out first, which does not match undo order.',
+      explainB: 'Stacks are LIFO — push/pop of recent actions fits undo/redo perfectly.',
+      explainC: 'Trees organise hierarchical data; they are not required for simple sequential undo.',
+      explainD: 'Hash tables optimise lookup by key, not ordered reversal of actions.',
     }
   }
   if (focusTopic === 'DBMS') {
@@ -79,43 +91,52 @@ function exampleQuestionBlock(focusTopic: string | null, startIdx: number): {
       topic: 'DBMS',
       topicTag: 'Normalization & Keys',
       questionText: 'Which normal form removes partial dependency on a composite primary key?',
-      explanation:
-        'Core concept:\\n• 2NF applies when a table is in 1NF and non-key attributes depend on the whole key.\\n\\nOption breakdown:\\n• Option A — 1NF — INCORRECT because 1NF only removes repeating groups\\n• Option B — 2NF — ✓ CORRECT — eliminates partial dependency on part of a composite key\\n• Option C — 3NF — INCORRECT because 3NF removes transitive dependency\\n• Option D — BCNF — INCORRECT because BCNF is stricter than 3NF\\n\\nExam tip:\\n• Partial → 2NF; Transitive → 3NF\\n\\nReferences: Codd normal forms; IBPS SO IT — DBMS',
+      optionA: '1NF',
+      optionB: '2NF',
+      optionC: '3NF',
+      optionD: 'BCNF',
+      correctOption: 'B',
+      explanation: '2NF builds on 1NF by requiring every non-key attribute to depend on the whole composite key.',
+      explainA: '1NF only removes repeating groups / ensures atomic values.',
+      explainB: '2NF eliminates partial dependency on part of a composite key.',
+      explainC: '3NF removes transitive dependency, not partial dependency.',
+      explainD: 'BCNF is stricter than 3NF; it is not the form that introduces partial-dependency removal.',
     }
   }
-  // Default networking example only when focus is networking or unknown full mock
   return {
     topic: focusTopic ?? 'NETWORKING',
     topicTag: focusTopic === 'NETWORKING' || !focusTopic ? 'IP Addressing & Subnetting' : 'Core concepts',
     questionText:
       focusTopic === 'NETWORKING' || !focusTopic
-        ? 'A subnet mask 255.255.255.192 is used on network 192.168.10.0/24. How many usable host addresses per subnet?'
+        ? 'A subnet mask 255.255.255.192 is used. How many usable host addresses are there per subnet?'
         : 'Sample question stem aligned to the mock title and description?',
+    optionA: focusTopic === 'NETWORKING' || !focusTopic ? '30' : 'Option A text',
+    optionB: focusTopic === 'NETWORKING' || !focusTopic ? '62' : 'Option B text',
+    optionC: focusTopic === 'NETWORKING' || !focusTopic ? '126' : 'Option C text',
+    optionD: focusTopic === 'NETWORKING' || !focusTopic ? '254' : 'Option D text',
+    correctOption: 'B',
     explanation:
       focusTopic === 'NETWORKING' || !focusTopic
-        ? 'Core concept:\\n• Usable hosts = 2^h − 2.\\n\\nSolution steps:\\n1. /26 mask gives h = 6 host bits\\n2. 2^6 = 64 addresses\\n3. Usable = 64 − 2 = 62\\n4. Matches Option B\\n\\nOption breakdown:\\n• Option A — 30 — INCORRECT\\n• Option B — 62 — ✓ CORRECT\\n• Option C — 126 — INCORRECT\\n• Option D — 254 — INCORRECT\\n\\nCommon trap:\\n• Forgetting to subtract network and broadcast\\n\\nExam tip:\\n• /26 → 62 usable hosts\\n\\nReferences: RFC 950; IBPS SO IT — Networking'
-        : 'Core concept:\\n• ...\\n\\nOption breakdown:\\n• Option A — ... — INCORRECT\\n• Option B — ... — INCORRECT\\n• Option C — ✓ CORRECT — ...\\n• Option D — ... — INCORRECT\\n\\nExam tip:\\n• ...\\n\\nReferences: IBPS SO IT syllabus',
+        ? 'Mask 255.255.255.192 is /26, so there are 6 host bits: 2^6 − 2 = 62 usable hosts.'
+        : 'State the core rule in one or two sentences.',
+    explainA:
+      focusTopic === 'NETWORKING' || !focusTopic
+        ? '30 usable hosts belong to /27 (5 host bits), not /26.'
+        : 'Why A is wrong (one short sentence).',
+    explainB:
+      focusTopic === 'NETWORKING' || !focusTopic
+        ? 'Correct: /26 → 64 addresses − network − broadcast = 62.'
+        : 'Why B is correct (one short sentence).',
+    explainC:
+      focusTopic === 'NETWORKING' || !focusTopic
+        ? '126 usable hosts belong to /25, not /26.'
+        : 'Why C is wrong (one short sentence).',
+    explainD:
+      focusTopic === 'NETWORKING' || !focusTopic
+        ? '254 usable hosts belong to /24, not /26.'
+        : 'Why D is wrong (one short sentence).',
   }
 }
-
-/** Shared explanation rules — imported mocks render section-by-section in the result UI. */
-const EXPLANATION_RULES = `
-EXPLANATION FORMAT (mandatory — the app parses section headers; wrong order breaks the UI):
-
-Use literal \\\\n between lines in JSON. Put a blank line (\\\\n\\\\n) between every section.
-
-Pick exactly ONE template per question. Copy section headers verbatim (same spelling, trailing colon).
-
-━━━ TEMPLATE A — Calculation / numerical ━━━
-Core concept → Solution steps (numbered, no →/--> on steps) → Option breakdown → Common trap → Exam tip → References
-
-━━━ TEMPLATE B — Conceptual ━━━
-Core concept → Option breakdown → Key distinction → Exam tip → References (Flowchart optional before References)
-
-━━━ GLOBAL ━━━
-- Minimum 200 characters per explanation; four options in Option breakdown; one ✓ CORRECT; References: last line
-- Flowchart optional (~30–50% of conceptual Qs only); never fake diagrams
-`
 
 export function buildMockPrompt(opts: {
   title: string
@@ -136,7 +157,7 @@ export function buildMockPrompt(opts: {
   const description = (opts.description ?? '').trim() || `IBPS SO IT — ${title}`
   const focusTopic = inferMockTopicFocus(title, description)
   const topicDirective = buildTopicDirective(batchSize, mockCategory, focusTopic, opts.topics)
-  const ex = exampleQuestionBlock(focusTopic, startIdx)
+  const ex = exampleQuestionBlock(focusTopic)
 
   if (batchSize === 0) {
     return `This mock already has ${opts.questionLimit} questions (limit reached). Increase question limit in mock settings or delete questions first.`
@@ -162,7 +183,7 @@ MOCK METADATA (copy into JSON exactly — do not invent different title/descript
 
 CONTENT SCOPE (mandatory):
 - Every question MUST match the mock title and description above.
-- Do NOT generate questions from unrelated chapters (e.g. no networking/subnetting if the mock is Data Structures).
+- Do NOT generate questions from unrelated chapters.
 - topic / topicTag on each row must fit this mock's subject.
 
 SYLLABUS TOPICS FOR THIS BATCH:
@@ -172,9 +193,15 @@ QUESTION RULES:
 - Exactly ${batchSize} items in "questions"
 - orderIndex: ${startIdx} through ${endIdx}
 - 4 options A–D; exactly one correct (correctOption: "A"|"B"|"C"|"D")
-- Every question MUST have "topic" (uppercase enum) AND "topicTag" (2–6 words, specific sub-topic)
+- Every question MUST have "topic" (uppercase enum) AND "topicTag" (2–6 words)
 - IBPS SO IT style; no duplicate stems
-${EXPLANATION_RULES}
+- Keep text short and plain — NO flowcharts, Mermaid, ASCII diagrams, or "References" sections
+
+EXPLANATION FIELDS (simple — do not write long templates):
+- "explanation": 1–3 sentences on why the correct answer is right
+- "explainA", "explainB", "explainC", "explainD": one short sentence each (why that option is right or wrong)
+- No other explanation format is required
+
 VALID topic enum values:
 NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DATA_STRUCTURES, COMPUTER_ORGANIZATION, SOFTWARE_ENGINEERING, CLOUD_COMPUTING, DIGITAL_ELECTRONICS, QUANTITATIVE_APTITUDE, LOGICAL_REASONING, VERBAL_ABILITY
 
@@ -190,13 +217,16 @@ JSON TEMPLATE (use exact title/description above; example row shows format for T
   "questions": [
     {
       "questionText": "${esc(ex.questionText)}",
-      "optionA": "...",
-      "optionB": "...",
-      "optionC": "...",
-      "optionD": "...",
-      "correctOption": "B",
-      "explanation": "${escJson(ex.explanation)}",
-      "solutionImageUrl": null,
+      "optionA": "${esc(ex.optionA)}",
+      "optionB": "${esc(ex.optionB)}",
+      "optionC": "${esc(ex.optionC)}",
+      "optionD": "${esc(ex.optionD)}",
+      "correctOption": "${ex.correctOption}",
+      "explanation": "${esc(ex.explanation)}",
+      "explainA": "${esc(ex.explainA)}",
+      "explainB": "${esc(ex.explainB)}",
+      "explainC": "${esc(ex.explainC)}",
+      "explainD": "${esc(ex.explainD)}",
       "topic": "${ex.topic}",
       "topicTag": "${esc(ex.topicTag)}",
       "orderIndex": ${startIdx}
@@ -206,8 +236,8 @@ JSON TEMPLATE (use exact title/description above; example row shows format for T
 
 SELF-CHECK:
 [ ] JSON title and description match MOCK METADATA exactly
-[ ] All ${batchSize} questions match "${esc(title)}" — not random mixed syllabus
-[ ] topic field follows SYLLABUS TOPICS FOR THIS BATCH
-[ ] orderIndex ${startIdx}–${endIdx}; valid JSON; Option breakdown on every question
+[ ] All ${batchSize} questions match "${esc(title)}"
+[ ] Every question has explanation + explainA + explainB + explainC + explainD
+[ ] orderIndex ${startIdx}–${endIdx}; valid JSON only
 `
 }

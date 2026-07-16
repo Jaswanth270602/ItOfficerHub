@@ -30,8 +30,8 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
   const [difficulty, setDifficulty] = useState('MEDIUM')
   const [examTarget, setExamTarget] = useState('IBPS_SO_IT')
   const [mockCategory, setMockCategory] = useState('FULL')
-  const [questionCount, setQuestionCount] = useState(20)
-  const [timeLimitMinutes, setTimeLimitMinutes] = useState(15)
+  const [questionCount, setQuestionCount] = useState(25)
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState(20)
   const [seriesDay, setSeriesDay] = useState('')
   const [nextCode, setNextCode] = useState('')
   const [nextCodeLoading, setNextCodeLoading] = useState(false)
@@ -185,8 +185,8 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
       setError(msg)
       if (isWafBlockedResponse(err)) {
         setHint(WAF_IMPORT_HINT)
-      } else if (msg.toLowerCase().includes('explanation')) {
-        setHint('Claude must add Option breakdown for A–D, References line, and at least 200 characters per explanation. Flowchart is optional.')
+      } else if (msg.toLowerCase().includes('explain')) {
+        setHint('Each question needs explanation + explainA, explainB, explainC, explainD (one short sentence each). No flowcharts or References required.')
       } else if (msg.toLowerCase().includes('topic')) {
         setHint('Use uppercase topic codes from the prompt (e.g. NETWORKING, DBMS).')
       }
@@ -228,7 +228,7 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
               <input
                 id="mock-desc"
                 className={inputClass}
-                placeholder="20 Q · 15 min · mixed syllabus"
+                placeholder="25 Q · 20 min · PK section pattern"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -242,7 +242,7 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
                 max={100}
                 className={inputClass}
                 value={questionCount}
-                onChange={(e) => setQuestionCount(Number(e.target.value) || 20)}
+                onChange={(e) => setQuestionCount(Number(e.target.value) || 25)}
               />
               <p className="text-xs text-slate-500 mt-1">Claude prompt uses this count.</p>
             </div>
@@ -255,7 +255,7 @@ export function ImportMockModal({ open, onOpenChange, onSuccess }: Props) {
                 max={180}
                 className={inputClass}
                 value={timeLimitMinutes}
-                onChange={(e) => setTimeLimitMinutes(Number(e.target.value) || 15)}
+                onChange={(e) => setTimeLimitMinutes(Number(e.target.value) || 20)}
               />
             </div>
             <div>

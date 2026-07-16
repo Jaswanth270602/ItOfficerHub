@@ -169,8 +169,8 @@ export function DashboardPage() {
     else navigate(`/login?redirect=${encodeURIComponent(target)}`)
   }
 
-  const pMark = overview?.marksPerCorrect ?? 1
-  const nMark = overview?.marksPerWrong ?? 0.25
+  const pMark = overview?.marksPerCorrect ?? 2
+  const nMark = overview?.marksPerWrong ?? 0.5
 
   return (
     <>
@@ -202,8 +202,9 @@ export function DashboardPage() {
             <div className="flex flex-wrap gap-2 mt-5">
               <MarkingPill label="P marks" value={`+${pMark}`} tone="green" />
               <MarkingPill label="N marks" value={`-${nMark}`} tone="red" />
-              <MarkingPill label="Duration" value="15 min" tone="green" />
-              <MarkingPill label="Questions" value="20" tone="green" />
+              <MarkingPill label="Duration" value="20 min" tone="green" />
+              <MarkingPill label="Questions" value="25" tone="green" />
+              <MarkingPill label="Max marks" value="50" tone="green" />
             </div>
           </div>
           {overview?.platformStats && (

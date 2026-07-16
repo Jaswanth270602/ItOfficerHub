@@ -1,10 +1,10 @@
 package com.itofficerhub.service;
 
-/** IBPS-style: +1 per correct, −0.25 per wrong, 0 for unattempted */
+/** IBPS SO IT PK-style: +2 per correct, −0.5 per wrong (¼ of marks), 0 for unattempted */
 public final class ExamScoring {
 
-	public static final double MARKS_PER_CORRECT = 1.0;
-	public static final double NEGATIVE_PER_WRONG = 0.25;
+	public static final double MARKS_PER_CORRECT = 2.0;
+	public static final double NEGATIVE_PER_WRONG = 0.5;
 
 	private ExamScoring() {}
 

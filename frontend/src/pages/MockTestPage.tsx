@@ -45,9 +45,9 @@ export function MockTestPage() {
   const [attemptId, setAttemptId] = useState<number | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
   const [title, setTitle] = useState('')
-  const [timeLimit, setTimeLimit] = useState(15)
-  const [marksCorrect, setMarksCorrect] = useState(1)
-  const [marksWrong, setMarksWrong] = useState(0.25)
+  const [timeLimit, setTimeLimit] = useState(20)
+  const [marksCorrect, setMarksCorrect] = useState(2)
+  const [marksWrong, setMarksWrong] = useState(0.5)
   const [current, setCurrent] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [marked, setMarked] = useState<Record<number, boolean>>({})
@@ -126,8 +126,8 @@ export function MockTestPage() {
         setQuestions(r.data.questions)
         setTitle(r.data.mockTitle)
         setTimeLimit(r.data.timeLimitMinutes)
-        setMarksCorrect(r.data.marksPerCorrect ?? 1)
-        setMarksWrong(r.data.negativePerWrong ?? 0.25)
+        setMarksCorrect(r.data.marksPerCorrect ?? 2)
+        setMarksWrong(r.data.negativePerWrong ?? 0.5)
         const total = r.data.timeLimitMinutes * 60
         setTotalSeconds(total)
 

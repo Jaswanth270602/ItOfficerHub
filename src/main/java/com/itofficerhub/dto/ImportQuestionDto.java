@@ -10,6 +10,11 @@ public record ImportQuestionDto(
 		@NotBlank String optionD,
 		@NotBlank String correctOption,
 		String explanation,
+		/** Short reason for option A (preferred over long free-text templates). */
+		String explainA,
+		String explainB,
+		String explainC,
+		String explainD,
 		String solutionImageUrl,
 		String topic,
 		Integer orderIndex,

@@ -195,7 +195,7 @@ export function Layout() {
           </nav>
           <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 text-xs sm:text-sm text-slate-500 text-center">
             <span>© {new Date().getFullYear()} ItOfficerHub — IT Officer Hub</span>
-            <span>Free IBPS SO IT &amp; TCS NQT mocks · P +1 · N 0.25</span>
+            <span>Free IBPS SO IT &amp; TCS NQT mocks · P +2 · N 0.5 · 25 Q</span>
           </div>
         </div>
       </footer>

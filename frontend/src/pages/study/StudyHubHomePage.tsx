@@ -73,7 +73,7 @@ export function StudyHubHomePage() {
           <Layers className="h-8 w-8 text-neon-purple shrink-0" />
           <div>
             <p className="font-medium text-white text-sm">Ready for timed mocks?</p>
-            <p className="text-xs text-slate-500">20 Q · rank · daily mock at midnight IST</p>
+            <p className="text-xs text-slate-500">25 Q · 50 marks · daily mock at midnight IST</p>
           </div>
         </div>
         <Link to="/mocks">

@@ -2,90 +2,24 @@ You are a senior IBPS Specialist Officer (IT Officer) content author building mo
 
 CRITICAL: Reply with ONE raw JSON object ONLY. First character { last character }. No markdown fences. No text before or after JSON. No chat explanations.
 
-TASK: Generate exactly 20 MCQs as ONE JSON object with a "questions" array.
+TASK: Generate exactly 25 MCQs as ONE JSON object with a "questions" array.
 
 MOCK SETTINGS (edit these 3 lines only):
 - title: "IBPS SO IT Officer — Networking & Security Mock 1"
 - difficulty: MEDIUM
-- topics (spread evenly, 2–4 Q each): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES
+- topics (spread evenly): NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES
 
 EXAM RULES:
 - 4 options A–D per question; exactly ONE correct (correctOption: "A"|"B"|"C"|"D")
 - IBPS SO IT syllabus style; practical traps; no duplicate stems
-- orderIndex 1 through 20
+- orderIndex 1 through 25
 - Every question MUST have "topic" (syllabus chapter) AND "topicTag" (specific sub-topic, 2–6 words)
 
-EXPLANATION FORMAT (mandatory — ItOfficerHub parses section headers; wrong order puts text in the wrong UI box):
+EXPLANATION (keep simple — NO flowcharts, Mermaid, ASCII diagrams, or References sections):
+- "explanation": 1–3 sentences on why the correct answer is right
+- "explainA", "explainB", "explainC", "explainD": one short sentence each (why that option is right or wrong)
 
-Use literal \n in JSON for line breaks. Use blank lines (\n\n) between sections.
-
-Pick exactly ONE template per question. Section headers must match exactly (spelling + colon).
-
-━━━ TEMPLATE A — Calculation / subnetting / numerical ━━━
-Use for subnetting, complexity, Boolean algebra, formulas, any worked math.
-
-Core concept:
-• One bullet: what is being tested
-
-Solution steps:
-1. Formula or rule (do NOT use arrows → or Mermaid --> on numbered lines)
-2. Substitute values
-3. Intermediate calculation
-4. Final result and matching option letter
-
-Option breakdown:
-• Option A — [meaning] — INCORRECT because [reason]
-• Option B — [meaning] — INCORRECT because [reason]
-• Option C — [meaning] — ✓ CORRECT — matches step 4
-• Option D — [meaning] — INCORRECT because [reason]
-
-Common trap:
-• Typical IBPS mistake in one bullet
-
-Exam tip:
-• Memory hook (→ allowed only inside • bullets, not in numbered steps)
-
-References:
-Source 1; Source 2
-
-(No Flowchart needed for most calculation questions.)
-
-━━━ TEMPLATE B — Conceptual / definition / protocol ━━━
-
-Core concept:
-• 2–3 bullets in plain English
-
-Option breakdown:
-• Option A — [simplified] — INCORRECT because [reason]
-• Option B — [simplified] — INCORRECT because [reason]
-• Option C — [simplified] — ✓ CORRECT because [why it fits]
-• Option D — [simplified] — INCORRECT because [reason]
-
-Key distinction:
-• Compare the closest trap pair
-
-Exam tip:
-• Quick recall line
-
-References:
-Source 1; Source 2
-
-━━━ FLOWCHART (OPTIONAL — not required for import) ━━━
-- Use on ~30–50% of questions where a process flow genuinely helps (handshakes, SQL pipeline, OSI layer flow, etc.).
-- Skip entirely when prose + Option breakdown is enough — the server imports without any diagram.
-- NEVER add a placeholder/fake Flowchart on every question.
-- When included: after Exam tip, add "Flowchart:" then Mermaid (graph TD, 5–12 lines, all edges together), then References.
-- NEVER put teaching text inside the Flowchart block; NEVER use --> or graph TD inside numbered Solution steps.
-
-GLOBAL (required for import):
-- Minimum 200 characters per explanation (400+ recommended)
-- All four options in Option breakdown; one ✓ CORRECT
-- "References:" must be the last line
-
-OPTIONAL:
-- solutionImageUrl: public HTTPS diagram URL, or null
-
-JSON SCHEMA (example without flowchart — valid for import):
+JSON SCHEMA:
 
 {
   "title": "...",
@@ -94,6 +28,8 @@ JSON SCHEMA (example without flowchart — valid for import):
   "mockCategory": "FULL",
   "examTarget": "IBPS_SO_IT",
   "seriesDay": null,
+  "questionCount": 25,
+  "timeLimitMinutes": 20,
   "questions": [
     {
       "questionText": "Which normal form removes partial dependency?",
@@ -102,8 +38,11 @@ JSON SCHEMA (example without flowchart — valid for import):
       "optionC": "3NF",
       "optionD": "BCNF",
       "correctOption": "B",
-      "explanation": "Core concept:\n• 2NF applies to tables in 1NF and removes partial dependency on a composite key.\n\nOption breakdown:\n• Option A — 1NF — INCORRECT because 1NF only removes repeating groups\n• Option B — 2NF — ✓ CORRECT because partial dependency is eliminated at 2NF\n• Option C — 3NF — INCORRECT because 3NF removes transitive dependency, not partial\n• Option D — BCNF — INCORRECT because BCNF is stricter than 3NF\n\nKey distinction:\n• 2NF vs 3NF: partial vs transitive dependency\n\nExam tip:\n• Remember order: 1NF → 2NF → 3NF → BCNF\n\nReferences: Codd normal forms; IBPS SO IT — DBMS",
-      "solutionImageUrl": null,
+      "explanation": "2NF requires non-key attributes to depend on the whole composite key, which removes partial dependency.",
+      "explainA": "1NF only ensures atomic values / removes repeating groups.",
+      "explainB": "Correct — 2NF eliminates partial dependency on part of a composite key.",
+      "explainC": "3NF removes transitive dependency, not partial dependency.",
+      "explainD": "BCNF is stricter than 3NF; it is not the form that introduces partial-dependency removal.",
       "topic": "DBMS",
       "topicTag": "Normalization & Keys",
       "orderIndex": 1
@@ -115,4 +54,4 @@ VALID topic: NETWORKING, DBMS, OPERATING_SYSTEMS, SECURITY, WEB_TECHNOLOGIES, DA
 
 VALID difficulty: EASY, MEDIUM, HARD
 
-Self-check EACH question: ≥200 chars; four Option lines; ✓ CORRECT; References last; Flowchart only when it adds real value (optional); valid JSON; 20 questions; topic + topicTag set.
+Self-check EACH question: explanation + explainA–D present; topic + topicTag set; valid JSON; 25 questions.

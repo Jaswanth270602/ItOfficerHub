@@ -80,8 +80,8 @@ export function AdminMockPage() {
     difficulty: 'MEDIUM',
     examTarget: 'IBPS_SO_IT',
     mockCategory: 'FULL',
-    questionCount: 20,
-    timeLimitMinutes: 15,
+    questionCount: 25,
+    timeLimitMinutes: 20,
     allowRetake: false,
   })
   const [questions, setQuestions] = useState<Question[]>([])
@@ -300,7 +300,7 @@ export function AdminMockPage() {
                 max={100}
                 className="mt-1"
                 value={metaForm.questionCount}
-                onChange={(e) => setMetaForm((s) => ({ ...s, questionCount: Number(e.target.value) || 20 }))}
+                onChange={(e) => setMetaForm((s) => ({ ...s, questionCount: Number(e.target.value) || 25 }))}
               />
             </div>
             <div>
@@ -312,7 +312,7 @@ export function AdminMockPage() {
                 max={180}
                 className="mt-1"
                 value={metaForm.timeLimitMinutes}
-                onChange={(e) => setMetaForm((s) => ({ ...s, timeLimitMinutes: Number(e.target.value) || 15 }))}
+                onChange={(e) => setMetaForm((s) => ({ ...s, timeLimitMinutes: Number(e.target.value) || 20 }))}
               />
             </div>
           </div>

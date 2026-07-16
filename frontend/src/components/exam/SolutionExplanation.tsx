@@ -1,233 +1,11 @@
 import { cn } from '@/lib/utils'
+import {
+  extractMainExplanation,
+  extractOptionExplains,
+  type OptionLetter,
+} from '@/lib/composeExplanation'
 
-const SECTION_HEADERS = [
-  'core concept',
-  'solution steps',
-  'option breakdown',
-  'common trap',
-  'key distinction',
-  'exam tip',
-  'flowchart',
-  'mermaid',
-  'diagram',
-  'references',
-] as const
-
-const MERMAID_START =
-  /^(graph\s+(TD|LR|BT|RL)|flowchart\s+(TD|LR)|sequenceDiagram|classDiagram|stateDiagram)/i
-
-function isSectionHeader(line: string): boolean {
-  const t = line.trim().replace(/:$/, '').toLowerCase()
-  return SECTION_HEADERS.some((h) => t === h || t.startsWith(h + ':'))
-}
-
-function isDiagramHeaderLine(line: string): boolean {
-  const t = line.trim().toLowerCase()
-  const bare = t.replace(/:$/, '')
-  return (
-    bare === 'flowchart' ||
-    bare === 'mermaid' ||
-    bare === 'diagram' ||
-    bare.startsWith('ascii diagram') ||
-    t.startsWith('flowchart:') ||
-    t.startsWith('mermaid:') ||
-    t.startsWith('diagram:')
-  )
-}
-
-function isProseLine(line: string): boolean {
-  const t = line.trim()
-  if (!t) return false
-  if (t.startsWith('•')) return true
-  if (/^option\s+[A-D]/i.test(t)) return true
-  if (/^\d+\.\s/.test(t)) return true
-  if (isSectionHeader(line) && !isDiagramHeaderLine(line)) return true
-  return false
-}
-
-function isMermaidLine(line: string): boolean {
-  const t = line.trim()
-  if (!t) return false
-  if (MERMAID_START.test(t)) return true
-  if (isDiagramHeaderLine(line)) return true
-  if (/^subgraph\b/i.test(t)) return true
-  if (/^end\s*$/i.test(t)) return true
-  if (/^style\b/i.test(t)) return true
-  if (/^classDef\b/i.test(t)) return true
-  if (/-->/.test(t) || /-.->/.test(t) || /---/.test(t)) {
-    if (t.startsWith('•')) return false
-    if (/^option\s+[A-D]/i.test(t)) return false
-    return true
-  }
-  if (/^[A-Za-z0-9_]+\s*[\[\(]/.test(t)) return true
-  return false
-}
-
-function findDiagramRange(lines: string[]): { start: number; end: number } | null {
-  let start = -1
-  for (let i = 0; i < lines.length; i++) {
-    if (isDiagramHeaderLine(lines[i]) || MERMAID_START.test(lines[i].trim())) {
-      start = i
-      break
-    }
-  }
-  if (start < 0) return null
-
-  let end = start + 1
-  while (end < lines.length) {
-    const raw = lines[end]
-    const t = raw.trim().toLowerCase()
-    if (t.startsWith('references:')) break
-    if (raw.trim() && isSectionHeader(raw) && !isDiagramHeaderLine(raw)) break
-    if (raw.trim() && isProseLine(raw)) break
-    if (!raw.trim()) {
-      end++
-      continue
-    }
-    if (!isMermaidLine(raw) && end > start + 1) break
-    end++
-  }
-
-  return { start, end: Math.max(start + 1, end) }
-}
-
-/** Pull stray Mermaid lines out of the teaching body into the diagram block. */
-function extractStrayMermaidFromBody(
-  body: string,
-  diagram: string | null
-): { body: string; diagram: string | null } {
-  const lines = body.split('\n')
-  const kept: string[] = []
-  const stray: string[] = []
-
-  for (const line of lines) {
-    if (line.trim() && isMermaidLine(line) && !isDiagramHeaderLine(line)) {
-      stray.push(line)
-    } else {
-      kept.push(line)
-    }
-  }
-
-  if (stray.length === 0) {
-    return { body: body.trim(), diagram }
-  }
-
-  const bodyOut = kept
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
-
-  const parts = [...stray]
-  if (diagram) parts.push(diagram)
-
-  return { body: bodyOut, diagram: orderDiagramLines(parts.join('\n')) }
-}
-
-function orderDiagramLines(text: string): string {
-  const lines = text.split('\n').filter((l) => l.trim() && !isDiagramHeaderLine(l))
-  if (lines.length === 0) return text.trim()
-
-  const graphIdx = lines.findIndex((l) => MERMAID_START.test(l.trim()))
-  if (graphIdx < 0) return lines.join('\n').trim()
-
-  const graphLine = lines[graphIdx]
-  const edges = lines.filter((l, i) => i !== graphIdx && (/-->/.test(l) || /-.->/.test(l)))
-  const rest = lines.filter((l, i) => i !== graphIdx && !edges.includes(l))
-
-  return [graphLine, ...edges, ...rest].join('\n').trim()
-}
-
-function normalizeDiagramText(raw: string): string {
-  return raw
-    .split('\n')
-    .filter((l) => !isDiagramHeaderLine(l) || MERMAID_START.test(l.replace(/^[^:]+:\s*/, '').trim()))
-    .join('\n')
-    .replace(/^(flowchart|mermaid|diagram):\s*/gim, '')
-    .trim()
-}
-
-function splitExplanation(text: string): { body: string; diagram: string | null; references: string | null } {
-  const lines = text.split('\n')
-  const refStart = lines.findIndex((l) => l.trim().toLowerCase().startsWith('references:'))
-  const bodyEnd = refStart >= 0 ? refStart : lines.length
-  const bodySlice = lines.slice(0, bodyEnd)
-
-  const diagramRange = findDiagramRange(bodySlice)
-  let diagram: string | null = null
-  let references: string | null = null
-
-  if (diagramRange) {
-    diagram = normalizeDiagramText(bodySlice.slice(diagramRange.start, diagramRange.end).join('\n')) || null
-  }
-
-  if (refStart >= 0) {
-    references = lines.slice(refStart).join('\n').trim() || null
-  }
-
-  let bodyLines = bodySlice
-  if (diagramRange) {
-    bodyLines = [...bodySlice.slice(0, diagramRange.start), ...bodySlice.slice(diagramRange.end)]
-  }
-
-  const merged = extractStrayMermaidFromBody(bodyLines.join('\n').trim(), diagram)
-  diagram = merged.diagram ? orderDiagramLines(merged.diagram) : null
-
-  return { body: merged.body, diagram, references }
-}
-
-function optionLineClass(line: string, correctOption?: string): string | null {
-  const m = line.match(/option\s*([A-D])/i)
-  if (!m) return null
-  const letter = m[1].toUpperCase()
-  const isCorrect = line.includes('✓') || line.toUpperCase().includes('CORRECT')
-  if (isCorrect || letter === correctOption?.toUpperCase()) {
-    return 'border-l-2 border-emerald-500/70 pl-3 text-emerald-100/95'
-  }
-  if (line.toUpperCase().includes('INCORRECT') || line.includes('✗')) {
-    return 'border-l-2 border-red-500/40 pl-3 text-slate-300'
-  }
-  return 'border-l-2 border-cyber-600 pl-3 text-slate-200'
-}
-
-function renderBodyLine(line: string, index: number, correctOption?: string) {
-  const trimmed = line.trim()
-  if (!trimmed) return <div key={`sp-${index}`} className="h-2" aria-hidden />
-
-  if (isMermaidLine(line) && !isDiagramHeaderLine(line)) {
-    return null
-  }
-
-  if (isSectionHeader(trimmed)) {
-    return (
-      <p key={`hdr-${index}`} className="text-xs font-semibold uppercase tracking-wider text-neon-cyan/90 mt-4 first:mt-0 mb-1">
-        {trimmed.replace(/:$/, '')}
-      </p>
-    )
-  }
-
-  const optClass = optionLineClass(trimmed, correctOption)
-  if (optClass) {
-    return (
-      <p key={`opt-${index}`} className={cn('text-sm leading-relaxed whitespace-pre-wrap', optClass)}>
-        {trimmed}
-      </p>
-    )
-  }
-
-  if (/^\d+\.\s/.test(trimmed)) {
-    return (
-      <p key={`step-${index}`} className="text-sm leading-relaxed text-slate-100 pl-4 whitespace-pre-wrap">
-        {trimmed}
-      </p>
-    )
-  }
-
-  return (
-    <p key={`ln-${index}`} className="text-sm leading-relaxed text-slate-200 whitespace-pre-wrap">
-      {line}
-    </p>
-  )
-}
+const LETTERS: OptionLetter[] = ['A', 'B', 'C', 'D']
 
 export function SolutionExplanation({
   text,
@@ -238,25 +16,70 @@ export function SolutionExplanation({
   className?: string
   correctOption?: string
 }) {
-  const { body, diagram, references } = splitExplanation(text)
+  const main = extractMainExplanation(text)
+  const optionMap = extractOptionExplains(text)
+  const hasOptions = LETTERS.some((l) => Boolean(optionMap[l]))
+  const correct = correctOption?.trim().toUpperCase()
 
   return (
-    <div className={cn('space-y-1', className)}>
-      <div className="space-y-1">{body.split('\n').map((line, i) => renderBodyLine(line, i, correctOption))}</div>
-
-      {diagram && (
-        <div className="rounded-xl border border-neon-cyan/25 bg-gradient-to-b from-cyber-900/60 to-cyber-950/90 p-4 mt-5 shadow-inner shadow-neon-cyan/5">
-          <p className="text-[10px] uppercase tracking-widest text-neon-cyan/80 mb-3 font-semibold">Flowchart / diagram</p>
-          <pre className="text-[13px] font-mono text-emerald-200/85 leading-relaxed whitespace-pre-wrap break-words overflow-x-auto max-w-full">
-            {diagram}
-          </pre>
+    <div className={cn('space-y-4', className)}>
+      {main ? (
+        <div className="rounded-lg border border-cyber-700/70 bg-cyber-950/40 px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-neon-cyan/80 mb-1.5">Explanation</p>
+          <p className="text-sm leading-relaxed text-slate-200 whitespace-pre-wrap">{main}</p>
         </div>
-      )}
+      ) : null}
 
-      {references && (
-        <p className="text-xs text-slate-500 mt-4 pt-3 border-t border-cyber-700 whitespace-pre-wrap leading-relaxed">
-          {references}
-        </p>
+      {hasOptions ? (
+        <div className="space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Option-wise</p>
+          {LETTERS.map((letter) => {
+            const body = optionMap[letter]
+            if (!body) return null
+            const isCorrect = letter === correct
+            return (
+              <div
+                key={letter}
+                className={cn(
+                  'rounded-lg border px-3 py-2.5',
+                  isCorrect
+                    ? 'border-emerald-500/50 bg-emerald-950/30'
+                    : 'border-cyber-700/60 bg-cyber-900/30'
+                )}
+              >
+                <div className="flex items-start gap-2.5">
+                  <span
+                    className={cn(
+                      'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold',
+                      isCorrect
+                        ? 'bg-emerald-500/20 text-emerald-300'
+                        : 'bg-cyber-800 text-slate-400'
+                    )}
+                  >
+                    {letter}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    {isCorrect && (
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-emerald-400/90 mb-0.5">
+                        Correct answer
+                      </p>
+                    )}
+                    <p
+                      className={cn(
+                        'text-sm leading-relaxed whitespace-pre-wrap',
+                        isCorrect ? 'text-emerald-50/95' : 'text-slate-300'
+                      )}
+                    >
+                      {body.replace(/^[—:\-–]\s*/, '').replace(/^[✓✔]\s*CORRECT\s*[—:\-–]?\s*/i, '').trim()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="text-sm leading-relaxed text-slate-200 whitespace-pre-wrap">{text}</p>
       )}
     </div>
   )

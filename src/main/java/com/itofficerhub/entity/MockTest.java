@@ -22,10 +22,10 @@ public class MockTest {
 	private Difficulty difficulty = Difficulty.MEDIUM;
 
 	@Column(nullable = false)
-	private int questionCount = 20;
+	private int questionCount = 25;
 
 	@Column(nullable = false)
-	private int timeLimitMinutes = 15;
+	private int timeLimitMinutes = 20;
 
 	@Column(nullable = false)
 	private boolean published = false;
@@ -60,7 +60,7 @@ public class MockTest {
 
 	/** Minimum net score to clear mock (IBPS-style qualifying bar) */
 	@Column(nullable = false)
-	private double cutoffMarks = 10.0;
+	private double cutoffMarks = 25.0;
 
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt = Instant.now();

@@ -17,7 +17,7 @@ export const LANDING_FAQ = [
   },
   {
     q: 'How is marking done in ItOfficerHub mocks?',
-    a: 'Standard IBPS-style marking: +1 for each correct answer (P), −0.25 for each wrong answer (N), and 0 for unattempted questions. Mocks are typically 20 questions in 15 minutes.',
+    a: 'IBPS SO IT PK-style marking: +2 for each correct answer (P), −0.5 for each wrong answer (N), and 0 for unattempted. Mocks are 25 questions / 50 marks in 20 minutes.',
   },
   {
     q: 'Can I practice subject-wise mocks (CN, OS, DBMS)?',

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.itofficerhub.util.AppTime;
+import com.itofficerhub.util.ExplanationComposer;
 import com.itofficerhub.util.MockVisibility;
 
 import java.time.Instant;
@@ -277,9 +278,9 @@ public class AdminService {
 		int count = request.questions().size();
 		int qCount = request.questionCount() != null && request.questionCount() > 0
 				? request.questionCount()
-				: (count > 0 ? count : 20);
+				: (count > 0 ? count : 25);
 		mock.setQuestionCount(qCount);
-		mock.setTimeLimitMinutes(request.timeLimitMinutes() != null ? request.timeLimitMinutes() : 15);
+		mock.setTimeLimitMinutes(request.timeLimitMinutes() != null ? request.timeLimitMinutes() : 20);
 		mock.setPublished(false);
 		mock.setAllowRetake(true);
 		mock.setMockCategory(parseCategory(request.mockCategory()));
@@ -298,7 +299,8 @@ public class AdminService {
 			question.setOptionC(q.optionC());
 			question.setOptionD(q.optionD());
 			question.setCorrectOption(OptionLabel.valueOf(q.correctOption().trim().toUpperCase()));
-			question.setExplanation(q.explanation());
+			question.setExplanation(ExplanationComposer.compose(
+					q.explanation(), q.explainA(), q.explainB(), q.explainC(), q.explainD()));
 			if (q.solutionImageUrl() != null && !q.solutionImageUrl().isBlank()) {
 				question.setSolutionImageUrl(q.solutionImageUrl().trim());
 			}
@@ -331,30 +333,24 @@ public class AdminService {
 			} catch (IllegalArgumentException e) {
 				throw new ApiException(HttpStatus.BAD_REQUEST, "Question " + i + ": invalid topic " + q.topic());
 			}
-			String exp = q.explanation();
-			if (exp == null || exp.trim().length() < 200) {
+			boolean structured = ExplanationComposer.hasAllOptionExplains(
+					q.explainA(), q.explainB(), q.explainC(), q.explainD());
+			String exp = q.explanation() == null ? "" : q.explanation().trim();
+			if (structured) {
+				if (exp.isEmpty()) {
+					// Allowed — composer fills a default head from option explains
+					continue;
+				}
+			} else if (ExplanationComposer.explainsAllOptionsInText(exp)) {
+				if (exp.length() < 20) {
+					throw new ApiException(HttpStatus.BAD_REQUEST,
+							"Question " + i + ": explanation is too short");
+				}
+			} else {
 				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must be at least 200 characters with full option breakdown");
-			}
-			if (!exp.toLowerCase().contains("option breakdown")) {
-				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must include an \"Option breakdown:\" section with all 4 options");
-			}
-			if (!explainsAllOptions(exp)) {
-				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must cover Option A, B, C, and D individually");
-			}
-			if (!exp.toLowerCase().contains("references:")) {
-				throw new ApiException(HttpStatus.BAD_REQUEST,
-						"Question " + i + ": explanation must include a References: line");
+						"Question " + i + ": provide explainA, explainB, explainC, explainD (one short reason each)");
 			}
 		}
-	}
-
-	private static boolean explainsAllOptions(String exp) {
-		String upper = exp.toUpperCase();
-		return upper.contains("OPTION A") && upper.contains("OPTION B")
-				&& upper.contains("OPTION C") && upper.contains("OPTION D");
 	}
 
 	private MockCategory parseCategory(String raw) {
