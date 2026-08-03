@@ -20,7 +20,7 @@ import java.util.Optional;
 
 /**
  * Aspirant of the day: top scorer on today's featured mock among attempts submitted today (IST).
- * Locked for 24 hours once awarded.
+ * Re-synced whenever a better (or newly top-ranked) attempt is submitted, until expiry.
  */
 @Service
 public class DailySpotlightService {
@@ -55,10 +55,7 @@ public class DailySpotlightService {
 				return;
 			}
 			cleanup(m.getId());
-			if (spotlightRepository.findActiveForMock(m.getId(), now).isPresent()) {
-				return;
-			}
-			tryAward(m);
+			syncAward(m);
 		});
 	}
 
@@ -67,12 +64,8 @@ public class DailySpotlightService {
 		return mockCatalogService.featuredMock(Instant.now()).flatMap(mock -> {
 			cleanup(mock.getId());
 			Instant now = Instant.now();
-			Optional<DailySpotlight> active = spotlightRepository.findActiveForMock(mock.getId(), now);
-			if (active.isEmpty()) {
-				tryAward(mock);
-				active = spotlightRepository.findActiveForMock(mock.getId(), now);
-			}
-			return active.map(s -> toDto(s, mock));
+			syncAward(mock);
+			return spotlightRepository.findActiveForMock(mock.getId(), now).map(s -> toDto(s, mock));
 		});
 	}
 
@@ -90,7 +83,11 @@ public class DailySpotlightService {
 		mockCatalogService.featuredMock(now).ifPresent(m -> cleanup(m.getId()));
 	}
 
-	private void tryAward(MockTest mock) {
+	/**
+	 * Keep spotlight aligned with today's #1 on the featured mock (best score per user, then faster time).
+	 * Creates the row if missing; updates user/score when ranking changes.
+	 */
+	private void syncAward(MockTest mock) {
 		List<TestAttempt> rankedToday = rankingCache.bestAttemptsPerUserToday(mock.getId());
 		if (rankedToday.isEmpty()) {
 			return;
@@ -100,13 +97,27 @@ public class DailySpotlightService {
 			return;
 		}
 		Instant now = Instant.now();
-		DailySpotlight s = new DailySpotlight();
+		Optional<DailySpotlight> activeOpt = spotlightRepository.findActiveForMock(mock.getId(), now);
+		if (activeOpt.isEmpty()) {
+			DailySpotlight s = new DailySpotlight();
+			s.setUser(top.getUser());
+			s.setMockTest(mock);
+			s.setNetScore(top.getNetScore());
+			s.setRankPosition(1);
+			s.setAwardedAt(now);
+			s.setExpiresAt(now.plus(SPOTLIGHT_TTL));
+			spotlightRepository.save(s);
+			return;
+		}
+		DailySpotlight s = activeOpt.get();
+		boolean sameUser = s.getUser().getId().equals(top.getUser().getId());
+		boolean sameScore = Double.compare(s.getNetScore(), top.getNetScore()) == 0;
+		if (sameUser && sameScore) {
+			return;
+		}
 		s.setUser(top.getUser());
-		s.setMockTest(mock);
 		s.setNetScore(top.getNetScore());
 		s.setRankPosition(1);
-		s.setAwardedAt(now);
-		s.setExpiresAt(now.plus(SPOTLIGHT_TTL));
 		spotlightRepository.save(s);
 	}
 
