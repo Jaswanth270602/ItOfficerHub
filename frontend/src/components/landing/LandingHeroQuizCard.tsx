@@ -4,6 +4,7 @@ import { DailyQuizPlayer } from '@/components/quiz/DailyQuizPlayer'
 import { DailyQuizCountdown } from '@/components/quiz/DailyQuizCountdown'
 import { Button } from '@/components/ui/button'
 import {
+  activeFriendChallenge,
   istTodayIso,
   loadDailyQuizProgress,
   type DailyQuizChallenge,
@@ -26,6 +27,7 @@ export function LandingHeroQuizCard({ questionCountHint = 10, challenge = null }
   }, [progressTick])
 
   const doneToday = progress?.lastDate === istTodayIso()
+  const friendChallenge = activeFriendChallenge(challenge, progress)
 
   if (playing) {
     return (
@@ -35,7 +37,7 @@ export function LandingHeroQuizCard({ questionCountHint = 10, challenge = null }
       >
         <DailyQuizPlayer
           embedded
-          challenge={challenge}
+          challenge={friendChallenge}
           onClose={() => {
             setPlaying(false)
             setProgressTick((t) => t + 1)
@@ -99,10 +101,10 @@ export function LandingHeroQuizCard({ questionCountHint = 10, challenge = null }
         aria-hidden
       />
 
-      {challenge && (
+      {friendChallenge && (
         <div className="relative mb-3 rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
-          Friend scored <strong>{challenge.beat}/{challenge.of}</strong>
-          {challenge.date ? ` on ${challenge.date}` : ''} — beat them!
+          Friend scored <strong>{friendChallenge.beat}/{friendChallenge.of}</strong>
+          {friendChallenge.date ? ` on ${friendChallenge.date}` : ''} — beat them!
         </div>
       )}
 

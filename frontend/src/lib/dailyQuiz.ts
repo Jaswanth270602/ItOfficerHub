@@ -59,6 +59,7 @@ export type DailyQuizLocalProgress = {
   totalQuestions: number
   scorePercent: number
   streak: number
+  shareHeadline?: string
 }
 
 const PROGRESS_KEY = 'ioh_daily10_progress_v1'
@@ -118,19 +119,30 @@ export function saveDailyQuizCompletion(result: DailyQuizResult): DailyQuizLocal
   } else if (prev && prev.lastDate === prevIsoDate(result.quizDate)) {
     streak = prev.streak + 1
   }
-  const next: DailyQuizLocalProgress = {
-    lastDate: result.quizDate,
-    correctCount: result.correctCount,
-    totalQuestions: result.totalQuestions,
-    scorePercent: result.scorePercent,
-    streak,
-  }
+  // Keep the best score of the day for share / challenge links.
+  const keepPrevBest =
+    prev?.lastDate === result.quizDate && prev.correctCount > result.correctCount
+  const next: DailyQuizLocalProgress = keepPrevBest
+    ? {
+        ...prev,
+        streak,
+        shareHeadline: prev.shareHeadline ?? result.shareHeadline,
+      }
+    : {
+        lastDate: result.quizDate,
+        correctCount: result.correctCount,
+        totalQuestions: result.totalQuestions,
+        scorePercent: result.scorePercent,
+        streak,
+        shareHeadline: result.shareHeadline,
+      }
   try {
     localStorage.setItem(PROGRESS_KEY, JSON.stringify(next))
     window.dispatchEvent(new Event('ioh-daily10-updated'))
   } catch {
     /* ignore quota */
   }
+  syncDailyQuizShareUrl(progressToShareData(next))
   return next
 }
 
@@ -140,6 +152,22 @@ export function isDailyQuizDoneToday(quizDate?: string): boolean {
   return progress.lastDate === (quizDate ?? istTodayIso())
 }
 
+export function progressToShareData(p: DailyQuizLocalProgress): DailyQuizShareData {
+  return {
+    quizDate: p.lastDate,
+    correctCount: p.correctCount,
+    totalQuestions: p.totalQuestions,
+    scorePercent: p.scorePercent,
+    shareHeadline: p.shareHeadline ?? defaultShareHeadline(p.scorePercent),
+  }
+}
+
+function defaultShareHeadline(scorePercent: number): string {
+  if (scorePercent >= 80) return "Crushed today's Daily 10!"
+  if (scorePercent >= 50) return 'Solid Daily 10 — keep going!'
+  return 'Daily 10 done — revise & retry tomorrow!'
+}
+
 export function dailyQuizChallengePath(data: DailyQuizShareData): string {
   const params = new URLSearchParams({
     beat: String(data.correctCount),
@@ -147,6 +175,16 @@ export function dailyQuizChallengePath(data: DailyQuizShareData): string {
     date: data.quizDate,
   })
   return `/daily-quiz?${params.toString()}`
+}
+
+/** Update the address bar to this user's score so reload / share stay in sync. */
+export function syncDailyQuizShareUrl(data: DailyQuizShareData): void {
+  if (typeof window === 'undefined') return
+  const next = dailyQuizChallengePath(data)
+  const current = `${window.location.pathname}${window.location.search}`
+  if (current !== next) {
+    window.history.replaceState(null, '', next)
+  }
 }
 
 export type DailyQuizChallenge = {
@@ -160,8 +198,24 @@ export function parseDailyQuizChallenge(search: string): DailyQuizChallenge | nu
   const beat = Number(params.get('beat'))
   const of = Number(params.get('of') ?? 10)
   const date = params.get('date') ?? ''
-  if (!Number.isFinite(beat) || beat < 0 || !Number.isFinite(of) || of <= 0) return null
+  // 0/10 is not a meaningful challenge — ignore stale/broken links
+  if (!Number.isFinite(beat) || beat < 1 || !Number.isFinite(of) || of <= 0) return null
   return { beat, of, date }
+}
+
+/**
+ * Only show "friend scored X" when it's a real opponent score the user hasn't beaten yet.
+ * Hides own share links and stale low scores after the user already finished today.
+ */
+export function activeFriendChallenge(
+  challenge: DailyQuizChallenge | null,
+  progress: DailyQuizLocalProgress | null = loadDailyQuizProgress()
+): DailyQuizChallenge | null {
+  if (!challenge || challenge.beat < 1) return null
+  if (!progress || progress.lastDate !== istTodayIso()) return challenge
+  // Own score in the URL, or already matched/beaten the friend — don't show friend banner
+  if (progress.correctCount >= challenge.beat) return null
+  return challenge
 }
 
 export function buildDailyQuizShareText(data: DailyQuizShareData): string {

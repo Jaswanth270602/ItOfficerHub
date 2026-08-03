@@ -4,6 +4,9 @@ import api, { apiErrorMessage } from '@/lib/api'
 import {
   buildDailyQuizShareText,
   copyDailyQuizShareText,
+  isDailyQuizDoneToday,
+  loadDailyQuizProgress,
+  progressToShareData,
   saveDailyQuizCompletion,
   shareDailyQuizCard,
   type DailyQuiz,
@@ -49,9 +52,14 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
   const [answers, setAnswers] = useState<Record<number, Choice | null>>({})
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<DailyQuizResult | null>(null)
-  const [localProgress, setLocalProgress] = useState<DailyQuizLocalProgress | null>(null)
+  const [localProgress, setLocalProgress] = useState<DailyQuizLocalProgress | null>(() =>
+    loadDailyQuizProgress()
+  )
+  const [retrying, setRetrying] = useState(false)
   const [sharing, setSharing] = useState(false)
   const shareRef = useRef<HTMLDivElement>(null)
+
+  const doneToday = isDailyQuizDoneToday() && !retrying
 
   useEffect(() => {
     setLoading(true)
@@ -83,7 +91,9 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
         scorePercent: result.scorePercent,
         shareHeadline: result.shareHeadline,
       }
-    : null
+    : doneToday && localProgress
+      ? progressToShareData(localProgress)
+      : null
 
   const submit = async () => {
     if (!quiz) return
@@ -122,7 +132,10 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
     }
   }
 
-  if (loading) {
+  // Show today's saved score immediately (even while quiz loads / on reload).
+  const showSavedResult = Boolean(shareData && (result || doneToday))
+
+  if (loading && !showSavedResult) {
     return (
       <div className={cn('flex items-center justify-center gap-2 text-slate-400', embedded ? 'py-16' : 'py-24')}>
         <Loader2 className="h-5 w-5 animate-spin text-neon-cyan" />
@@ -131,20 +144,12 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
     )
   }
 
-  if (error || !quiz) {
-    return (
-      <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-6 text-center">
-        <p className="text-amber-200 mb-3">{error || 'No questions published yet'}</p>
-        <Link to="/study">
-          <Button variant="outline" className="cursor-pointer">
-            Browse Study Q&A
-          </Button>
-        </Link>
-      </div>
-    )
-  }
+  if (showSavedResult && shareData) {
+    const scoreCorrect = result?.correctCount ?? shareData.correctCount
+    const scoreTotal = result?.totalQuestions ?? shareData.totalQuestions
+    const scorePct = result?.scorePercent ?? shareData.scorePercent
+    const headline = result?.shareHeadline ?? shareData.shareHeadline
 
-  if (result && shareData) {
     return (
       <div className="space-y-5">
         <div className="fixed left-0 top-0 -z-10 opacity-0 pointer-events-none" aria-hidden>
@@ -153,8 +158,8 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
 
         <div className="text-center">
           <p className="text-xs uppercase tracking-widest text-neon-cyan mb-2">Daily 10 result</p>
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{result.shareHeadline}</h2>
-          <p className="text-slate-400 text-sm">{result.quizDate}</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{headline}</h2>
+          <p className="text-slate-400 text-sm">{shareData.quizDate}</p>
           {localProgress && localProgress.streak > 1 && (
             <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-amber-300">
               <Flame className="h-3.5 w-3.5" /> {localProgress.streak}-day streak — come back tomorrow
@@ -177,32 +182,38 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
                 stroke="#22d3ee"
                 strokeWidth="10"
                 strokeLinecap="round"
-                strokeDasharray={`${(result.scorePercent / 100) * 327} 327`}
+                strokeDasharray={`${(scorePct / 100) * 327} 327`}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl font-bold tabular-nums text-white">
-                {result.correctCount}/{result.totalQuestions}
+                {scoreCorrect}/{scoreTotal}
               </span>
-              <span className="text-xs text-slate-500">{result.scorePercent}%</span>
+              <span className="text-xs text-slate-500">{scorePct}%</span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center text-sm">
-          <div className="rounded-lg bg-emerald-950/40 border border-emerald-800/40 py-2">
-            <p className="font-bold text-emerald-400 tabular-nums">{result.correctCount}</p>
-            <p className="text-[10px] text-slate-500">Correct</p>
+        {result ? (
+          <div className="grid grid-cols-3 gap-2 text-center text-sm">
+            <div className="rounded-lg bg-emerald-950/40 border border-emerald-800/40 py-2">
+              <p className="font-bold text-emerald-400 tabular-nums">{result.correctCount}</p>
+              <p className="text-[10px] text-slate-500">Correct</p>
+            </div>
+            <div className="rounded-lg bg-red-950/40 border border-red-800/40 py-2">
+              <p className="font-bold text-red-400 tabular-nums">{result.wrongCount}</p>
+              <p className="text-[10px] text-slate-500">Wrong</p>
+            </div>
+            <div className="rounded-lg bg-amber-950/30 border border-amber-800/30 py-2">
+              <p className="font-bold text-amber-300 tabular-nums">{result.skippedCount}</p>
+              <p className="text-[10px] text-slate-500">Skipped</p>
+            </div>
           </div>
-          <div className="rounded-lg bg-red-950/40 border border-red-800/40 py-2">
-            <p className="font-bold text-red-400 tabular-nums">{result.wrongCount}</p>
-            <p className="text-[10px] text-slate-500">Wrong</p>
-          </div>
-          <div className="rounded-lg bg-amber-950/30 border border-amber-800/30 py-2">
-            <p className="font-bold text-amber-300 tabular-nums">{result.skippedCount}</p>
-            <p className="text-[10px] text-slate-500">Skipped</p>
-          </div>
-        </div>
+        ) : (
+          <p className="text-center text-sm text-slate-400">
+            Your best today — share it and challenge a friend.
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2 justify-center">
           <Button className="cursor-pointer gap-2 min-h-[44px]" disabled={sharing} onClick={() => void share()}>
@@ -228,35 +239,55 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
           </Button>
         </div>
 
-        <div className={cn('space-y-3 overflow-y-auto pr-1', embedded ? 'max-h-[32vh]' : 'max-h-[50vh]')}>
-          {result.reviews.map((r) => (
-            <details
-              key={r.questionId}
-              className="rounded-lg border border-cyber-700 bg-cyber-900/50 px-3 py-2"
-            >
-              <summary className="cursor-pointer flex items-center gap-2 text-sm list-none">
-                {r.correct ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-400 shrink-0" />
-                )}
-                <span className="text-slate-300 truncate flex-1">
-                  Q{r.orderIndex}. {r.questionText}
-                </span>
-              </summary>
-              <div className="mt-2 text-xs text-slate-400 space-y-2">
-                <p>
-                  Your answer: {r.selectedOption ?? '—'} · Correct: {r.correctOption}
-                </p>
-                {r.explanation ? (
-                  <SolutionExplanation text={r.explanation} correctOption={r.correctOption} />
-                ) : null}
-              </div>
-            </details>
-          ))}
-        </div>
+        {result && (
+          <div className={cn('space-y-3 overflow-y-auto pr-1', embedded ? 'max-h-[32vh]' : 'max-h-[50vh]')}>
+            {result.reviews.map((r) => (
+              <details
+                key={r.questionId}
+                className="rounded-lg border border-cyber-700 bg-cyber-900/50 px-3 py-2"
+              >
+                <summary className="cursor-pointer flex items-center gap-2 text-sm list-none">
+                  {r.correct ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-400 shrink-0" />
+                  )}
+                  <span className="text-slate-300 truncate flex-1">
+                    Q{r.orderIndex}. {r.questionText}
+                  </span>
+                </summary>
+                <div className="mt-2 text-xs text-slate-400 space-y-2">
+                  <p>
+                    Your answer: {r.selectedOption ?? '—'} · Correct: {r.correctOption}
+                  </p>
+                  {r.explanation ? (
+                    <SolutionExplanation text={r.explanation} correctOption={r.correctOption} />
+                  ) : null}
+                </div>
+              </details>
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2 justify-center pt-2">
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => {
+              setRetrying(true)
+              setResult(null)
+              setIndex(0)
+              if (quiz) {
+                const init: Record<number, Choice | null> = {}
+                quiz.questions.forEach((q) => {
+                  init[q.id] = null
+                })
+                setAnswers(init)
+              }
+            }}
+          >
+            Retry for practice
+          </Button>
           <Link to="/study">
             <Button variant="outline" className="cursor-pointer">
               More Study Q&A
@@ -273,6 +304,19 @@ export function DailyQuizPlayer({ embedded, challenge = null, onClose, onComplet
             </Button>
           )}
         </div>
+      </div>
+    )
+  }
+
+  if (error || !quiz) {
+    return (
+      <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-6 text-center">
+        <p className="text-amber-200 mb-3">{error || 'No questions published yet'}</p>
+        <Link to="/study">
+          <Button variant="outline" className="cursor-pointer">
+            Browse Study Q&A
+          </Button>
+        </Link>
       </div>
     )
   }

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Seo } from '@/components/Seo'
 import { DailyQuizPlayer } from '@/components/quiz/DailyQuizPlayer'
@@ -6,17 +6,40 @@ import { DailyQuizCountdown } from '@/components/quiz/DailyQuizCountdown'
 import { Button } from '@/components/ui/button'
 import { SITE_URL } from '@/lib/seo'
 import {
+  activeFriendChallenge,
   istTodayIso,
   loadDailyQuizProgress,
   parseDailyQuizChallenge,
+  progressToShareData,
+  syncDailyQuizShareUrl,
+  type DailyQuizLocalProgress,
 } from '@/lib/dailyQuiz'
 import { ArrowLeft, Flame } from 'lucide-react'
 
 export function DailyQuizPage() {
   const { search } = useLocation()
-  const challenge = useMemo(() => parseDailyQuizChallenge(search), [search])
-  const progress = loadDailyQuizProgress()
+  const [progress, setProgress] = useState<DailyQuizLocalProgress | null>(() => loadDailyQuizProgress())
+
+  const rawChallenge = useMemo(() => parseDailyQuizChallenge(search), [search])
+  const friendChallenge = useMemo(
+    () => activeFriendChallenge(rawChallenge, progress),
+    [rawChallenge, progress]
+  )
+
   const doneToday = progress?.lastDate === istTodayIso()
+
+  // After finishing, keep the URL on YOUR score (not a stale friend beat=0 link).
+  useEffect(() => {
+    if (doneToday && progress) {
+      syncDailyQuizShareUrl(progressToShareData(progress))
+    }
+  }, [doneToday, progress])
+
+  useEffect(() => {
+    const refresh = () => setProgress(loadDailyQuizProgress())
+    window.addEventListener('ioh-daily10-updated', refresh)
+    return () => window.removeEventListener('ioh-daily10-updated', refresh)
+  }, [])
 
   return (
     <>
@@ -45,17 +68,17 @@ export function DailyQuizPage() {
           </div>
         </div>
 
-        {challenge && (
+        {friendChallenge && (
           <div className="mb-4 rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-            A friend scored <strong>{challenge.beat}/{challenge.of}</strong>
-            {challenge.date ? ` on ${challenge.date}` : ''}. Can you beat them?
+            A friend scored <strong>{friendChallenge.beat}/{friendChallenge.of}</strong>
+            {friendChallenge.date ? ` on ${friendChallenge.date}` : ''}. Can you beat them?
           </div>
         )}
 
-        {doneToday && progress && (
+        {doneToday && progress && !friendChallenge && (
           <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-slate-400">
             <span className="text-emerald-300">
-              Today: {progress.correctCount}/{progress.totalQuestions}
+              Your best today: {progress.correctCount}/{progress.totalQuestions}
               {progress.streak > 1 ? ` · ${progress.streak}-day streak` : ''}
             </span>
             <DailyQuizCountdown />
@@ -63,7 +86,10 @@ export function DailyQuizPage() {
         )}
 
         <div className="rounded-2xl border border-neon-cyan/25 bg-cyber-900/60 p-4 sm:p-6 shadow-lg shadow-black/20">
-          <DailyQuizPlayer challenge={challenge} />
+          <DailyQuizPlayer
+            challenge={friendChallenge}
+            onCompleted={(p) => setProgress(p)}
+          />
         </div>
 
         <div className="mt-8 text-center">
