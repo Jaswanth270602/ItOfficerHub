@@ -3,31 +3,30 @@ import { Link, useNavigate } from 'react-router-dom'
 import api from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { Seo } from '@/components/Seo'
+import { SITE_URL } from '@/lib/seo'
 import { faqJsonLd, LANDING_FAQ } from '@/lib/seo-faq'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UpcomingMockBanner } from '@/components/UpcomingMockBanner'
 import { LandingDailySplash } from '@/components/landing/LandingDailySplash'
+import { LandingHeroQuizCard } from '@/components/landing/LandingHeroQuizCard'
 import { LandingPlatformShowcase } from '@/components/landing/LandingPlatformShowcase'
 import { OfficialChannelsCard } from '@/components/OfficialChannelsCard'
 import { LandingSection } from '@/components/landing/LandingSection'
 import { MottoCarousel, type MottoSlide } from '@/components/landing/MottoCarousel'
 import {
-  Award,
   BarChart3,
   BookOpen,
   ChevronDown,
-  FolderOpen,
   Clock,
   FileQuestion,
-  GraduationCap,
+  Flame,
+  FolderOpen,
   Layers,
-  Mail,
-  ShieldCheck,
+  Share2,
   Sparkles,
   Target,
   Trophy,
-  Unlock,
   Users,
   Zap,
 } from 'lucide-react'
@@ -110,29 +109,40 @@ const MOTTO_SLIDES: MottoSlide[] = [
 
 const FEATURES = [
   {
+    icon: Flame,
+    title: 'Daily 10 Quiz',
+    desc: '10 random Study Q&A questions every day — start from the hero, no login, share your score.',
+    accent: 'from-amber-500/20 to-orange-500/10 border-amber-500/30 text-amber-300',
+  },
+  {
     icon: BookOpen,
     title: 'Topic-wise Study Q&A',
     desc: 'Topic-wise syllabus — browse CN, DBMS, OS & Security with solutions. No login required.',
+    accent: 'from-neon-cyan/20 to-neon-blue/10 border-neon-cyan/30 text-neon-cyan',
   },
   {
     icon: Zap,
     title: 'Daily mock at midnight IST',
     desc: 'A fresh full-length mock unlocks every day — compete on the daily leaderboard.',
+    accent: 'from-neon-purple/20 to-violet-500/10 border-neon-purple/30 text-neon-purple',
   },
   {
     icon: Trophy,
     title: 'All-India rank & percentile',
     desc: 'See where you stand among unique best scores — fair rankings, retakes excluded.',
+    accent: 'from-amber-400/15 to-yellow-500/10 border-amber-400/25 text-amber-300',
+  },
+  {
+    icon: Share2,
+    title: 'Shareable score cards',
+    desc: 'Visual result cards for WhatsApp — challenge friends to beat your rank or Daily 10.',
+    accent: 'from-emerald-500/15 to-teal-500/10 border-emerald-500/25 text-emerald-300',
   },
   {
     icon: BarChart3,
     title: 'Chapter-wise analytics',
     desc: 'Strong and weak topics from import tags — know exactly what to revise next.',
-  },
-  {
-    icon: Mail,
-    title: 'Prep Mail & prep groups',
-    desc: 'DM friends, share score cards, and study together without leaving the hub.',
+    accent: 'from-blue-500/15 to-cyan-500/10 border-blue-400/25 text-neon-blue',
   },
 ]
 
@@ -185,8 +195,9 @@ export function LandingPage() {
       <Seo
         path="/"
         title="Crack IBPS SO IT Officer — 100% Free, No Login for Prep"
-        description="Free IBPS SO IT, SBI IT, BOB IT, UCO Bank IT, PSU IT & TCS NQT prep — topic-wise Study Q&A with no login. All-India rank on mocks. 100% free."
-        keywords="ItOfficerHub, IBPS SO IT Officer, SBI IT Officer, BOB IT Officer, UCO Bank IT Officer, PSU IT Officer, NIACL IT, LIC IT, TCS NQT mock test, free IT officer mock test, bank IT officer preparation"
+        description="Free Daily 10 quiz & Study Q&A — no login. IBPS SO IT, SBI IT, BOB IT, UCO Bank IT, PSU IT & TCS NQT mocks with All-India rank. 100% free."
+        keywords="ItOfficerHub, Daily 10 quiz, IBPS SO IT Officer, SBI IT Officer, BOB IT Officer, UCO Bank IT Officer, PSU IT Officer, NIACL IT, LIC IT, TCS NQT mock test, free IT officer mock test"
+        image={`${SITE_URL}/og-default.png`}
         jsonLd={[
           faqJsonLd(),
           {
@@ -207,72 +218,59 @@ export function LandingPage() {
             <LandingHeroScene />
           </Suspense>
 
-          <div className="relative z-10 page-container flex flex-col items-center text-center px-3 sm:px-4 pt-6 sm:pt-8 pb-24">
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mb-5 sm:mb-6 w-full max-w-3xl">
-              {EXAM_BADGES.map(({ label, href, className }) => (
-                <Link
-                  key={label}
-                  to={href}
-                  className={`inline-flex items-center px-3.5 sm:px-4 py-2 rounded-lg border text-xs sm:text-sm font-semibold tracking-wide hover:brightness-110 transition-all ${className}`}
+          <div className="relative z-10 page-container px-3 sm:px-4 pt-6 sm:pt-10 pb-24">
+            <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-10 items-center max-w-6xl mx-auto">
+              <div className="text-center lg:text-left">
+                <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-5 w-full">
+                  {EXAM_BADGES.slice(0, 5).map(({ label, href, className }) => (
+                    <Link
+                      key={label}
+                      to={href}
+                      className={`inline-flex items-center px-3 py-1.5 rounded-lg border text-xs font-semibold tracking-wide hover:brightness-110 transition-all ${className}`}
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+
+                <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 text-xs text-emerald-300 font-medium mb-4">
+                  <Zap className="h-3.5 w-3.5" /> 100% free · Daily 10 needs no login
+                </p>
+
+                <h1
+                  id="hero-heading"
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-[1.12] tracking-tight"
                 >
-                  {label}
-                </Link>
-              ))}
-            </div>
+                  <span className="block text-white mb-1">ItOfficerHub</span>
+                  <span className="bg-gradient-to-r from-neon-blue via-neon-cyan to-neon-purple bg-clip-text text-transparent">
+                    Crack IBPS SO IT — start in one tap.
+                  </span>
+                </h1>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-7">
-              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-xs sm:text-sm text-emerald-300 font-medium">
-                <Unlock className="h-4 w-4 shrink-0" /> Study prep · no login needed
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-neon-purple/30 bg-neon-purple/10 text-xs sm:text-sm text-neon-purple">
-                <Zap className="h-4 w-4 shrink-0" /> 100% free · no ads
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-cyber-600 bg-cyber-900/60 text-xs sm:text-sm text-slate-400">
-                <ShieldCheck className="h-4 w-4 shrink-0" /> Mocks · free account for rank
-              </span>
-            </div>
+                <p className="text-base sm:text-lg text-slate-300 max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
+                  Take today&apos;s Daily 10 from Study Q&amp;A instantly — or jump into a full mock for All-India rank.
+                </p>
 
-            <h1
-              id="hero-heading"
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold mb-4 sm:mb-5 leading-[1.12] tracking-tight max-w-4xl"
-            >
-              Crack IBPS SO IT Officer.
-              <br />
-              <span className="bg-gradient-to-r from-neon-blue via-neon-cyan to-neon-purple bg-clip-text text-transparent">
-                100% free — no login for prep.
-              </span>
-            </h1>
+                <div className="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-2.5">
+                  <Link to="/study">
+                    <Button size="lg" variant="outline" className="cursor-pointer min-h-[48px] gap-2 w-full sm:w-auto">
+                      <FolderOpen className="h-5 w-5" /> Study Q&amp;A
+                    </Button>
+                  </Link>
+                  <Link to="/dashboard">
+                    <Button size="lg" variant="outline" className="cursor-pointer min-h-[48px] gap-2 w-full sm:w-auto">
+                      <Target className="h-5 w-5" /> Daily mock
+                    </Button>
+                  </Link>
+                  <Link to="/mocks">
+                    <Button size="lg" variant="ghost" className="cursor-pointer min-h-[48px] gap-2 w-full sm:w-auto text-slate-300">
+                      <Layers className="h-5 w-5" /> All mocks
+                    </Button>
+                  </Link>
+                </div>
+              </div>
 
-            <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-6 leading-relaxed">
-              Topic-wise Study Q&amp;A opens instantly — CN, DBMS, OS, Security &amp; more. Start prep without
-              creating an account.
-            </p>
-            <p className="text-slate-500 mb-8 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-              Full-length &amp; sectional mocks with All-India rank need a{' '}
-              <strong className="text-slate-300">free account</strong> — prep never does.
-            </p>
-
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 w-full sm:w-auto max-w-md sm:max-w-none">
-              <Link to="/study" className="w-full sm:w-auto">
-                <Button size="lg" className="cursor-pointer w-full min-h-[48px] gap-2">
-                  <FolderOpen className="h-5 w-5 shrink-0" /> Study Q&amp;A — no login
-                </Button>
-              </Link>
-              <Link to="/dashboard" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="cursor-pointer w-full min-h-[48px]">
-                  Daily mock
-                </Button>
-              </Link>
-              <Link to="/ibps-so-2026" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="cursor-pointer gap-2 w-full min-h-[48px]">
-                  <GraduationCap className="h-5 w-5 shrink-0" /> IBPS SO 2026
-                </Button>
-              </Link>
-              <Link to="/mocks" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="cursor-pointer gap-2 w-full min-h-[48px]">
-                  <Layers className="h-5 w-5 shrink-0" /> All IT mocks
-                </Button>
-              </Link>
+              <LandingHeroQuizCard />
             </div>
           </div>
 
@@ -300,26 +298,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <LandingPlatformShowcase />
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 sm:mb-12" aria-label="Platform statistics">
-              {[
-                { icon: BarChart3, value: stats.totalMocks, label: 'Mock Tests', color: 'text-neon-blue' },
-                { icon: Users, value: stats.totalUsers, label: 'Aspirants', color: 'text-neon-purple' },
-                { icon: Award, value: stats.totalAttempts, label: 'Attempts', color: 'text-neon-cyan' },
-                { icon: Clock, value: `${stats.averageScorePercent}%`, label: 'Avg Net Score', color: 'text-green-400' },
-              ].map(({ icon: Icon, value, label, color }) => (
-                <Card key={label} className="border-cyber-700/80 bg-cyber-900/50">
-                  <CardContent className="pt-5 sm:pt-6 flex items-center gap-3 sm:gap-4">
-                    <Icon className={`h-8 w-8 sm:h-10 sm:w-10 shrink-0 ${color}`} />
-                    <div className="min-w-0">
-                      <p className="text-xl sm:text-2xl font-bold tabular-nums">{value}</p>
-                      <p className="text-slate-400 text-xs sm:text-sm truncate">{label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <LandingPlatformShowcase stats={stats} />
 
             {upcoming && !featured && (
               <div className="max-w-2xl mx-auto mb-8">
@@ -378,20 +357,20 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
-              {FEATURES.map(({ icon: Icon, title, desc }) => (
-                <Card
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
+              {FEATURES.map(({ icon: Icon, title, desc, accent }) => (
+                <div
                   key={title}
-                  className="border-cyber-700/80 bg-cyber-900/40 hover:border-neon-cyan/30 transition-colors"
+                  className="feature-tile group rounded-2xl border border-cyber-700/80 bg-cyber-900/40 p-5 sm:p-6 hover:border-neon-cyan/35 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-neon-blue/5"
                 >
-                  <CardContent className="pt-6 sm:pt-8 pb-6 sm:pb-8">
-                    <div className="h-12 w-12 rounded-xl bg-neon-blue/10 border border-neon-blue/25 flex items-center justify-center mb-4">
-                      <Icon className="h-6 w-6 text-neon-cyan" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-                    <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
-                  </CardContent>
-                </Card>
+                  <div
+                    className={`h-12 w-12 rounded-xl bg-gradient-to-br border flex items-center justify-center mb-4 transition-transform group-hover:scale-105 ${accent}`}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
+                </div>
               ))}
             </div>
 

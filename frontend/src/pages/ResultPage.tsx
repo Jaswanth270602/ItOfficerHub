@@ -206,6 +206,7 @@ export function ResultPage() {
     if (!result) return null
     return {
       mockTitle: result.mockTitle,
+      mockTestId: result.mockTestId,
       netScore: result.netScore,
       maxMarks: result.maxMarks,
       cutoffMarks: result.cutoffMarks,
@@ -591,11 +592,25 @@ export function ResultPage() {
         </div>
       </div>
 
-      <Card className="mb-8 border-cyber-600/80">
-        <CardContent className="pt-5 pb-5 space-y-4">
-          <p className="text-sm text-slate-400 text-center">
-            Share a score card image — no private report link is included.
-          </p>
+      <Card className="mb-8 border-neon-cyan/25 bg-gradient-to-br from-cyber-900/80 to-cyber-950 overflow-hidden">
+        <CardContent className="pt-5 pb-5 space-y-5">
+          <div className="text-center space-y-1">
+            <p className="text-xs uppercase tracking-widest text-neon-cyan flex items-center justify-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" /> Viral score card
+            </p>
+            <p className="text-sm text-slate-300 font-medium">
+              Challenge friends to beat your rank — image + WhatsApp text, no private link.
+            </p>
+          </div>
+
+          {shareCardData && (
+            <div className="flex justify-center overflow-hidden rounded-xl border border-cyber-700/80 bg-cyber-950/60 p-3">
+              <div className="origin-top scale-[0.55] sm:scale-[0.72] -my-16 sm:-my-10 pointer-events-none select-none">
+                <ScoreShareCard data={shareCardData} />
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2 justify-center">
             <Button
               variant="default"
@@ -606,7 +621,7 @@ export function ResultPage() {
               <Share2 className="h-4 w-4 shrink-0" /> {sharing ? 'Preparing…' : 'Share score card'}
             </Button>
             <Button variant="outline" className="cursor-pointer min-h-[44px] gap-2" onClick={() => void copyShare()}>
-              <Copy className="h-4 w-4 shrink-0" /> {copied ? 'Copied' : 'Copy score text'}
+              <Copy className="h-4 w-4 shrink-0" /> {copied ? 'Copied' : 'Copy challenge text'}
             </Button>
             <ShareMockButton mockId={result.mockTestId} mockTitle={result.mockTitle} variant="pill" />
             <Link to={`/community?shareAttempt=${result.attemptId}`}>

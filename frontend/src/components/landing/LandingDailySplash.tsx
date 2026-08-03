@@ -84,9 +84,12 @@ export function LandingDailySplash() {
             😊
           </span>
         </p>
+        <p className="mt-3 text-sm text-neon-cyan/90">
+          Plus Daily 10 — free quiz, no login
+        </p>
 
         <p className="mt-8 text-xs sm:text-sm text-slate-500 animate-pulse">
-          Tap anywhere to continue · New mock every day at midnight IST
+          Tap anywhere to continue · Fresh at midnight IST
         </p>
       </div>
     </div>

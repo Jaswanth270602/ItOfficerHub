@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom'
 import { useStudyCatalog } from '@/components/study/StudyHubShell'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, FolderOpen, Layers, Search } from 'lucide-react'
+import { isDailyQuizDoneToday, loadDailyQuizProgress } from '@/lib/dailyQuiz'
+import { ChevronRight, Flame, FolderOpen, Layers, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 export function StudyHubHomePage() {
   const { catalog, loading, error } = useStudyCatalog()
   const [filter, setFilter] = useState('')
+  const dailyProgress = loadDailyQuizProgress()
+  const dailyDone = isDailyQuizDoneToday()
 
   const sections = useMemo(() => {
     if (!catalog) return []
@@ -27,6 +30,26 @@ export function StudyHubHomePage() {
           IBPS SO IT &amp; PSU IT syllabus — one MCQ per topic with solution. Pick a subject to browse topics.
         </p>
       </header>
+
+      <Link
+        to="/daily-quiz"
+        className="mb-5 flex items-center gap-3 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-neon-purple/10 px-4 py-3 hover:border-amber-400/50 transition-colors"
+      >
+        <div className="h-10 w-10 rounded-lg bg-amber-500/15 border border-amber-500/35 flex items-center justify-center shrink-0">
+          <Flame className="h-5 w-5 text-amber-300" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white">
+            {dailyDone
+              ? `Daily 10 done · ${dailyProgress?.correctCount ?? '—'}/${dailyProgress?.totalQuestions ?? 10}`
+              : 'Today’s Daily 10 — 10 random Qs, no login'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {dailyDone ? 'Share your score or come back tomorrow' : 'Fresh from Study Q&A every midnight IST'}
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-amber-300 shrink-0" />
+      </Link>
 
       <div className="relative mb-5">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />

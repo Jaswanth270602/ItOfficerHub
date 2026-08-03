@@ -259,6 +259,18 @@ export function DashboardPage() {
             <UpcomingMockBanner upcoming={overview.upcomingMock} />
           )}
 
+          <Link
+            to="/daily-quiz"
+            className="mb-6 flex items-center gap-3 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-cyber-900/40 to-neon-purple/10 px-4 py-3 hover:border-amber-400/45 transition-colors"
+          >
+            <Flame className="h-5 w-5 text-amber-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white">Daily 10 Quiz · no login needed</p>
+              <p className="text-xs text-slate-400">10 random Study Q&amp;A — share your score, build a streak</p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-amber-300 shrink-0" />
+          </Link>
+
           <div className="grid lg:grid-cols-3 gap-6 mb-10">
             {/* Mock of the day */}
             <Card className="lg:col-span-2 border-neon-cyan/30 bg-gradient-to-br from-cyber-900/90 to-cyber-950 overflow-hidden relative">

@@ -66,6 +66,17 @@ public class PublicController {
 		return com.itofficerhub.util.MockCategoryDisplay.catalog();
 	}
 
+	@GetMapping("/practice/daily-quiz")
+	public com.itofficerhub.dto.DailyQuizDto dailyQuiz() {
+		return practiceService.dailyQuiz();
+	}
+
+	@PostMapping("/practice/daily-quiz/submit")
+	public com.itofficerhub.dto.DailyQuizResultDto submitDailyQuiz(
+			@Valid @RequestBody com.itofficerhub.dto.DailyQuizSubmitRequest request) {
+		return practiceService.submitDailyQuiz(request);
+	}
+
 	@GetMapping("/practice/catalog")
 	public com.itofficerhub.dto.PracticeCatalogDto practiceCatalog() {
 		return practiceService.catalog();

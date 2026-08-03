@@ -1,7 +1,14 @@
 import { useEffect } from 'react'
-import { canonicalUrl, DEFAULT_DESCRIPTION, DEFAULT_KEYWORDS, fullTitle, SITE_NAME, SITE_URL, type SeoProps } from '@/lib/seo'
-
-const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`
+import {
+  canonicalUrl,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_KEYWORDS,
+  DEFAULT_OG_IMAGE,
+  fullTitle,
+  SITE_NAME,
+  SITE_URL,
+  type SeoProps,
+} from '@/lib/seo'
 
 function upsertMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
   if (!content) return

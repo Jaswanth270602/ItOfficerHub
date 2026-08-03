@@ -6,6 +6,7 @@ import com.itofficerhub.entity.PracticeQuestion;
 import com.itofficerhub.entity.Topic;
 import com.itofficerhub.exception.ApiException;
 import com.itofficerhub.repository.PracticeQuestionRepository;
+import com.itofficerhub.util.AppTime;
 import com.itofficerhub.util.PracticeCatalog;
 import com.itofficerhub.util.TopicDisplay;
 import org.springframework.http.HttpStatus;
@@ -13,15 +14,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 @Service
 public class PracticeService {
 
 	public static final int TARGET_QUESTIONS_PER_SUBTOPIC = 50;
+	public static final int DAILY_QUIZ_SIZE = 10;
 
 	private final PracticeQuestionRepository repository;
 
@@ -126,6 +134,134 @@ public class PracticeService {
 				pq.getCorrectOption().name().substring(0, 1),
 				pq.getExplanation(),
 				pq.getSolutionImageUrl());
+	}
+
+	/** Same 10 Study Q&A questions for everyone today (IST), no login required. */
+	public DailyQuizDto dailyQuiz() {
+		List<PracticeQuestion> picked = todaysQuizQuestions();
+		String date = AppTime.today().toString();
+		List<DailyQuizQuestionDto> questions = new ArrayList<>();
+		for (int i = 0; i < picked.size(); i++) {
+			questions.add(toDailyQuizQuestion(picked.get(i), i + 1));
+		}
+		return new DailyQuizDto(date, "Daily 10 · Study Q&A", questions.size(), questions);
+	}
+
+	public DailyQuizResultDto submitDailyQuiz(DailyQuizSubmitRequest request) {
+		List<PracticeQuestion> picked = todaysQuizQuestions();
+		if (picked.isEmpty()) {
+			throw new ApiException(HttpStatus.NOT_FOUND, "Daily quiz is not available yet");
+		}
+		Set<Long> allowed = new HashSet<>();
+		Map<Long, PracticeQuestion> byId = new LinkedHashMap<>();
+		for (PracticeQuestion pq : picked) {
+			allowed.add(pq.getId());
+			byId.put(pq.getId(), pq);
+		}
+		Map<Long, String> answers = new HashMap<>();
+		for (DailyQuizAnswerRequest a : request.answers()) {
+			if (a.questionId() == null || !allowed.contains(a.questionId())) {
+				throw new ApiException(HttpStatus.BAD_REQUEST, "Answer does not belong to today's quiz");
+			}
+			answers.put(a.questionId(), normalizeOption(a.selectedOption()));
+		}
+
+		int correctCount = 0;
+		int wrongCount = 0;
+		int skippedCount = 0;
+		List<DailyQuizReviewDto> reviews = new ArrayList<>();
+		int order = 0;
+		for (PracticeQuestion pq : picked) {
+			order++;
+			String selected = answers.get(pq.getId());
+			String correct = pq.getCorrectOption().name().substring(0, 1);
+			boolean attempted = selected != null;
+			boolean isCorrect = attempted && selected.equals(correct);
+			if (!attempted) {
+				skippedCount++;
+			} else if (isCorrect) {
+				correctCount++;
+			} else {
+				wrongCount++;
+			}
+			reviews.add(new DailyQuizReviewDto(
+					pq.getId(),
+					order,
+					pq.getQuestionText(),
+					selected,
+					correct,
+					isCorrect,
+					attempted,
+					pq.getExplanation(),
+					pq.getTopic().name()));
+		}
+		int total = picked.size();
+		int pct = total == 0 ? 0 : (int) Math.round((correctCount * 100.0) / total);
+		String headline = pct >= 80
+				? "Crushed today's Daily 10!"
+				: pct >= 50 ? "Solid Daily 10 — keep going!" : "Daily 10 done — revise & retry tomorrow!";
+		return new DailyQuizResultDto(
+				AppTime.today().toString(),
+				correctCount,
+				wrongCount,
+				skippedCount,
+				total,
+				pct,
+				headline,
+				reviews);
+	}
+
+	private List<PracticeQuestion> todaysQuizQuestions() {
+		List<Long> ids = new ArrayList<>(repository.findPublishedIds());
+		if (ids.isEmpty()) {
+			return List.of();
+		}
+		Collections.sort(ids);
+		Collections.shuffle(ids, new Random(AppTime.today().toEpochDay()));
+		int n = Math.min(DAILY_QUIZ_SIZE, ids.size());
+		List<Long> pickedIds = ids.subList(0, n);
+		Map<Long, PracticeQuestion> loaded = new HashMap<>();
+		for (PracticeQuestion pq : repository.findByIdInAndPublishedTrue(pickedIds)) {
+			loaded.put(pq.getId(), pq);
+		}
+		List<PracticeQuestion> ordered = new ArrayList<>();
+		for (Long id : pickedIds) {
+			PracticeQuestion pq = loaded.get(id);
+			if (pq != null) {
+				ordered.add(pq);
+			}
+		}
+		return ordered;
+	}
+
+	private static String normalizeOption(String raw) {
+		if (raw == null || raw.isBlank()) {
+			return null;
+		}
+		String s = raw.trim().toUpperCase(Locale.ROOT);
+		if (s.length() > 1) {
+			s = s.substring(0, 1);
+		}
+		if (!s.equals("A") && !s.equals("B") && !s.equals("C") && !s.equals("D")) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "selectedOption must be A–D");
+		}
+		return s;
+	}
+
+	private DailyQuizQuestionDto toDailyQuizQuestion(PracticeQuestion pq, int orderIndex) {
+		var sec = PracticeCatalog.section(pq.getSectionId()).orElseThrow();
+		var sub = PracticeCatalog.subtopic(pq.getSectionId(), pq.getSubtopicSlug()).orElseThrow();
+		return new DailyQuizQuestionDto(
+				pq.getId(),
+				orderIndex,
+				pq.getTopic().name(),
+				sec.title(),
+				sub.title(),
+				pq.getQuestionText(),
+				pq.getOptionA(),
+				pq.getOptionB(),
+				pq.getOptionC(),
+				pq.getOptionD());
 	}
 
 	@Transactional

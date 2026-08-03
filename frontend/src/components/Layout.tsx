@@ -8,6 +8,7 @@ import { Button } from './ui/button'
 import { AppLogo } from '@/components/AppLogo'
 import {
   BookOpen,
+  Flame,
   GraduationCap,
   Layers,
   ShieldCheck,
@@ -22,6 +23,7 @@ import {
 import { cn } from '@/lib/utils'
 import { RouteNoIndexSeo } from '@/components/RouteNoIndexSeo'
 import { VisitTracker } from '@/components/VisitTracker'
+import { DailyQuizFab } from '@/components/DailyQuizFab'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -54,6 +56,8 @@ export function Layout() {
         />
       )}
 
+      <DailyQuizFab />
+
       <header className="border-b border-cyber-700/50 bg-cyber-900/70 backdrop-blur-lg sticky top-0 z-40 pt-[env(safe-area-inset-top)] overflow-visible">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 min-h-14 sm:min-h-16 h-14 sm:h-16 flex items-center justify-between gap-2 overflow-visible">
           <AppLogo textClassName="text-base sm:text-lg" />
@@ -66,6 +70,11 @@ export function Layout() {
               <NavLink to="/study" className={navLinkClass}>
                 <span className="flex items-center gap-1">
                   <BookOpen className="h-4 w-4" /> Study Q&A
+                </span>
+              </NavLink>
+              <NavLink to="/daily-quiz" className={navLinkClass}>
+                <span className="flex items-center gap-1">
+                  <Flame className="h-4 w-4 text-amber-300" /> Daily 10
                 </span>
               </NavLink>
               <NavLink to="/mocks" className={navLinkClass}>
@@ -152,6 +161,9 @@ export function Layout() {
             </Link>
             <Link to="/study" className="text-slate-400 hover:text-white py-1">
               Study Q&A
+            </Link>
+            <Link to="/daily-quiz" className="text-slate-400 hover:text-white py-1">
+              Daily 10
             </Link>
             <Link to="/mocks" className="text-slate-400 hover:text-white py-1">
               IBPS SO IT Mocks

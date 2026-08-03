@@ -4,7 +4,9 @@ import { whatsAppShareUrl } from '@/lib/shareSite'
 import type { ScoreShareCardData } from '@/components/exam/ScoreShareCard'
 
 export function buildScoreShareText(data: ScoreShareCardData): string {
-  const site = shareSitePath('/')
+  const site = data.mockTestId
+    ? shareSitePath(`/mock/${data.mockTestId}`)
+    : shareSitePath('/')
   const cutoffLine = data.clearedCutoff
     ? `✅ Cutoff ${data.cutoffMarks} — CLEARED`
     : `📌 Cutoff ${data.cutoffMarks} — keep pushing`
@@ -26,8 +28,7 @@ export function buildScoreShareText(data: ScoreShareCardData): string {
     `🏆  Rank #${data.rank} of ${data.uniqueStudents} aspirants`,
     `📈  Percentile: ${pct}`,
     '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    'Free daily IBPS SO IT mocks (no private report link):',
+    '🔥  Can you beat my rank? Attempt the same mock:',
     site,
     '━━━━━━━━━━━━━━━━━━━━━━━━',
   ].join('\n')

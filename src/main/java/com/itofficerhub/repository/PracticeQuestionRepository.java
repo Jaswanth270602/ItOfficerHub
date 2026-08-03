@@ -3,10 +3,16 @@ package com.itofficerhub.repository;
 import com.itofficerhub.entity.PracticeQuestion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface PracticeQuestionRepository extends JpaRepository<PracticeQuestion, Long> {
+
+	@Query("SELECT p.id FROM PracticeQuestion p WHERE p.published = true")
+	List<Long> findPublishedIds();
+
+	List<PracticeQuestion> findByIdInAndPublishedTrue(Collection<Long> ids);
 
 	List<PracticeQuestion> findBySectionIdAndSubtopicSlugOrderByQuestionNumberAsc(
 			String sectionId, String subtopicSlug);

@@ -8,6 +8,7 @@ import {
   BookMarked,
   BookOpen,
   ClipboardList,
+  Flame,
   GraduationCap,
   Home,
   Layers,
@@ -55,6 +56,9 @@ export function MobileHeaderMenu() {
             </NavLink>
             <NavLink to="/study" className={linkClass}>
               <BookOpen className="h-5 w-5" /> Study Q&A
+            </NavLink>
+            <NavLink to="/daily-quiz" className={linkClass}>
+              <Flame className="h-5 w-5 text-amber-300" /> Daily 10
             </NavLink>
             <NavLink to="/mocks" className={linkClass}>
               <Layers className="h-5 w-5" /> Mocks
@@ -114,9 +118,9 @@ export function MobileBottomNav() {
   const tabs = [
     { to: '/dashboard', label: 'Home', icon: Home, match: path === '/dashboard' || path === '/' },
     { to: '/study', label: 'Study', icon: BookOpen, match: path.startsWith('/study') },
+    { to: '/daily-quiz', label: 'Daily 10', icon: Flame, match: path.startsWith('/daily-quiz') },
     { to: '/mocks', label: 'Mocks', icon: Layers, match: path.startsWith('/mocks') || path.startsWith('/mock/') },
     { to: '/community', label: 'Mail', icon: Mail, match: path.startsWith('/community') },
-    { to: '/revision', label: 'Revision', icon: BookMarked, match: path.startsWith('/revision') },
   ]
 
   return (

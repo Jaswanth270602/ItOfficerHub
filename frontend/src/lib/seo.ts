@@ -5,8 +5,10 @@ export const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined)?.r
 export const SITE_NAME = 'ItOfficerHub'
 export const SITE_TAGLINE = 'Crack IBPS SO IT Officer — 100% free, no login for prep'
 
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`
+
 export const DEFAULT_DESCRIPTION =
-  'Crack IBPS SO IT Officer with free topic-wise Study Q&A — no login needed. IBPS SO IT, PSU IT, NIACL/LIC & TCS NQT mocks with All-India rank. 100% free.'
+  'Crack IBPS SO IT Officer with free Daily 10 quiz & topic-wise Study Q&A — no login needed. Full mocks with All-India rank for IBPS SO IT, PSU IT, NIACL/LIC & TCS NQT. 100% free.'
 
 export const DEFAULT_KEYWORDS = [
   'ItOfficerHub',
@@ -14,6 +16,7 @@ export const DEFAULT_KEYWORDS = [
   'it officer hub',
   'IBPS SO IT Officer',
   'IBPS IT Officer mock test',
+  'Daily 10 quiz',
   'IBPS Specialist Officer IT',
   'SBI IT Officer',
   'BOB IT Officer',

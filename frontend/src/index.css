@@ -129,3 +129,48 @@ button:disabled {
   animation: landing-splash-fade-out 0.35s ease forwards;
   pointer-events: none;
 }
+
+@keyframes hero-quiz-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 32px rgba(34, 211, 238, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 48px rgba(139, 92, 246, 0.22);
+  }
+}
+
+@keyframes hero-quiz-icon-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.hero-quiz-card {
+  animation: hero-quiz-pulse 3.2s ease-in-out infinite;
+}
+
+.hero-quiz-icon {
+  animation: hero-quiz-icon-bob 2.4s ease-in-out infinite;
+}
+
+.hero-quiz-cta {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-quiz-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-quiz-card,
+  .hero-quiz-icon,
+  .landing-splash-smiley {
+    animation: none;
+  }
+}

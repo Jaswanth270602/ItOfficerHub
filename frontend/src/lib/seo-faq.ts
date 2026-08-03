@@ -4,6 +4,14 @@ export const LANDING_FAQ = [
     a: 'ItOfficerHub is a free online platform for IBPS SO IT Officer, PSU IT Officer (NIACL, LIC, GIC, RBI), and TCS NQT aptitude mock tests. Practice with timed mocks, All-India rank, cutoff analysis, and detailed solutions.',
   },
   {
+    q: 'What is the Daily 10 quiz?',
+    a: 'Daily 10 is a free 10-question quiz drawn randomly from Study Q&A. It refreshes every midnight IST, needs no login, and lets you share a score card to challenge friends.',
+  },
+  {
+    q: 'Do I need an account to practice?',
+    a: 'No for Study Q&A and Daily 10 — open and practice instantly. Full-length mocks with All-India rank need a free account so rankings stay fair.',
+  },
+  {
     q: 'Is ItOfficerHub free for IBPS SO IT Officer preparation?',
     a: 'Yes — 100% free. All IBPS Specialist Officer IT professional knowledge mocks, sectional tests, and solutions are free with no payment or subscription.',
   },

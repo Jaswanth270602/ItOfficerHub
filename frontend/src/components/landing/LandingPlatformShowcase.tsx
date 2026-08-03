@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { ActivityHeatmap, buildDemoHeatmapWeeks } from '@/components/ActivityHeatmap'
-import { Activity, BarChart3, Trophy } from 'lucide-react'
+import { Activity, BarChart3, Flame, Trophy } from 'lucide-react'
 
 const LEADERBOARD = [
   { rank: 1, name: 'Priya S.', score: '18.75' },
@@ -9,17 +10,17 @@ const LEADERBOARD = [
   { rank: 4, name: 'You?', score: '—', highlight: true },
 ]
 
-const WEAK_TOPICS = [
-  { topic: 'Computer Networks', pct: 78, tone: 'strong' as const },
-  { topic: 'DBMS', pct: 62, tone: 'mid' as const },
-  { topic: 'Security', pct: 41, tone: 'weak' as const },
-  { topic: 'Data Structures', pct: 35, tone: 'weak' as const },
-]
-
 const DEMO_WEEKS = buildDemoHeatmapWeeks()
 
-/** Decorative previews — illustrates real dashboard features (leaderboard, analytics, activity). */
-export function LandingPlatformShowcase() {
+type LiveStats = {
+  totalMocks: number
+  totalUsers: number
+  totalAttempts: number
+  averageScorePercent: number
+}
+
+/** Platform previews — live stats + demo UI of real dashboard features. */
+export function LandingPlatformShowcase({ stats }: { stats?: LiveStats }) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-10 sm:mb-12">
       <div className="rounded-xl border border-neon-cyan/25 bg-gradient-to-br from-cyber-900/90 to-cyber-950 p-4 sm:p-5 shadow-lg shadow-black/20">
@@ -57,46 +58,34 @@ export function LandingPlatformShowcase() {
             </li>
           ))}
         </ul>
-        <p className="text-[10px] text-slate-500 mt-3">Fair rank — best unique score per aspirant</p>
+        <p className="text-[10px] text-slate-500 mt-3">Preview · live ranks unlock after you attempt</p>
       </div>
 
-      <div className="rounded-xl border border-neon-purple/25 bg-gradient-to-br from-cyber-900/90 to-cyber-950 p-4 sm:p-5 shadow-lg shadow-black/20">
+      <div className="rounded-xl border border-amber-500/25 bg-gradient-to-br from-cyber-900/90 to-cyber-950 p-4 sm:p-5 shadow-lg shadow-black/20 flex flex-col">
         <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="h-4 w-4 text-neon-purple" />
-          <p className="text-xs font-semibold uppercase tracking-widest text-neon-purple">Chapter analytics</p>
+          <Flame className="h-4 w-4 text-amber-300" />
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-300">Live platform</p>
         </div>
-        <p className="text-sm font-medium text-white mb-3">Know your weak spots</p>
-        <ul className="space-y-3">
-          {WEAK_TOPICS.map(({ topic, pct, tone }) => (
-            <li key={topic}>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-300 truncate pr-2">{topic}</span>
-                <span
-                  className={cn(
-                    'tabular-nums shrink-0',
-                    tone === 'strong' && 'text-emerald-400',
-                    tone === 'mid' && 'text-neon-cyan',
-                    tone === 'weak' && 'text-amber-400'
-                  )}
-                >
-                  {pct}%
-                </span>
-              </div>
-              <div className="h-2 rounded-full bg-cyber-800 overflow-hidden">
-                <div
-                  className={cn(
-                    'h-full rounded-full',
-                    tone === 'strong' && 'bg-emerald-500',
-                    tone === 'mid' && 'bg-neon-cyan',
-                    tone === 'weak' && 'bg-amber-500'
-                  )}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </li>
+        <p className="text-sm font-medium text-white mb-3">Real numbers · growing daily</p>
+        <div className="grid grid-cols-2 gap-3 flex-1">
+          {[
+            { label: 'Aspirants', value: stats?.totalUsers ?? '—' },
+            { label: 'Attempts', value: stats?.totalAttempts ?? '—' },
+            { label: 'Mocks', value: stats?.totalMocks ?? '—' },
+            { label: 'Avg net %', value: stats ? `${stats.averageScorePercent}%` : '—' },
+          ].map((row) => (
+            <div key={row.label} className="rounded-lg bg-cyber-800/50 border border-cyber-700/80 px-3 py-2.5">
+              <p className="text-lg font-bold text-white tabular-nums">{row.value}</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wide">{row.label}</p>
+            </div>
           ))}
-        </ul>
-        <p className="text-[10px] text-slate-500 mt-3">Auto-tagged from mock attempts — revise what hurts</p>
+        </div>
+        <Link
+          to="/daily-quiz"
+          className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-sm font-semibold text-amber-100 hover:bg-amber-500/15 transition-colors"
+        >
+          <Flame className="h-4 w-4" /> Try Daily 10 free
+        </Link>
       </div>
 
       <div className="rounded-xl border border-emerald-500/20 bg-gradient-to-br from-cyber-900/90 to-cyber-950 p-4 sm:p-5 shadow-lg shadow-black/20 md:col-span-2 lg:col-span-1">
@@ -115,6 +104,9 @@ export function LandingPlatformShowcase() {
             { label: 'Current streak', value: 5, accentClass: 'text-emerald-400' },
           ]}
         />
+        <p className="text-[10px] text-slate-500 mt-3 flex items-center gap-1">
+          <BarChart3 className="h-3 w-3" /> Sample preview · yours appears after mocks
+        </p>
       </div>
     </div>
   )
