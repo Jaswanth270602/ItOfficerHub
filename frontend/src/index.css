@@ -174,3 +174,94 @@ button:disabled {
     animation: none;
   }
 }
+
+/* Vocab Daily promo / hologram */
+@keyframes vocab-holo-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateX(-50%) scaleX(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateX(-50%) scaleX(1.08);
+  }
+}
+
+@keyframes vocab-holo-ring {
+  0%,
+  100% {
+    box-shadow:
+      0 0 40px -8px rgba(52, 211, 153, 0.55),
+      0 20px 40px -20px rgba(0, 0, 0, 0.8),
+      inset 0 0 0 1px rgba(167, 243, 208, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 56px -4px rgba(52, 211, 153, 0.8),
+      0 20px 40px -20px rgba(0, 0, 0, 0.8),
+      inset 0 0 0 1px rgba(167, 243, 208, 0.35);
+  }
+}
+
+@keyframes vocab-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.vocab-holo-pulse {
+  animation: vocab-holo-pulse 3s ease-in-out infinite;
+}
+
+.vocab-holo-ring {
+  animation: vocab-holo-ring 2.8s ease-in-out infinite;
+}
+
+.vocab-promo-shimmer {
+  background-size: 200% 100%;
+  animation: vocab-shimmer 4s linear infinite;
+}
+
+.vocab-carousel-stage {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.vocab-shot-center {
+  transform: translateX(0) scale(1.08) rotateY(0deg);
+  opacity: 1;
+  filter: none;
+}
+
+.vocab-shot-left {
+  transform: translateX(-58%) scale(0.78) rotateY(12deg);
+  opacity: 0.45;
+  filter: brightness(0.75) saturate(0.85);
+}
+
+.vocab-shot-right {
+  transform: translateX(58%) scale(0.78) rotateY(-12deg);
+  opacity: 0.45;
+  filter: brightness(0.75) saturate(0.85);
+}
+
+@media (min-width: 640px) {
+  .vocab-shot-left {
+    transform: translateX(-72%) scale(0.78) rotateY(12deg);
+  }
+  .vocab-shot-right {
+    transform: translateX(72%) scale(0.78) rotateY(-12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vocab-holo-pulse,
+  .vocab-holo-ring,
+  .vocab-promo-shimmer {
+    animation: none;
+  }
+}

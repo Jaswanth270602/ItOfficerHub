@@ -28,7 +28,7 @@ public class SpaWebConfig implements WebMvcConfigurer {
 	static class SpaFallbackResolver extends PathResourceResolver {
 
 		private static final java.util.regex.Pattern STATIC_FILE = java.util.regex.Pattern.compile(
-				".+\\.(svg|png|jpe?g|gif|ico|webp|xml|txt|webmanifest|css|js|map|woff2?)$",
+				".+\\.(svg|png|jpe?g|gif|ico|webp|xml|txt|webmanifest|css|js|map|woff2?|apk)$",
 				java.util.regex.Pattern.CASE_INSENSITIVE);
 
 		@Override

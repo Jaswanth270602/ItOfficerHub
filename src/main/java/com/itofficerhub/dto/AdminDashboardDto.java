@@ -4,5 +4,6 @@ public record AdminDashboardDto(
 		long totalMocks,
 		long totalQuestions,
 		long totalUsers,
-		long totalAttempts
+		long totalAttempts,
+		long vocabDailyDownloads
 ) {}

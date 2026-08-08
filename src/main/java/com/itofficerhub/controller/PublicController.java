@@ -8,10 +8,16 @@ import com.itofficerhub.service.DashboardService;
 import com.itofficerhub.service.PracticeService;
 import com.itofficerhub.service.PublicService;
 import com.itofficerhub.service.VisitTrackingService;
+import com.itofficerhub.service.VocabDailyService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/public")
@@ -21,13 +27,30 @@ public class PublicController {
 	private final DashboardService dashboardService;
 	private final PracticeService practiceService;
 	private final VisitTrackingService visitTrackingService;
+	private final VocabDailyService vocabDailyService;
 
 	public PublicController(PublicService publicService, DashboardService dashboardService,
-			PracticeService practiceService, VisitTrackingService visitTrackingService) {
+			PracticeService practiceService, VisitTrackingService visitTrackingService,
+			VocabDailyService vocabDailyService) {
 		this.publicService = publicService;
 		this.dashboardService = dashboardService;
 		this.practiceService = practiceService;
 		this.visitTrackingService = visitTrackingService;
+		this.vocabDailyService = vocabDailyService;
+	}
+
+	@GetMapping("/vocab-daily/download")
+	public ResponseEntity<Resource> downloadVocabDaily() {
+		Resource apk = vocabDailyService.prepareDownload();
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"VocabDaily.apk\"")
+				.contentType(MediaType.parseMediaType("application/vnd.android.package-archive"))
+				.body(apk);
+	}
+
+	@GetMapping("/vocab-daily/stats")
+	public Map<String, Long> vocabDailyStats() {
+		return Map.of("downloads", vocabDailyService.downloadCount());
 	}
 
 	@PostMapping("/visits")

@@ -15,6 +15,7 @@ import { normalizeMock, type MockExam } from '@/types/mock'
 import {
   Award,
   ArrowRight,
+  BookOpen,
   Calendar,
   Clock,
   Crown,
@@ -228,6 +229,33 @@ export function DashboardPage() {
           )}
         </div>
       </section>
+
+      <Link
+        to="/vocab-daily"
+        className="mb-6 sm:mb-8 group relative flex w-full items-center gap-3 sm:gap-4 overflow-hidden rounded-xl border border-emerald-400/35 bg-gradient-to-r from-emerald-500/15 via-cyber-900/70 to-orange-500/15 px-4 py-3.5 sm:px-5 sm:py-4 hover:border-emerald-300/55 transition-colors vocab-promo-shimmer"
+        style={{
+          backgroundImage:
+            'linear-gradient(110deg, rgba(16,185,129,0.18) 0%, rgba(12,18,34,0.85) 40%, rgba(251,146,60,0.14) 70%, rgba(16,185,129,0.12) 100%)',
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_50%,rgba(52,211,153,0.22),transparent_45%)]" />
+        <div className="pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full bg-orange-400/15 blur-2xl group-hover:bg-orange-400/25 transition-colors" />
+        <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-400/15 text-emerald-300 shadow-[0_0_20px_-6px_rgba(52,211,153,0.7)]">
+          <BookOpen className="h-5 w-5" />
+        </span>
+        <div className="relative flex-1 min-w-0">
+          <p className="text-sm sm:text-base font-semibold text-white leading-snug">
+            Get free English vocabulary widget — Vocab Daily
+          </p>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 leading-snug">
+            1 word each day · meanings, idioms, OWS &amp; phrasal verbs inside · free Android app
+          </p>
+        </div>
+        <span className="relative shrink-0 inline-flex items-center gap-1 rounded-lg bg-emerald-400/90 px-3 py-2 text-xs font-bold text-cyber-950 group-hover:bg-emerald-300 transition-colors">
+          Get the app
+          <ArrowRight className="h-3.5 w-3.5" />
+        </span>
+      </Link>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">Rankings refresh as more aspirants complete mocks</p>

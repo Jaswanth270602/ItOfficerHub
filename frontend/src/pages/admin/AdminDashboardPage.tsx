@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImportMockModal } from './ImportMockModal'
 import { PlatformLeaderboardsPanel, type PlatformOverview } from '@/components/dashboard/PlatformLeaderboardsPanel'
-import { BarChart3, BookOpen, CalendarClock, ChevronLeft, ChevronRight, FileJson, FileQuestion, Globe, Search, Users, Zap } from 'lucide-react'
+import { BarChart3, BookOpen, CalendarClock, ChevronLeft, ChevronRight, Download, FileJson, FileQuestion, Globe, Search, Users, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Dashboard {
@@ -16,6 +16,7 @@ interface Dashboard {
   totalQuestions: number
   totalUsers: number
   totalAttempts: number
+  vocabDailyDownloads: number
 }
 
 type LiveStatus = 'DRAFT' | 'SCHEDULED' | 'LIVE'
@@ -207,11 +208,20 @@ export function AdminDashboardPage() {
       )}
 
       {stats && (
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
           <Card><CardContent className="pt-6 flex gap-3"><BarChart3 className="text-neon-blue" /><div><p className="text-2xl font-bold">{stats.totalMocks}</p><p className="text-sm text-slate-400">Mocks</p></div></CardContent></Card>
           <Card><CardContent className="pt-6 flex gap-3"><FileQuestion className="text-neon-purple" /><div><p className="text-2xl font-bold">{stats.totalQuestions}</p><p className="text-sm text-slate-400">Questions</p></div></CardContent></Card>
           <Card><CardContent className="pt-6 flex gap-3"><Users className="text-neon-cyan" /><div><p className="text-2xl font-bold">{stats.totalUsers}</p><p className="text-sm text-slate-400">Users</p></div></CardContent></Card>
           <Card><CardContent className="pt-6 flex gap-3"><Zap className="text-amber-400" /><div><p className="text-2xl font-bold">{stats.totalAttempts}</p><p className="text-sm text-slate-400">Attempts</p></div></CardContent></Card>
+          <Card>
+            <CardContent className="pt-6 flex gap-3">
+              <Download className="text-emerald-400" />
+              <div>
+                <p className="text-2xl font-bold">{stats.vocabDailyDownloads ?? 0}</p>
+                <p className="text-sm text-slate-400">Vocab Daily downloads</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

@@ -19,6 +19,7 @@ import { TcsNqtPage } from '@/pages/TcsNqtPage'
 import { IbpsSoItOfficerPage } from '@/pages/IbpsSoItOfficerPage'
 import { IbpsSo2026Page } from '@/pages/IbpsSo2026Page'
 import { SupportPage } from '@/pages/SupportPage'
+import { VocabDailyPage } from '@/pages/VocabDailyPage'
 import { StudyHubShell } from '@/components/study/StudyHubShell'
 import { StudyHubHomePage } from '@/pages/study/StudyHubHomePage'
 import { StudySectionPage } from '@/pages/study/StudySectionPage'
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/mocks" element={<MocksPage />} />
             <Route path="/ibps-so-2026" element={<IbpsSo2026Page />} />
             <Route path="/support" element={<SupportPage />} />
+            <Route path="/vocab-daily" element={<VocabDailyPage />} />
             <Route path="/tcs-nqt" element={<TcsNqtPage />} />
             <Route path="/syllabus" element={<Navigate to="/ibps-so-it-officer" replace />} />
             <Route path="/ibps-so-it-officer" element={<IbpsSoItOfficerPage />} />

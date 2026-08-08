@@ -31,6 +31,7 @@ public class AdminService {
 	private final AppCacheService appCacheService;
 	private final MockCodeService mockCodeService;
 	private final PasswordEncoder passwordEncoder;
+	private final VocabDailyService vocabDailyService;
 
 	public AdminService(MockTestRepository mockTestRepository, QuestionRepository questionRepository,
 			UserRepository userRepository, TestAttemptRepository attemptRepository,
@@ -38,7 +39,7 @@ public class AdminService {
 			DailySpotlightRepository dailySpotlightRepository,
 			DailySpotlightService dailySpotlightService,
 			AppCacheService appCacheService, MockCodeService mockCodeService,
-			PasswordEncoder passwordEncoder) {
+			PasswordEncoder passwordEncoder, VocabDailyService vocabDailyService) {
 		this.mockTestRepository = mockTestRepository;
 		this.questionRepository = questionRepository;
 		this.userRepository = userRepository;
@@ -49,6 +50,7 @@ public class AdminService {
 		this.appCacheService = appCacheService;
 		this.mockCodeService = mockCodeService;
 		this.passwordEncoder = passwordEncoder;
+		this.vocabDailyService = vocabDailyService;
 	}
 
 	public AdminDashboardDto dashboard() {
@@ -56,7 +58,8 @@ public class AdminService {
 				mockTestRepository.count(),
 				questionRepository.count(),
 				userRepository.countByRole(Role.USER),
-				attemptRepository.countBySubmittedTrue());
+				attemptRepository.countBySubmittedTrue(),
+				vocabDailyService.downloadCount());
 	}
 
 	public List<MockTestAdminDto> listMocks() {
