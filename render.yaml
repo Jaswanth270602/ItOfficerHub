@@ -23,6 +23,11 @@ services:
         sync: false
       - key: JPA_SHOW_SQL
         value: "false"
+      # Flyway owns schema — skip Hibernate ddl-auto on Neon (major cold-start speedup)
+      - key: JPA_DDL_AUTO
+        value: "none"
+      - key: VOCAB_DAILY_APK_PATH
+        value: "/app/downloads/vocab-daily.apk"
       - key: PORT
         value: "8080"
       - key: CORS_ORIGINS
