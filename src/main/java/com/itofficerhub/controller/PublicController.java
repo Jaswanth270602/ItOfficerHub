@@ -40,12 +40,16 @@ public class PublicController {
 	}
 
 	@GetMapping("/vocab-daily/download")
-	public ResponseEntity<Resource> downloadVocabDaily() {
+	public ResponseEntity<Resource> downloadVocabDaily() throws java.io.IOException {
 		Resource apk = vocabDailyService.prepareDownload();
-		return ResponseEntity.ok()
+		long len = apk.contentLength();
+		ResponseEntity.BodyBuilder builder = ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"VocabDaily.apk\"")
-				.contentType(MediaType.parseMediaType("application/vnd.android.package-archive"))
-				.body(apk);
+				.contentType(MediaType.parseMediaType("application/vnd.android.package-archive"));
+		if (len >= 0) {
+			builder.contentLength(len);
+		}
+		return builder.body(apk);
 	}
 
 	@GetMapping("/vocab-daily/stats")

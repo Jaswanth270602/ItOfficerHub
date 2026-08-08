@@ -1,5 +1,6 @@
 package com.itofficerhub.config;
 
+import com.itofficerhub.entity.ExamTarget;
 import com.itofficerhub.entity.MockTest;
 import com.itofficerhub.repository.MockTestRepository;
 import com.itofficerhub.service.MockCodeService;
@@ -11,10 +12,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /** Assigns IBPS-001 style codes to mocks created before mockCode existed. */
 @Component
@@ -34,24 +35,23 @@ public class MockCodeBackfill implements ApplicationRunner {
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
-		List<MockTest> missing = mockTestRepository.findAll().stream()
-				.filter(m -> m.getMockCode() == null || m.getMockCode().isBlank())
-				.sorted(Comparator.comparing(MockTest::getId))
-				.toList();
-		if (missing.isEmpty()) return;
+		List<MockTest> missing = mockTestRepository.findMissingMockCodes();
+		if (missing.isEmpty()) {
+			return;
+		}
 
-		Map<com.itofficerhub.entity.ExamTarget, Long> seqByTarget = mockTestRepository.findAll().stream()
-				.filter(m -> m.getMockCode() != null && !m.getMockCode().isBlank())
-				.collect(Collectors.groupingBy(MockTest::getExamTarget, Collectors.counting()));
-
+		Map<ExamTarget, Long> seqByTarget = new HashMap<>();
 		log.warn("Backfilling mockCode for {} mocks", missing.size());
 		for (MockTest m : missing) {
-			var target = m.getExamTarget();
-			long seq = seqByTarget.getOrDefault(target, 0L) + 1;
-			String code = mockCodeService.prefixFor(target) + "-" + String.format("%03d", seq);
-			m.setMockCode(code);
+			ExamTarget target = m.getExamTarget();
+			long next = seqByTarget.computeIfAbsent(target, t -> {
+				long total = mockTestRepository.countByExamTarget(t);
+				long stillMissing = missing.stream().filter(x -> Objects.equals(x.getExamTarget(), t)).count();
+				return total - stillMissing; // already-coded count for this target
+			}) + 1;
+			seqByTarget.put(target, next);
+			m.setMockCode(mockCodeService.prefixFor(target) + "-" + String.format("%03d", next));
 			mockTestRepository.save(m);
-			seqByTarget.put(target, seq);
 		}
 		log.info("mockCode backfill complete");
 	}

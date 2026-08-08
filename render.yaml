@@ -28,6 +28,15 @@ services:
         value: "none"
       - key: VOCAB_DAILY_APK_PATH
         value: "/app/downloads/vocab-daily.apk"
+      # Stay under Render free 512Mi (heap + metaspace + threads + native)
+      - key: JAVA_TOOL_OPTIONS
+        value: "-Xms48m -Xmx180m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=40m -Xss256k -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+      - key: HIKARI_MAX_POOL
+        value: "3"
+      - key: HIKARI_MIN_IDLE
+        value: "1"
+      - key: TOMCAT_MAX_THREADS
+        value: "32"
       - key: PORT
         value: "8080"
       - key: CORS_ORIGINS

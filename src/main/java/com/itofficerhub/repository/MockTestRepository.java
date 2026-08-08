@@ -19,4 +19,11 @@ public interface MockTestRepository extends JpaRepository<MockTest, Long> {
 	long countByPublishedTrue();
 
 	long countByExamTarget(com.itofficerhub.entity.ExamTarget examTarget);
+
+	@Query("""
+			SELECT m FROM MockTest m
+			WHERE m.mockCode IS NULL OR TRIM(m.mockCode) = ''
+			ORDER BY m.id ASC
+			""")
+	List<MockTest> findMissingMockCodes();
 }

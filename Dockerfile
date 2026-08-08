@@ -32,6 +32,7 @@ USER appuser
 EXPOSE 8080
 ENV PORT=8080
 ENV VOCAB_DAILY_APK_PATH=/app/downloads/vocab-daily.apk
-# Cap heap for Render free (512MB) so the process is not OOM-killed during Hibernate init
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70.0 -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Render free = 512Mi total. Hard-cap heap/metaspace so native+threads stay under the limit.
+# SerialGC uses less overhead than G1 on tiny heaps. (MaxRAMPercentage alone still OOMs.)
+ENV JAVA_TOOL_OPTIONS="-Xms48m -Xmx180m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=40m -Xss256k -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]

@@ -17,16 +17,17 @@ public class CacheConfig {
 	@Bean
 	public CacheManager cacheManager() {
 		var manager = new org.springframework.cache.support.SimpleCacheManager();
+		// Keep caches small — Render free is 512Mi; large user caches were a quiet RAM leak.
 		manager.setCaches(List.of(
-				build(CacheNames.PUBLIC_STATS, 120, 8),
-				build(CacheNames.PUBLISHED_MOCKS, 120, 32),
-				build(CacheNames.MOCK_ATTEMPT_COUNT, 180, 256),
-				build(CacheNames.MOCK_RANKING, 90, 128),
-				build(CacheNames.MOCK_LEADERBOARD, 90, 512),
-				build(CacheNames.USER_INBOX, 25, 2048),
-				build(CacheNames.USER_MOCK_STATUS, 45, 2048),
-				build(CacheNames.USER_HISTORY, 45, 2048),
-				build(CacheNames.DASHBOARD_OVERVIEW, 60, 16)));
+				build(CacheNames.PUBLIC_STATS, 120, 4),
+				build(CacheNames.PUBLISHED_MOCKS, 120, 16),
+				build(CacheNames.MOCK_ATTEMPT_COUNT, 180, 64),
+				build(CacheNames.MOCK_RANKING, 90, 64),
+				build(CacheNames.MOCK_LEADERBOARD, 90, 64),
+				build(CacheNames.USER_INBOX, 25, 256),
+				build(CacheNames.USER_MOCK_STATUS, 45, 256),
+				build(CacheNames.USER_HISTORY, 45, 256),
+				build(CacheNames.DASHBOARD_OVERVIEW, 60, 8)));
 		return manager;
 	}
 
